@@ -6,7 +6,7 @@ HtmlForm::HtmlForm(string s)
 	findByRegex(s, INPUT_REGEX, inputVec, false);
 	string value;
 	Field *temp;
-	for (int i = 0; i < inputVec.size(); i++)
+	for (unsigned int i = 0; i < inputVec.size(); i++)
 	{
 		temp = new Field();
 		if (findByName(inputVec[i], string("type"), value, false))
@@ -51,7 +51,7 @@ HtmlForm::HtmlForm(string s)
 std::string HtmlForm::toString()
 {
 	string args;
-	for (int i = 0; i < this->m_fields.size(); i++)
+	for (unsigned int i = 0; i < this->m_fields.size(); i++)
 	{
 		if (m_fields[i].getName() != "")
 		{

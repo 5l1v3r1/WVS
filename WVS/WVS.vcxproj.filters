@@ -60,6 +60,15 @@
     <ClInclude Include="CHttpClient.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Data.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="ExtractJob.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="ScheduleJob.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="WVS.cpp">
@@ -96,6 +105,15 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="CHttpClient.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Data.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="ExtractJob.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="ScheduleJob.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

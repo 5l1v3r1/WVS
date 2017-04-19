@@ -1,18 +1,7 @@
 #pragma once
 #include "afxcmn.h"
-
-#include"curl\curl.h"
-#include<iostream>
-#include<string>
-#include<fstream>
-#include <queue>
-#include <regex>
-#include <list>
-
-#include"CHttpClient.h"
+#include "ScheduleJob.h"
 #include "CThreadPool.h"
-#include "HtmlForm.h"
-#include "Item.h"
 
 using namespace std;
 
@@ -44,8 +33,12 @@ public:
 	CString m_crawledNum;
 	// 总的测试项，每一个参数为单位1。
 	UINT m_totalTestNum;
-
 	afx_msg void OnBnClickedBegin();
 	// 网站地址
 	CString m_strOriUrl;
+
+	CButton m_btnBegin;
+
+	CScheduleJob* m_pSchedule;
+	CThreadManage* m_pManage;
 };

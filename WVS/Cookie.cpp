@@ -10,13 +10,13 @@ Cookie::Cookie(string headerStr)
 	if (findByRegex(headerStr, COOKIE_REGEX, cookieVec, false))
 	{
 		//showVecStr(cookieVec);
-		for (int i = 0; i < cookieVec.size(); i++)
+		for (unsigned int i = 0; i < cookieVec.size(); i++)
 		{
 			if (findByRegex(cookieVec[i], COOKIE_FIELD_REGEX, cookieFieldVec, false))
 			{
 				//cout << "cookieFieldVec:" <<i<< endl;
 				//showVecStr(cookieFieldVec);
-				for (int j = 0; j < cookieFieldVec.size(); j++)
+				for (unsigned int j = 0; j < cookieFieldVec.size(); j++)
 				{
 					temp = new Field();
 					posOfEqule = cookieFieldVec[j].find("=");
@@ -44,7 +44,7 @@ Cookie::Cookie(const Cookie&a)
 std::string Cookie::toString()
 {
 	string args;
-	for (int i = 0; i < this->m_cookie.size(); i++)
+	for (unsigned int i = 0; i < this->m_cookie.size(); i++)
 	{
 		if (m_cookie[i].getName() != "")
 		{
@@ -68,7 +68,7 @@ bool Cookie::operator==(Cookie&a)
 {
 	if (m_cookie.size() == a.m_cookie.size())
 	{
-		int i, j;
+		unsigned int i, j;
 		for (i = 0; i < m_cookie.size(); i++)
 		{
 			for (j = 0; j < a.m_cookie.size(); j++)
@@ -91,12 +91,19 @@ bool Cookie::operator==(Cookie&a)
 //************************************
 bool Cookie::hasExisted(string name)
 {
-	for (int i = 0; i < m_cookie.size(); i++)
+	for (unsigned int i = 0; i < m_cookie.size(); i++)
 	{
 		if (m_cookie[i].getName() == name)
 			return true;
 	}
 	return false;
+}
+
+
+Cookie Cookie::operator=(Cookie&a)
+{
+	m_cookie = a.m_cookie;
+	return *this;
 }
 
 const std::string Cookie::COOKIE_REGEX = "Set-Cookie.*";

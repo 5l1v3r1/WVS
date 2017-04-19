@@ -13,6 +13,7 @@ public:
 	Cookie(const Cookie &a);
 	string toString();
 	bool operator==(Cookie&a);
+	Cookie operator=(Cookie&a);
 
 	static const string COOKIE_REGEX;
 	static const string COOKIE_FIELD_REGEX;

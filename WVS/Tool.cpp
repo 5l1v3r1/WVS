@@ -1,10 +1,10 @@
 #include "stdafx.h"
 #include "Tool.h"
 
-static int i = 0;
+static int s_i = 0;
 void Print(string k)
 {
-	cout << i++ << "$$$" << k << "$$$" << endl;
+	cout << s_i++ << "$$$" << k << "$$$" << endl;
 }
 void showVecStr(vector<string> vec)
 {
@@ -13,7 +13,7 @@ void showVecStr(vector<string> vec)
 string vecStrToString(vector<string> vec)
 {
 	string str = "";
-	for (int i = 0; i < vec.size(); i++)
+	for (unsigned int i = 0; i < vec.size(); i++)
 	{
 		str += vec[i];
 	}
@@ -50,6 +50,7 @@ bool findByName(string s, string name, string& value, bool isCaseSensitive)
 	char quote = '>';
 	bool flag = false;	//是否有看到"="号
 	int posOfEqual = -1;
+	unsigned int i;
 	while (!flag)
 	{
 		if (isCaseSensitive)
@@ -88,7 +89,7 @@ bool findByName(string s, string name, string& value, bool isCaseSensitive)
 	}
 	if (posOfName != -1)
 	{
-		int i;
+		unsigned int i;
 		for (i = posOfEqual + 1; i < s.size(); i++)
 		{
 			if (s[i] == '"' || s[i] == '\'')

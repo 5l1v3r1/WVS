@@ -24,6 +24,7 @@ CHttpClient::CHttpClient()
 	}
 	this->g_INSTANCE_NUM++;
 	this->m_pCurl = curl_easy_init();
+	curl_easy_setopt(this->m_pCurl, CURLOPT_NOSIGNAL, 1L);
 
 }
 
@@ -39,7 +40,7 @@ CHttpClient::~CHttpClient()
 		curl_global_cleanup();
 	}
 }
-
+  
 void CHttpClient::setHeaderOpt(const std::string &strHeaderParam, string& headerStr)
 {
 	curl_slist *chunk = NULL;
@@ -49,7 +50,7 @@ void CHttpClient::setHeaderOpt(const std::string &strHeaderParam, string& header
 	chunk = curl_slist_append(chunk, "User - Agent: Mozilla / 5.0 (Windows NT 10.0; Win64; x64) AppleWebKit / 537.36 (KHTML, like Gecko) Chrome / 56.0.2924.87 Safari / 537.36");
 	chunk = curl_slist_append(chunk, "Connection: keep-alive");
 	curl_easy_setopt(this->m_pCurl, CURLOPT_HTTPHEADER, chunk);
-	curl_easy_setopt(this->m_pCurl, CURLOPT_VERBOSE, 1);	//调试阶段，会在cmd中输出链接相关信息。
+	curl_easy_setopt(this->m_pCurl, CURLOPT_VERBOSE, 1);		//调试阶段，会在cmd中输出链接相关信息。
 	curl_easy_setopt(this->m_pCurl, CURLOPT_WRITEFUNCTION, &WriteFunction);
 	curl_easy_setopt(this->m_pCurl, CURLOPT_FOLLOWLOCATION, 1);	//自动跳转，处理302类型的回复。
 	curl_easy_setopt(this->m_pCurl, CURLOPT_HEADEROPT, 1);
@@ -108,7 +109,7 @@ CURLcode CHttpClient::send(HttpMethod method, const std::string &strCookie, cons
 	{
 		curl_easy_setopt(this->m_pCurl, CURLOPT_POST, 1);
 
-		for (int i = 0; i < fieldVec.size(); i++)
+		for (unsigned  int i = 0; i < fieldVec.size(); i++)
 		{
 			args += fieldVec[i].toString();
 			if (i != fieldVec.size() - 1)

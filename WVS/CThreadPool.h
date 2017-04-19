@@ -5,20 +5,10 @@
 #include <Windows.h>
 #include <stdint.h>
 #include <process.h>
-#include<time.h>
+#include <time.h>
+#include "CHttpClient.h"
 using namespace std;
 
-#define WINDOWS_SECURITE
-#ifdef WINDOWS_SECURITE
-#define strcpy(x, y) strcpy_s(x, 200, y)	
-#endif
-
-//#define DEBUG_THREADPOOL
-#ifdef DEBUG_THREADPOOL
-#define print_TP	printf
-#else
-#define print_TP(...)
-#endif
 
 static int urlNum = 60;
 static int currentNum = 0;
@@ -27,12 +17,6 @@ static int currentNum = 0;
 #define INITNUM_MAX 3		//宏定义最大初始化线程数。
 #define NUM_MAX	5			//最大可用线程数
 #define AVALIBLE_LOW 2		//最小可用
-/*
-最大可用
-当前可用
-*/
-
-
 
 class CThreadPool;
 class CJob;
@@ -46,6 +30,7 @@ public:
 	void Lock();    
 	void Unlock();
 };
+
 class CCondition
 {
 private:
@@ -61,7 +46,7 @@ public:
 	~CCondition();
 	void MyEnterCriticalSection();
 	void MyLeaveCriticalSection();
-	void Wait();
+	void Wait(unsigned int milliSec = INFINITE);
 	void Signal();
 };
 typedef enum ThreadState
@@ -77,12 +62,22 @@ class CThread
 private:
 	unsigned long m_ThreadID;  
 	ThreadState m_ThreadState;      //线程状态  
+	
+public:
+	//为了网络添加的属性add_net
+	CHttpClient* m_pHttpClient;
+	CURLcode m_curlCode;
+	string m_strHeader = "";
+
 protected:
 	static unsigned int __stdcall ThreadFunction(void* args);
 public:
 	CThread();
 	virtual ~CThread();
-	virtual void Run(void) = 0;
+	virtual void Run(void)
+	{
+		_cprintf("CThread::Run\n");
+	}
 	//设置或获取线程的状态  
 	void SetThreadState(ThreadState state)
 	{
@@ -108,6 +103,7 @@ private:
 	void* m_JobData;
 	CThreadMutex m_VarMutex;
 	bool m_IsEnd;
+
 
 public:
 	CWorkerThread();
@@ -278,11 +274,10 @@ private:
 
 class CJob
 {
-private:
+protected:
 	int m_JobNo;                    //任务编号  
 	char * m_JobName;               //任务名称  
 	CThread * m_pWorkThread;        //在线程里面设置
-
 public:
 	CJob();
 	virtual ~CJob();
@@ -318,31 +313,20 @@ public:
 	virtual void Run(void *ptr) = 0;
 	bool m_isDeleteAfterDone;
 };
-
 #endif
-void testThreadPool();
-class ExtractJob;
-class Crawler : public CJob
-{
-public:
-	Crawler(string oriUrl, CThreadManage *pManage);
-	void Run(void *ptr);
-	CThreadMutex m_webSiteLinksMutex;
-private:
-	friend class ExtractJob;
-	string m_oriUrl;
-	vector<string> m_webSiteLinks;
-	CThreadManage *m_pManage;
-	CCondition m_webSiteLinksCondition;
-};
-class ExtractJob : public CJob
-{
-public:
-	ExtractJob(string url, Crawler *pCrawler);
-	~ExtractJob();
-	void Run(void *ptr);
-	ExtractJob operator=(ExtractJob& a);
-private:
-	string m_url;
-	Crawler *m_pCrawler;
-};
+
+//void testThreadPool();
+//class ExtractJob;
+//class Crawler : public CJob
+//{
+//public:
+//	Crawler(string oriUrl, CThreadManage *pManage);
+//	void Run(void *ptr);
+//	CThreadMutex m_webSiteLinksMutex;
+//private:
+//	friend class ExtractJob;
+//	string m_oriUrl;
+//	vector<string> m_webSiteLinks;
+//	CThreadManage *m_pManage;
+//	CCondition m_webSiteLinksCondition;
+//};

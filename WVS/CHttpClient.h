@@ -7,8 +7,6 @@
 #include <vector>
 using namespace std;
 
-
-
 size_t WriteFunction(void *input, size_t uSize, size_t uCount, void *avg);
 
 

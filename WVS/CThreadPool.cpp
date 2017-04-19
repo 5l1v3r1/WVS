@@ -8,9 +8,9 @@ CCondition::CCondition()
 CCondition::~CCondition()
 {
 }
-void CCondition::Wait()
+void CCondition::Wait(unsigned int milliSecond)
 {
-	SleepConditionVariableCS(&m_conditionVar, &m_critSection, INFINITE);
+	SleepConditionVariableCS(&m_conditionVar, &m_critSection, milliSecond);
 }
 
 void CCondition::Signal()
@@ -45,16 +45,22 @@ void CThreadMutex::Lock()
 }
 void CThreadMutex::Unlock()
 {
-	ReleaseMutex(m_mutex);
+	if (!ReleaseMutex(m_mutex))
+	{
+		cout<<"线程释放失败---------------------\n";
+	}
 }
 CThread::CThread()
 {
+	m_pHttpClient = new CHttpClient();
+	m_pHttpClient->setHeaderOpt("", m_strHeader);		//为什么这两句在创建线程之后就会导致ThreadFunction里面的参数为CThread而不是CWorkerThread???
 	m_ThreadID = _beginthreadex(NULL, NULL, ThreadFunction, this, 0, NULL);
 }
 CThread::~CThread()
 {
-
+	delete m_pHttpClient;
 }
+
 bool CThread::Join()
 {
 	if (m_ThreadState == THREAD_BUSY)
@@ -67,11 +73,13 @@ unsigned int CThread::ThreadFunction(void*arg)
 {
 	CThread * pThread = (CThread *)arg;
 	pThread->Run();
+//	_cprintf("in threadFunction\n");
 	return 0;
 }
 
 CWorkerThread::CWorkerThread()
 {
+	//_cprintf("in workerThread\n");
 	m_Job = NULL;
 	m_JobData = NULL;
 	m_ThreadPool = NULL;
@@ -88,6 +96,7 @@ CWorkerThread::~CWorkerThread()
 
 void CWorkerThread::Run()
 {
+	//_cprintf("CWorkerThread::Run\n");
 	SetThreadState(THREAD_RUNNING);
 	for (;;)
 	{
@@ -208,7 +217,7 @@ CWorkerThread* CThreadPool::GetIdleThread(void)
 	{
 		//返回空闲队列首部的成员  
 		CWorkerThread * workThread = (CWorkerThread*)m_IdleList.front();
-		print_TP("Get Idle thread %d\n", workThread->GetThreadID());
+		_cprintf("Get Idle thread %d\n", workThread->GetThreadID());
 		m_IdleMutex.Unlock();
 		return workThread;
 	}
@@ -286,8 +295,8 @@ void CThreadPool::CreateIdleThread(int num)
 //删除指定数量的线程   //bug_1：没有删除全局里面的引用
 void CThreadPool::DeleteIdleThread(int num)
 {
-	print_TP("Enter into CThreadPool::DeleteIdleThread\n");
-	print_TP("Delete Num is %d\n", num);
+	_cprintf("Enter into CThreadPool::DeleteIdleThread\n");
+	_cprintf("Delete Num is %d\n", num);
 
 	m_IdleMutex.Lock();
 	for (int i = 0; i<num; i++)
@@ -296,7 +305,7 @@ void CThreadPool::DeleteIdleThread(int num)
 		if (m_IdleList.size() > 0)
 		{
 			removeThread = (CWorkerThread*)m_IdleList.front();
-			print_TP("Get Idle thread %d\n", removeThread->GetThreadID());
+			_cprintf("Get Idle thread %d\n", removeThread->GetThreadID());
 		}
 
 		//在空闲队列中查找，并删除  
@@ -307,8 +316,8 @@ void CThreadPool::DeleteIdleThread(int num)
 
 		m_AvailNum--;
 
-		print_TP("The idle thread available num:%d \n", m_AvailNum);
-		print_TP("The idlelist num:%d \n", m_IdleList.size());
+		_cprintf("The idle thread available num:%d \n", m_AvailNum);
+		_cprintf("The idlelist num:%d \n", m_IdleList.size());
 	}
 
 	m_IdleMutex.Unlock();
@@ -320,7 +329,7 @@ void CThreadPool::Run(CJob* job, void* jobArgs)
 {
 	assert(job != NULL);
 
-	//如果已经达到了最大线程数，则等待  //若可以从线程内部创建人物，则这里可能是瓶颈导致死锁，可能所有线程都陷到这里。
+	//如果已经达到了最大线程数，则等待		//若可以从线程内部创建任务，则这里可能是导致死锁，可能所有线程都陷到这里。
 	if (GetBusyNum() == m_MaxNum)
 		m_MaxNumCond.Wait();
 
@@ -344,7 +353,7 @@ void CThreadPool::Run(CJob* job, void* jobArgs)
 		//idleThread->SetThreadPool(this);  线程刚开始创建时，已经设置过此属性。
 		//任务调用线程进行执行  
 		job->SetWorkThread(idleThread);
-		print_TP("Job is set to thread %d \n", idleThread->GetThreadID());
+		_cprintf("Job is set to thread %d \n", idleThread->GetThreadID());
 		idleThread->SetJob(job, jobArgs);
 	}
 }
@@ -407,158 +416,158 @@ void CJob::SetJobName(char* jobname)
 	if (NULL != jobname)
 	{
 		m_JobName = (char*)malloc(strlen(jobname) + 1);
-		strcpy(m_JobName, jobname);
+		strcpy_s(m_JobName, 20, jobname);
 	}
 }
 /*< / pre><strong>线程池使用示例< / strong><br>*/
-class CXJob : public CJob
-{
-	int i;
-public:
-	CXJob()
-	{
-		i = 0;
-	}
+//class CXJob : public CJob
+//{
+//	int i;
+//public:
+//	CXJob()
+//	{
+//		i = 0;
+//	}
+//
+//	~CXJob()
+//	{}
+//
+//	void Run(void* jobArgs)
+//	{
+//		Sleep(1000);
+//		printf("CXJob  %d\n", (int)jobArgs);
+//	}
+//};
+//class CYJob : public CJob
+//{
+//public:
+//	int i;
+//public:
+//	CYJob()
+//	{
+//		i = 0;
+//	}
+//
+//	~CYJob()
+//	{
+//	}
+//
+//	void Run(void* jobdata)
+//	{
+//		printf("CYJob  %d\n", (int)jobdata);
+//		Sleep(1500);
+//	}
+//};
 
-	~CXJob()
-	{}
-
-	void Run(void* jobArgs)
-	{
-		Sleep(1000);
-		printf("CXJob  %d\n", (int)jobArgs);
-	}
-};
-class CYJob : public CJob
-{
-public:
-	int i;
-public:
-	CYJob()
-	{
-		i = 0;
-	}
-
-	~CYJob()
-	{
-	}
-
-	void Run(void* jobdata)
-	{
-		printf("CYJob  %d\n", (int)jobdata);
-		Sleep(1500);
-	}
-};
-
-
-ExtractJob::ExtractJob(string url, Crawler *pCrawler)
-{
-	m_url = url;
-	m_pCrawler = pCrawler;
-}
-ExtractJob ExtractJob::operator=(ExtractJob& a)
-{
-	return ExtractJob(a.m_url, a.m_pCrawler);
-}
-ExtractJob::~ExtractJob()
-{
-	printf("主动进入了析构函数--------------------------------------------------------\n");
-}
-
-void ExtractJob::Run(void *ptr)
-{
-	printf("正在爬取URL(%s)...\n", m_url.c_str());
-	Sleep(500);
-	int k;
-	vector<string>* pWebSiteLinks = (vector<string>*)ptr;
-	if (currentNum < urlNum/2)
-		k = 5;
-	else if (currentNum <urlNum)
-		k = 3;
-	else k = 0;
-	printf("爬取完毕,产生%d条URL\n", k);
-	m_pCrawler->m_webSiteLinksMutex.Lock();
-	for (int i = 0; i < k; i++)
-	{
-		if (currentNum < urlNum)
-		{
-			string tempStr = "I'm url:NO.";
-			char buff[4];
-			//_itoa_s(++currentNum, buff, 4);
-			sprintf_s(buff, 4, "%d", ++currentNum);
-			pWebSiteLinks->push_back(tempStr + buff);
-		}
-	}
-	m_pCrawler->m_webSiteLinksCondition.Signal();
-	m_pCrawler->m_webSiteLinksMutex.Unlock();
-}
-
-Crawler::Crawler(string oriUrl, CThreadManage *pManage)
-{
-	m_oriUrl = oriUrl;
-	m_webSiteLinks.push_back(m_oriUrl);
-	m_webSiteLinksMutex = CThreadMutex();
-	m_pManage = pManage;
-	m_webSiteLinksCondition = CCondition();
-}
-clock_t t_begin, t_end;
-void Crawler::Run(void *ptr)
-{
-	t_begin = clock();
-	string res;
-	bool flag = true;
-	while (flag)
-	{
-		m_webSiteLinksCondition.MyEnterCriticalSection();
-		while (m_webSiteLinks.size() <= 0)
-		{
-			if (m_pManage->getBusyNum() == 0)
-			{
-				false;
-			}
-			m_webSiteLinksCondition.Wait();
-		}
-		m_webSiteLinksCondition.MyLeaveCriticalSection();
-		m_webSiteLinksMutex.Lock();
-		res = m_webSiteLinks.back();
-		m_webSiteLinks.pop_back();
-		m_webSiteLinksMutex.Unlock();
-		ExtractJob *pTempExtract = new ExtractJob(res, this);	
-		pTempExtract->m_isDeleteAfterDone = true;	//动态申请，需要在任务完成后，由外部操作删除（此处为线程run）
-		m_pManage->Run(pTempExtract, (void*)&m_webSiteLinks);
-		//pTempExtract->Run( (void*)&m_webSiteLinks);
-		/*if (currentNum == urlNum)
-		{
-		m_pManage->TerminateAll();
-		flag = false;
-		}*/
-
-	}
-	t_end = clock();
-	printf("耗时：%ld\n", (t_end - t_begin) / CLOCKS_PER_SEC);
-
-} 
-
-
-//问题是，如何停止呢？
-void testThreadPool()
-{
-	CThreadManage* pManage = new CThreadManage(1);
-	Crawler crawler = Crawler("oriGinUrl:No.0", pManage);
-	crawler.Run(NULL);
-	//CThreadManage* manage = new CThreadManage(5);
-	//for (int i = 0; i < 10; i++)
-	//{
-	//	CXJob * job = new CXJob();
-	//	manage->Run(job, (void*)i);
-	//}
-	//CXJob *xjob = new CXJob();
-	//xjob->Run((void*)200000);
-	////Sleep(2000);
-	//CYJob* job = new CYJob();
-	//manage->Run(job, NULL);
-	//manage->TerminateAll();
-}
+//
+//ExtractJob::ExtractJob(string url, Crawler *pCrawler)
+//{
+//	m_url = url;
+//	m_pCrawler = pCrawler;
+//}
+//ExtractJob ExtractJob::operator=(ExtractJob& a)
+//{
+//	return ExtractJob(a.m_url, a.m_pCrawler);
+//}
+//ExtractJob::~ExtractJob()
+//{
+//	printf("主动进入了析构函数--------------------------------------------------------\n");
+//}
+//
+//void ExtractJob::Run(void *ptr)
+//{
+//	printf("正在爬取URL(%s)...\n", m_url.c_str());
+//	Sleep(500);
+//	int k;
+//	vector<string>* pWebSiteLinks = (vector<string>*)ptr;
+//	if (currentNum < urlNum/2)
+//		k = 5;
+//	else if (currentNum <urlNum)
+//		k = 3;
+//	else k = 0;
+//	printf("爬取完毕,产生%d条URL\n", k);
+//	m_pCrawler->m_webSiteLinksMutex.Lock();
+//	for (int i = 0; i < k; i++)
+//	{
+//		if (currentNum < urlNum)
+//		{
+//			string tempStr = "I'm url:NO.";
+//			char buff[4];
+//			//_itoa_s(++currentNum, buff, 4);
+//			sprintf_s(buff, 4, "%d", ++currentNum);
+//			pWebSiteLinks->push_back(tempStr + buff);
+//		}
+//	}
+//	m_pCrawler->m_webSiteLinksCondition.Signal();
+//	m_pCrawler->m_webSiteLinksMutex.Unlock();
+//}
+//
+//Crawler::Crawler(string oriUrl, CThreadManage *pManage)
+//{
+//	m_oriUrl = oriUrl;
+//	m_webSiteLinks.push_back(m_oriUrl);
+//	m_webSiteLinksMutex = CThreadMutex();
+//	m_pManage = pManage;
+//	m_webSiteLinksCondition = CCondition();
+//}
+//clock_t t_begin, t_end;
+//void Crawler::Run(void *ptr)
+//{
+//	t_begin = clock();
+//	string res;
+//	bool flag = true;
+//	while (flag)
+//	{
+//		m_webSiteLinksCondition.MyEnterCriticalSection();
+//		while (m_webSiteLinks.size() <= 0)
+//		{
+//			if (m_pManage->getBusyNum() == 0)
+//			{
+//				false;
+//			}
+//			m_webSiteLinksCondition.Wait();
+//		}
+//		m_webSiteLinksCondition.MyLeaveCriticalSection();
+//		m_webSiteLinksMutex.Lock();
+//		res = m_webSiteLinks.back();
+//		m_webSiteLinks.pop_back();
+//		m_webSiteLinksMutex.Unlock();
+//		ExtractJob *pTempExtract = new ExtractJob(res, this);	
+//		pTempExtract->m_isDeleteAfterDone = true;	//动态申请，需要在任务完成后，由外部操作删除（此处为线程run）
+//		m_pManage->Run(pTempExtract, (void*)&m_webSiteLinks);
+//		//pTempExtract->Run( (void*)&m_webSiteLinks);
+//		/*if (currentNum == urlNum)
+//		{
+//		m_pManage->TerminateAll();
+//		flag = false;
+//		}*/
+//
+//	}
+//	t_end = clock();
+//	printf("耗时：%ld\n", (t_end - t_begin) / CLOCKS_PER_SEC);
+//
+//} 
+//
+//
+////问题是，如何停止呢？
+//void testThreadPool()
+//{
+//	CThreadManage* pManage = new CThreadManage(1);
+//	Crawler crawler = Crawler("oriGinUrl:No.0", pManage);
+//	crawler.Run(NULL);
+//	//CThreadManage* manage = new CThreadManage(5);
+//	//for (int i = 0; i < 10; i++)
+//	//{
+//	//	CXJob * job = new CXJob();
+//	//	manage->Run(job, (void*)i);
+//	//}
+//	//CXJob *xjob = new CXJob();
+//	//xjob->Run((void*)200000);
+//	////Sleep(2000);
+//	//CYJob* job = new CYJob();
+//	//manage->Run(job, NULL);
+//	//manage->TerminateAll();
+//}
 /*< / pre><br>
 CXJob和CYJob都是从Job类继承而来，其都实现了Run接口。
 CXJob只是简单的打印一句”The Job comes from CXJob”，

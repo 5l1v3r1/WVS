@@ -30,6 +30,7 @@ Item::Item(const Item&a)
 	m_url = a.getUrl();
 	m_method = a.getMethod();
 	m_args = a.getArgs();
+	m_layer = a.getLayer();
 }
 
 Item Item::operator=(Item& a)
@@ -37,6 +38,7 @@ Item Item::operator=(Item& a)
 	m_method = a.getMethod();
 	m_args = a.getArgs();
 	m_url = a.getUrl();
+	m_layer = a.getLayer();
 	return *this;
 }
 
@@ -66,7 +68,7 @@ bool Item::equal(Item& a)
 
 	if (m_url == a.getUrl() && m_args.size() == a.getArgs().size())
 	{
-		for (int i = 0; i < m_args.size(); i++)
+		for (unsigned int i = 0; i < m_args.size(); i++)
 		{
 			if (!a.hasExistArgByName(m_args[i].getName()))
 				return false;
