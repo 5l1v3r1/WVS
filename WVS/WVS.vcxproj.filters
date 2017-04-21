@@ -54,9 +54,6 @@
     <ClInclude Include="Item.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="CThreadPool.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="CHttpClient.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -66,7 +63,10 @@
     <ClInclude Include="ExtractJob.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="ScheduleJob.h">
+    <ClInclude Include="MyThreadPool.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="MonitorJob.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -101,9 +101,6 @@
     <ClCompile Include="Item.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="CThreadPool.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="CHttpClient.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
@@ -113,7 +110,10 @@
     <ClCompile Include="ExtractJob.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="ScheduleJob.cpp">
+    <ClCompile Include="MyThreadPool.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="MonitorJob.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

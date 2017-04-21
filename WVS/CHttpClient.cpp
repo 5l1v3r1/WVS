@@ -61,7 +61,7 @@ void CHttpClient::setHeaderOpt(const std::string &strHeaderParam, string& header
 
 CURLcode CHttpClient::send(HttpMethod method, const std::string &strCookie, const std::string & strUrl, const std::string & strParam, std::string & strResponse)
 {
-	CURLcode code = CURLE_FTP_WEIRD_SERVER_REPLY; //8
+	m_curCode = CURLE_FTP_WEIRD_SERVER_REPLY; //8
 	curl_easy_setopt(this->m_pCurl, CURLOPT_URL, strUrl.c_str());
 	curl_easy_setopt(this->m_pCurl, CURLOPT_WRITEDATA, &strResponse);
 	if (strCookie != "")
@@ -79,25 +79,15 @@ CURLcode CHttpClient::send(HttpMethod method, const std::string &strCookie, cons
 	}
 	else
 	{
-
+		WriteLog("HttpMethod:other");
 	}
-
-	code = curl_easy_perform(this->m_pCurl);
-	if (code == CURLE_OK){
-		int statu;
-		curl_easy_getinfo(m_pCurl, CURLINFO_RESPONSE_CODE, &statu);
-		WriteFile("ÍøÖ·Ê÷_3.txt", to_string(statu) + "\t" + strUrl);
-	}
-	else{
-		WriteFile("ÍøÖ·Ê÷_3.txt", "-1\t" + strUrl);
-	}
-	return code;
+	return performRequest(strUrl);
 }
 
 
 CURLcode CHttpClient::send(HttpMethod method, const std::string &strCookie, const std::string & strUrl, std::vector<Field> & fieldVec, std::string & strResponse)
 {
-	CURLcode code = CURLE_FTP_WEIRD_SERVER_REPLY; //8
+	m_curCode = CURLE_FTP_WEIRD_SERVER_REPLY; //8
 	string args;
 	curl_easy_setopt(this->m_pCurl, CURLOPT_URL, strUrl.c_str());
 	curl_easy_setopt(this->m_pCurl, CURLOPT_WRITEDATA, &strResponse);
@@ -117,7 +107,7 @@ CURLcode CHttpClient::send(HttpMethod method, const std::string &strCookie, cons
 				args += "&";
 			}
 		}
-		cout << "args:" << args << endl;
+		//cout << "args:" << args << endl;
 		curl_easy_setopt(this->m_pCurl, CURLOPT_POSTFIELDS, args.c_str());
 		//	curl_easy_setopt(this->m_pCurl, CURLOPT_POSTFIELDSIZE, args.size());
 	}
@@ -129,17 +119,7 @@ CURLcode CHttpClient::send(HttpMethod method, const std::string &strCookie, cons
 	{
 		WriteLog("HttpMethod:other");
 	}
-
-	code = curl_easy_perform(this->m_pCurl);
-	if (code == CURLE_OK){
-		int statu;
-		curl_easy_getinfo(m_pCurl, CURLINFO_RESPONSE_CODE, &statu);
-		WriteFile("ÍøÖ·Ê÷_3.txt", to_string(statu) + "\t" + strUrl);
-	}
-	else{
-		WriteFile("ÍøÖ·Ê÷_3.txt", "-1\t" + strUrl);
-	}
-	return code;
+	return performRequest(strUrl);
 	//return curl_easy_perform(this->m_pCurl);
 }
 
@@ -155,6 +135,19 @@ CURLcode CHttpClient::send(HttpMethod method, const std::string &strCookie, cons
 	return send(method, strCookie, strUrl, strParam, strResponse);
 }
 
+
+CURLcode CHttpClient::performRequest(string strUrl)
+{
+	m_curCode = curl_easy_perform(this->m_pCurl);
+	if (m_curCode == CURLE_OK){
+		curl_easy_getinfo(m_pCurl, CURLINFO_RESPONSE_CODE, &m_statuCode);
+		WriteFile("ÍøÖ·Ê÷_3.txt", to_string(m_statuCode) + "\t" + strUrl);
+	}
+	else{
+		WriteFile("ÍøÖ·Ê÷_3.txt", "-1\t" + strUrl);
+	}
+	return m_curCode;
+}
 
 bool CHttpClient::g_INIT_FLAG = false;
 

@@ -1,6 +1,6 @@
 #pragma once
 #include "stdafx.h"
-#include "CThreadPool.h"
+#include "MyThreadPool.h"
 #include "Item.h"
 #include "Data.h"
 #include "CHttpClient.h"
@@ -14,9 +14,6 @@ public:
 
 	void Run(void *ptr);
 private:
-	CHttpClient* m_pHttpClient;
-	CURLcode m_code;
 	Item* m_pItem;
 	CData* m_pData;
-	CThreadManage*m_pThreadManage;
 };

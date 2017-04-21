@@ -17,7 +17,6 @@ CMainPageDlg::CMainPageDlg(CWnd* pParent /*=NULL*/)
 	, m_totalTestNum(0) 
 	, m_strOriUrl(_T(""))
 {
-
 }
 
 CMainPageDlg::~CMainPageDlg()
@@ -42,6 +41,7 @@ BEGIN_MESSAGE_MAP(CMainPageDlg, CDialogEx)
 	
 	ON_EN_CHANGE(IDC_NETADDRESS1, &CMainPageDlg::OnEnChangeNetaddress1)
 	ON_BN_CLICKED(ID_BEGIN, &CMainPageDlg::OnBnClickedBegin)
+	ON_MESSAGE(WM_MY_MONITOR, &CMainPageDlg::OnMONITOR)
 END_MESSAGE_MAP()
 
 // CMainPageDlg 消息处理程序
@@ -60,6 +60,24 @@ void CMainPageDlg::OnEnChangeNetaddress1()
 }
 
 
+LRESULT CMainPageDlg::OnMONITOR(WPARAM wParam, LPARAM lParam)
+{
+	CString cStr;
+	switch (wParam){
+		case 0:{
+				   cStr.Format(L"总耗时%d 秒\n结束了", lParam);
+					break;
+		}
+		case 1:{
+				  
+				   cStr.Format(L"耗时%d 秒", lParam);
+		}
+	}
+	SetDlgItemText(ID_BEGIN, cStr);
+	
+	return NULL;
+}
+
 void CMainPageDlg::OnBnClickedBegin()
 {
 	// TODO:  在此添加控件通知处理程序代码
@@ -67,8 +85,10 @@ void CMainPageDlg::OnBnClickedBegin()
 	GetDlgItemText(ID_BEGIN, cStr);
 	if ( cStr== _T("开始"))
 	{
-		if (m_pSchedule == NULL)
+		if (firstFlag)
 		{
+			start = clock();
+			firstFlag = FALSE;
 			//第一次，初始化
 			UpdateData(TRUE);
 			m_totalNum = 100;
@@ -77,13 +97,15 @@ void CMainPageDlg::OnBnClickedBegin()
 			const int bufInlen = 100;
 			char buf[bufInlen];
 			WideCharToMultiByte(CP_ACP, 0, m_strOriUrl, -1, buf, bufInlen, NULL, NULL);
-			strcpy_s(buf, 100, (string("http://192.168.8.191/DVWA-master/login.php")).c_str());
+			strcpy_s(buf, 100, (string("http://wangbaiyuan.cn")).c_str());
 			_cprintf("%d,%d,%s,%d\n", m_totalNum, m_totalTestNum, buf, sizeof(buf));
-			
-			m_pManage = new CThreadManage(3);
-			m_pSchedule = new CScheduleJob(buf, m_pManage);
-			m_pManage->Run(m_pSchedule, NULL);
-
+			m_pData = new CData(buf);
+			pThreadPool = new CMyThreadPool(8);
+			Item *pItem = new Item(HttpMethod::get, buf);
+			MonitorJob *pMJob = new MonitorJob(this->m_hWnd, start, pThreadPool);
+			pThreadPool->addJob(pMJob, NULL);
+			CExtractJob *pJob = new CExtractJob(pItem, m_pData);
+			pThreadPool->addJob(pJob, NULL);
 		}
 		else{
 			//继续执行任务。
@@ -96,7 +118,5 @@ void CMainPageDlg::OnBnClickedBegin()
 		_cprintf("pause\n");
 		SetDlgItemText(ID_BEGIN, L"开始");
 	}
-	
-	
-	
 }
+

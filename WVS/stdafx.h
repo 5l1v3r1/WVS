@@ -24,6 +24,7 @@
 
 
 
+
 #ifndef _AFX_NO_OLE_SUPPORT
 #include <afxdtctl.h>           // MFC 对 Internet Explorer 4 公共控件的支持
 #endif
@@ -34,6 +35,7 @@
 #include <afxcontrolbars.h>     // 功能区和控件条的 MFC 支持
 
 #include "conio.h"
+#include <string>
 
 
 

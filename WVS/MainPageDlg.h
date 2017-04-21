@@ -1,9 +1,13 @@
 #pragma once
 #include "afxcmn.h"
-#include "ScheduleJob.h"
-#include "CThreadPool.h"
+
+#include "MyThreadPool.h"
+#include "Data.h"
+#include "ExtractJob.h"
+#include "MonitorJob.h"
 
 using namespace std;
+
 
 
 // CMainPageDlg 对话框
@@ -26,19 +30,18 @@ protected:
 public:
 	afx_msg void OnEnChangeUrlEdit();
 	afx_msg void OnEnChangeNetaddress1();
-	CTreeCtrl m_urlTree;
-	// 网址总数
-	UINT m_totalNum;
-	// 已爬行的网址数，由于格式为int(%int)，所以写成string型。
-	CString m_crawledNum;
-	// 总的测试项，每一个参数为单位1。
-	UINT m_totalTestNum;
 	afx_msg void OnBnClickedBegin();
-	// 网站地址
-	CString m_strOriUrl;
+	afx_msg LRESULT OnMONITOR(WPARAM wParam, LPARAM lParam);
+	CTreeCtrl m_urlTree;
 
+	UINT m_totalNum; 	// 网址总数
+	CString m_crawledNum;// 已爬行的网址数，由于格式为int(%int)，所以写成string型。
+	UINT m_totalTestNum; // 总的测试项，每一个参数为单位1。
+	CString m_strOriUrl; // 网站地址
 	CButton m_btnBegin;
+	BOOL firstFlag = TRUE;
+	CData *m_pData;
+	CMyThreadPool *pThreadPool;
+	clock_t start, end;
 
-	CScheduleJob* m_pSchedule;
-	CThreadManage* m_pManage;
 };

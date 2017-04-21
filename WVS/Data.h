@@ -5,23 +5,26 @@
 #include "Cookie.h"
 #include "Item.h"
 #include "HtmlForm.h"
-#include "CThreadPool.h"
+#include "MyThreadPool.h"
 
 class CData
 {
 //全局类，用来存储所有的全局数据。
 public:
-	CData();
+	CData(string oriUrl);
 	~CData();
 	bool checkInLinks(Item &des, vector<Item*>&crawlerLinksVec);
 	string vecFieldToString(vector<Field> fieldVec);
 	void showCrawler();
+
+
 	void analyseHeader(string& strHeader);
 	vector<Item*>* analyseHtml(Item*pItem, string& strHtml);
 	Item* getItem();	
 	void putItem(Item* pItem);
 	vector<Item*>* readLinks();
-
+	void getCookie(Cookie& tempCookie);
+	int getRestLinksNum();
 
 	vector<Item*> crawlerLinksItemVec;	//存储所有爬行的links
 	Cookie cookie;					//作为最新的cookie，所有线程共一个，每次访问后，都解析http头，一旦发现Cookie改变，则立即使用新的cookie。
@@ -32,7 +35,8 @@ public:
 
 	
 private:
-	CThreadMutex m_itemMutex;
-	unsigned int crawledNum = 0;					//已经爬行过的链接数量，作为crawlerLinksItemVec的指示器。
+	SRWLOCK m_linksVecSRW;
+	SRWLOCK m_cookieSRW;
+	unsigned int crawledNum = 1;					//已经爬行过的链接数量，作为crawlerLinksItemVec的指示器。
 };
 

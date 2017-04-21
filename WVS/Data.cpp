@@ -1,10 +1,22 @@
 #include "stdafx.h"
 #include "Data.h"
 
-CData::CData()
+CData::CData(string oriUrl)
 {
-	originUrl = "";
-	m_itemMutex = CThreadMutex();
+	originUrl = oriUrl;
+	int posBeg = oriUrl.find('/');
+	int posEnd = (oriUrl.substr(posBeg + 2, oriUrl.size())).find('/');
+	if (posEnd == -1){
+		//		http://www.baidu.com
+		domain = oriUrl.substr(posBeg + 2, oriUrl.size());
+	}
+	else{
+		domain = oriUrl.substr(posBeg + 2, posEnd);
+	}
+	
+	InitializeSRWLock(&m_linksVecSRW);
+	InitializeSRWLock(&m_cookieSRW);
+
 }
 
 CData::~CData()
@@ -20,6 +32,7 @@ CData::~CData()
 //************************************
 bool CData::checkInLinks(Item &des, vector<Item*>&crawlerLinksVec)
 {
+	crawledNum = 100;
 	if (des.getUrl().find(domain) == -1)
 	{
 		cout << "不属于本网站的网址！" << des.getUrl() << endl;
@@ -35,16 +48,17 @@ bool CData::checkInLinks(Item &des, vector<Item*>&crawlerLinksVec)
 		cout << "退出登陆网址，不要" << des.getUrl() << endl;
 		return true;
 	}
-	m_itemMutex.Lock();
+	AcquireSRWLockShared(&m_linksVecSRW);
 	for (unsigned int i = 0; i < crawlerLinksItemVec.size(); i++)
 	{
 		if (des.equal(*(crawlerLinksItemVec[i])))
 		{
 			cout << "这个链接已经存在过！" << des.getUrl() << endl;
-			return true;
+			ReleaseSRWLockShared(&m_linksVecSRW);
+			return TRUE;
 		}
 	}
-	m_itemMutex.Unlock();
+	ReleaseSRWLockShared(&m_linksVecSRW);
 	cout << "新链接！" << des.getUrl() << endl;
 	return false;
 }
@@ -66,7 +80,7 @@ string CData::vecFieldToString(vector<Field> fieldVec)
 
 void CData::showCrawler()
 {
-	m_itemMutex.Lock();
+	AcquireSRWLockShared(&m_linksVecSRW);
 	cout << "-------------------------------------------------------------------" << endl;
 	cout << "url:" << crawlerLinksItemVec[crawledNum]->getUrl().c_str() << endl;
 	cout << "cookie:" << cookie.toString() << endl;
@@ -75,29 +89,36 @@ void CData::showCrawler()
 	cout << crawledNum << endl;
 	cout << "-------------------------------------------------------------------" << endl << endl;
 	WriteFile("网址树.txt", crawlerLinksItemVec[crawledNum]->getUrl() + string("\tMethod:") + (char)(crawlerLinksItemVec[crawledNum]->getMethod() + '0') + string("\tAEGUMENT:") + vecFieldToString(crawlerLinksItemVec[crawledNum]->getArgs()));
-	m_itemMutex.Unlock();
+	ReleaseSRWLockShared(&m_linksVecSRW);
 }
 
 
 void CData::analyseHeader(string& strHeader)
 {
 	Cookie newCookie(strHeader);
+	if (newCookie.toString() == "")
+	{
+		//当新cookie为空时，不更新全局cookie;
+		strHeader = "";
+		return;	
+	}
+	AcquireSRWLockExclusive(&m_cookieSRW);
 	if (!(cookie == newCookie))
 	{
-		//cookie = newCookie;
 		cookie = newCookie;
-		_cprintf("cookie:%s\n", newCookie.toString().c_str());
+	//	_cprintf("cookie:%s\n", newCookie.toString().c_str());
 	}
+	ReleaseSRWLockExclusive(&m_cookieSRW);
 	strHeader = "";
 }
 
 vector<Item*>* CData::analyseHtml(Item*pItem, string& strHtml)
 {
 	vector<Item*> *pItemVec = new vector<Item*>();
-	vector<string>linksVec;	//暂存 从一个网页中提取的多个links，
-	vector<string>baseVec;	//暂存 从一个网页中提取的base
-	vector<string>formStrVec;//暂存  form
-	vector<HtmlForm>formVec; //暂存 
+	vector<string>linksVec;		//暂存 从一个网页中提取的多个links，
+	vector<string>baseVec;		//暂存 从一个网页中提取的base
+	vector<string>formStrVec;	//暂存  form
+	vector<HtmlForm>formVec;	//暂存 
 	//1. 获取baseUrl。 首先寻找base标签，如果没有则获取该网页地址去除最后一段用‘\’分隔开的字符串作为baseurl。
 	findByRegex(strHtml, baseRegex, baseVec, false);
 	string baseUrl;
@@ -143,6 +164,10 @@ vector<Item*>* CData::analyseHtml(Item*pItem, string& strHtml)
 		argStr = "";
 		findByName(linksVec[i], "href", tempLink, false);
 		formatLink(baseUrl, tempLink, argStr);
+		if (tempLink.find("login.php") != -1){
+			int x = 1;
+			x++;
+		}
 		pTempNewItem->setUrl(tempLink);
 		if ((pArgs = getAgrs(argStr)) != NULL)
 		{
@@ -157,7 +182,7 @@ vector<Item*>* CData::analyseHtml(Item*pItem, string& strHtml)
 		//	crawlerLinksItemVec.push_back(*pTempNewItem);	//mutex area;
 		//	CExtractJob *job = new CExtractJob(pTempNewItem, this);
 		//	pThreadManage->Run(job, NULL);
-		//	pItemVec->push_back(pTempNewItem);
+			pItemVec->push_back(pTempNewItem);
 			putItem(pTempNewItem);
 		}
 		else
@@ -170,17 +195,24 @@ vector<Item*>* CData::analyseHtml(Item*pItem, string& strHtml)
 	//3. 获取所有的form表单。对每个表单中的input标签进行提取并格式化为Field。最后将每个表单存储为Item,设置请求方式为post。去重比较，若不重复则加入待扫描队列。
 	findByRegex(strHtml, HtmlForm::FORM_REGEX, formStrVec, false);
 	HtmlForm* form;
+	string debugtemp;
 	for (unsigned int i = 0; i < formStrVec.size(); i++)
 	{
+		 debugtemp = formStrVec[i];
 		form = new HtmlForm(formStrVec[i]);
-		cout << form->toString().c_str() << endl;
+		//cout << form->toString().c_str() << endl;
 		formVec.push_back(*form);
 	}
 	for (unsigned int i = 0; i < formVec.size(); i++)
 	{
-		tempLink = formVec[i].getAction();
+		string temp = formVec[i].getAction();
+		tempLink = temp;
 		pTempNewItem = new Item();
 		formatLink(baseUrl, tempLink, argStr);
+		if (tempLink.find("login.php") != -1){
+			int x = 1;
+			x++;
+		}
 		pTempNewItem->setUrl(tempLink);
 		pTempNewItem->setMethod(HttpMethod::post);
 		pTempNewItem->setArgs(formVec[i].getFields());
@@ -190,7 +222,7 @@ vector<Item*>* CData::analyseHtml(Item*pItem, string& strHtml)
 		//	crawlerLinksItemVec.push_back(*pTempNewItem);	//mutex area
 		//	CExtractJob *job = new CExtractJob(pTempNewItem, this);
 		//	pThreadManage->Run(job, NULL);
-		//	pItemVec->push_back(pTempNewItem);
+			pItemVec->push_back(pTempNewItem);
 			putItem(pTempNewItem);
 		}
 		else
@@ -209,7 +241,7 @@ vector<Item*>* CData::analyseHtml(Item*pItem, string& strHtml)
 Item* CData::getItem()
 {
 	Item * pItme;
-	m_itemMutex.Lock();
+	AcquireSRWLockExclusive(&m_linksVecSRW);
 	if (crawlerLinksItemVec.size() <= crawledNum)
 	{
 		pItme = NULL;
@@ -218,15 +250,34 @@ Item* CData::getItem()
 		pItme = crawlerLinksItemVec[crawledNum];
 		crawledNum++;
 	}
-	m_itemMutex.Unlock();
+	ReleaseSRWLockExclusive(&m_linksVecSRW);
 	return pItme;
 }
 
 void CData::putItem(Item* pItem)
 {
-	m_itemMutex.Lock();
+	AcquireSRWLockExclusive(&m_linksVecSRW);
 	crawlerLinksItemVec.push_back(pItem);
-	m_itemMutex.Unlock();
+	ReleaseSRWLockExclusive(&m_linksVecSRW);
 }
 
+void CData::getCookie(Cookie& tempCookie)
+{
+	AcquireSRWLockShared(&m_cookieSRW);
+	tempCookie = cookie;
+	if (tempCookie.toString() == ""){
+		int x = 1;
+		x++;
+	}
+	ReleaseSRWLockShared(&m_cookieSRW);
+}
+
+int CData::getRestLinksNum()
+{
+	int num;
+	AcquireSRWLockExclusive(&m_linksVecSRW);
+	num = crawlerLinksItemVec.size();
+	ReleaseSRWLockExclusive(&m_linksVecSRW);
+	return num;
+}
 

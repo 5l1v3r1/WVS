@@ -42,10 +42,12 @@ public:
 		const std::string & strUrl,
 		const std::string & strParam,
 		std::string & strResponse);
-
 private:
+	CURLcode performRequest(string);
+
 	static bool g_INIT_FLAG;
 	static int g_INSTANCE_NUM;
 	CURL *m_pCurl = NULL;
-	CURLcode code;
+	CURLcode m_curCode;		
+	int m_statuCode = 0;	//当一次调用成功后，返回的状态码。
 };

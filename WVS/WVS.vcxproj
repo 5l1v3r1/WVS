@@ -106,7 +106,6 @@
   <ItemGroup>
     <ClInclude Include="ConfigDlg.h" />
     <ClInclude Include="Cookie.h" />
-    <ClInclude Include="CThreadPool.h" />
     <ClInclude Include="Data.h" />
     <ClInclude Include="ExtractJob.h" />
     <ClInclude Include="Field.h" />
@@ -114,8 +113,9 @@
     <ClInclude Include="Item.h" />
     <ClInclude Include="MainPageDlg.h" />
     <ClInclude Include="CHttpClient.h" />
+    <ClInclude Include="MonitorJob.h" />
+    <ClInclude Include="MyThreadPool.h" />
     <ClInclude Include="Resource.h" />
-    <ClInclude Include="ScheduleJob.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="Tool.h" />
@@ -125,7 +125,6 @@
   <ItemGroup>
     <ClCompile Include="ConfigDlg.cpp" />
     <ClCompile Include="Cookie.cpp" />
-    <ClCompile Include="CThreadPool.cpp" />
     <ClCompile Include="Data.cpp" />
     <ClCompile Include="ExtractJob.cpp" />
     <ClCompile Include="Field.cpp" />
@@ -133,7 +132,8 @@
     <ClCompile Include="Item.cpp" />
     <ClCompile Include="MainPageDlg.cpp" />
     <ClCompile Include="CHttpClient.cpp" />
-    <ClCompile Include="ScheduleJob.cpp" />
+    <ClCompile Include="MonitorJob.cpp" />
+    <ClCompile Include="MyThreadPool.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
