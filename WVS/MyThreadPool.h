@@ -6,6 +6,14 @@ typedef enum ThreadStatus{
 	BUSY
 }TheadStatus;
 #endif
+#ifndef THREAD_POOL_STATUS
+#define THREAD_POOL_STATUS
+typedef enum ThreadPoolStatus{
+	pause,
+	work,
+	stop
+}ThreadPoolStatus;
+#endif
 
 #include "CHttpClient.h"
 
@@ -57,7 +65,7 @@ private:
 	CJob* m_Job;
 	void* m_JobData;
 	unsigned long m_ThreadID;
-	TheadStatus m_status;
+	TheadStatus m_status;	
 };
 
 
@@ -71,12 +79,20 @@ public:
 	CJob* getJob(void* &pjobData);
 	int getBusyWorkerNum();
 	int getRestJobNum();
+
+	void pause();
+	ThreadPoolStatus getStatus();
+	void resume();
+	void stop();
+
 	CRITICAL_SECTION m_jobQueueCS;
 	CONDITION_VARIABLE m_jobCond;
-	volatile int status;	//线程运行状态
+	CONDITION_VARIABLE m_statusCond;
+	SRWLOCK m_statusSRW;
 private:
 	queue<CJob*> jobQueue;	//任务队列；
 	queue<void*> jobDataQueue;//任务参数队列;
+	ThreadPoolStatus m_status;	//线程运行状态
 	
 
 	vector<CMyWorkerThread*> workerVec;

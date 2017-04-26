@@ -12,7 +12,7 @@ public:
 	Item(const Item&a);
 	Item(HttpMethod method, string url);
 	Item(HttpMethod method, string url, vector<Field> args);
-	
+	string getArgsStr(int pos = -1, string inject = "");
 
 	Item operator=(Item&a);
 	bool equal(Item&a);
@@ -26,10 +26,13 @@ public:
 	void setArgs(std::vector<Field> val) { m_args = val; }
 	int getLayer() const { return m_layer; }
 	void setLayer(int val) { m_layer = val; }
+	int getId() const { return id; }
+	void setId(int val) { id = val; }
 
 private:
 	HttpMethod m_method;
 	string m_url;
 	vector<Field> m_args;
 	int m_layer;
+	int id;
 };

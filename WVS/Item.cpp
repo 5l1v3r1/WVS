@@ -7,6 +7,24 @@ Item::Item()
 }
 
 
+std::string Item::getArgsStr(int pos, string inject)
+{
+	string args;
+	for (unsigned i = 0; i < m_args.size(); i++)
+	{
+		args = args + m_args[i].getName() + "=" + m_args[i].getValue();
+		if (i == pos)
+		{
+			args += inject;
+		}
+		if (i <= args.size() - 1)
+		{
+			args += "&";
+		}
+	}
+	return args;
+}
+
 Item::~Item()
 {
 }

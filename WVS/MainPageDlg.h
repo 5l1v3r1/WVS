@@ -5,6 +5,9 @@
 #include "Data.h"
 #include "ExtractJob.h"
 #include "MonitorJob.h"
+#include "SQLiTest.h"
+
+#include"curl\curl.h"
 
 using namespace std;
 
@@ -41,7 +44,10 @@ public:
 	CButton m_btnBegin;
 	BOOL firstFlag = TRUE;
 	CData *m_pData;
-	CMyThreadPool *pThreadPool;
+	CMyThreadPool *m_pThreadPool;
 	clock_t start, end;
-
+	UINT m_usedTime;
+	int m_workState = 1; //1：第一次开始前， -1，工作中，非第一次, 2:暂停
+	CSQLiTest* pSQLiTest;
+	
 };

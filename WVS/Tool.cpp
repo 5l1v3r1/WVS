@@ -213,7 +213,7 @@ void formatLink(string baseUrl, string &link, string &args)
 			posOfLastUnderline = baseUrl.rfind("/", baseUrl.size() - 2);
 			if (posOfLastUnderline == -1)
 			{
-				cout << "这个链接无效!" << baseUrl.c_str() << "\t\t" << link.c_str() << endl;
+				//cout << "这个链接无效!" << baseUrl.c_str() << "\t\t" << link.c_str() << endl;
 				//WriteLog("这个链接无效!" + baseUrl + "\t\t" + link);
 			}
 			else{
@@ -222,7 +222,7 @@ void formatLink(string baseUrl, string &link, string &args)
 			link = link.substr(3, link.size() - 3);
 		}
 		else{
-			cout << "当前状态!" << baseUrl.c_str() << "\t\t" << link.c_str() << endl;
+			//cout << "当前状态!" << baseUrl.c_str() << "\t\t" << link.c_str() << endl;
 			break;
 		}
 	}

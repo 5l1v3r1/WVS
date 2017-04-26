@@ -25,7 +25,6 @@ void MonitorJob::Run(void*ptr)
 		Sleep(waitTime);
 		m_now = clock();
 		if ((m_pThreadPool->getBusyWorkerNum() == 1) && (m_pThreadPool->getRestJobNum() == 0)){
-
 			SendMessage(m_hwnd, WM_MY_MONITOR, 0, (m_now - m_start) / CLOCKS_PER_SEC);
 			break;
 		}

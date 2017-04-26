@@ -36,6 +36,7 @@
 
 #include "conio.h"
 #include <string>
+#define TINYXML_USE_STL
 
 
 

@@ -7,6 +7,7 @@ Cookie::Cookie(string headerStr)
 	vector<string>cookieFieldVec;
 	Field *temp;
 	int posOfEqule;
+	int pos;
 	if (findByRegex(headerStr, COOKIE_REGEX, cookieVec, false))
 	{
 		//showVecStr(cookieVec);
@@ -22,11 +23,20 @@ Cookie::Cookie(string headerStr)
 					posOfEqule = cookieFieldVec[j].find("=");
 					temp->setName(cookieFieldVec[j].substr(0, posOfEqule));
 					temp->setValue(cookieFieldVec[j].substr(posOfEqule + 1, cookieFieldVec[j].size() - posOfEqule - 1));
-					if (hasExisted(temp->getName()) || temp->getName() == "path" || temp->getName() == "httponly")
+					if (temp->getName() == "path" || temp->getName() == "httponly")
 					{
 						//cout << "delete field:" << temp->m_name << endl;
 						delete temp;
-						continue;	//即不发送名称为path或者httponly的cookie字段。名称相同的字段也只发送一个，值为第一次的值
+						continue;	//即不发送名称为path或者httponly的cookie字段。
+					}
+					else if ((pos = hasExisted(temp->getName())) != -1)
+					{
+						//名称相同的字段也只发送一个，值为最后一次的值
+						m_cookie[pos].setValue(temp->getValue());
+					}
+					else if (temp->getName() == "security")
+					{
+						temp->setValue("low");
 					}
 					m_cookie.push_back(*temp);
 				}
@@ -85,18 +95,18 @@ bool Cookie::operator==(Cookie&a)
 }
 
 //************************************
-// Returns:   bool
+// Returns:   返回位置，-1表示不存在
 // Parameter: string name :
 // Function:  当某个cookie字段名已经存在于cookie中，则认为已经有了。
 //************************************
-bool Cookie::hasExisted(string name)
+int Cookie::hasExisted(string name)
 {
 	for (unsigned int i = 0; i < m_cookie.size(); i++)
 	{
 		if (m_cookie[i].getName() == name)
-			return true;
+			return i;
 	}
-	return false;
+	return -1;
 }
 
 

@@ -17,7 +17,9 @@ public:
 
 	static const string COOKIE_REGEX;
 	static const string COOKIE_FIELD_REGEX;
-	bool hasExisted(string name);
+	int hasExisted(string name);
 private:
 	vector<Field> m_cookie;
+
+	
 };

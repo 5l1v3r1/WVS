@@ -35,12 +35,12 @@ bool CData::checkInLinks(Item &des, vector<Item*>&crawlerLinksVec)
 	crawledNum = 100;
 	if (des.getUrl().find(domain) == -1)
 	{
-		cout << "不属于本网站的网址！" << des.getUrl() << endl;
+	//	cout << "不属于本网站的网址！" << des.getUrl() << endl;
 		return true;
 	}
 	else if (des.getUrl().size() >= 5 && (des.getUrl().c_str()[4] == 's' || des.getUrl().c_str()[4] == 'S'))
 	{
-		cout << "该网址为https,暂不支持!" << des.getUrl() << endl;
+	//	cout << "该网址为https,暂不支持!" << des.getUrl() << endl;
 		return true;
 	}
 	else if (des.getUrl().find("logout") != -1)
@@ -48,18 +48,23 @@ bool CData::checkInLinks(Item &des, vector<Item*>&crawlerLinksVec)
 		cout << "退出登陆网址，不要" << des.getUrl() << endl;
 		return true;
 	}
+	else if (des.getUrl().find("setup-db.php") != -1)
+	{
+		cout << "数据库重置，不要" << des.getUrl() << endl;
+		return true;
+	}
 	AcquireSRWLockShared(&m_linksVecSRW);
 	for (unsigned int i = 0; i < crawlerLinksItemVec.size(); i++)
 	{
 		if (des.equal(*(crawlerLinksItemVec[i])))
 		{
-			cout << "这个链接已经存在过！" << des.getUrl() << endl;
+	//		cout << "这个链接已经存在过！" << des.getUrl() << endl;
 			ReleaseSRWLockShared(&m_linksVecSRW);
 			return TRUE;
 		}
 	}
 	ReleaseSRWLockShared(&m_linksVecSRW);
-	cout << "新链接！" << des.getUrl() << endl;
+//	cout << "新链接！" << des.getUrl() << endl;
 	return false;
 }
 
@@ -114,43 +119,13 @@ void CData::analyseHeader(string& strHeader)
 
 vector<Item*>* CData::analyseHtml(Item*pItem, string& strHtml)
 {
+	string baseUrl = getBaseUrl(strHtml, pItem);
 	vector<Item*> *pItemVec = new vector<Item*>();
 	vector<string>linksVec;		//暂存 从一个网页中提取的多个links，
-	vector<string>baseVec;		//暂存 从一个网页中提取的base
 	vector<string>formStrVec;	//暂存  form
 	vector<HtmlForm>formVec;	//暂存 
 	//1. 获取baseUrl。 首先寻找base标签，如果没有则获取该网页地址去除最后一段用‘\’分隔开的字符串作为baseurl。
-	findByRegex(strHtml, baseRegex, baseVec, false);
-	string baseUrl;
-	if (baseVec.size() > 1)
-	{
-		string FileName = "Base" + pItem->getUrl();
-		WriteLog("多于一个base标签:" + vecStrToString(baseVec) + "\n原文见文件:" + FileName + "\n");
-		baseUrl = pItem->getUrl();
-	}
-	else if (baseVec.size() == 1)
-	{
-		if (!findByName(baseVec[0], "href", baseUrl, false))
-		{
-			WriteLog("BaseUrl提取失败: baseTag = " + baseVec[0] + "提取内容:" + baseUrl.c_str() + "\n");
-			baseUrl = pItem->getUrl();
-		}
-	}
-	else
-	{
-		baseUrl = pItem->getUrl();
-	}
-	_cprintf("baseUrl:%s\n", baseUrl.c_str());
-	int posOfEnd = baseUrl.rfind('/');
-	if (posOfEnd < 6)
-	{
-		WriteLog("Url 太短,里面没有/，只有协议（http://）:" + pItem->getUrl() + "\n");
-		exit(1);
-	}
-	else	
-	{
-		baseUrl = baseUrl.substr(0, posOfEnd + 1);
-	}
+	
 
 	//2. 获取网页内所有的<a>标签，提取其中的href字段，格式化为Item,设置请求方式为get。去重比较，若不重复则加入待扫描队列。
 	findByRegex(strHtml, linksRegex, linksVec, false);
@@ -164,10 +139,6 @@ vector<Item*>* CData::analyseHtml(Item*pItem, string& strHtml)
 		argStr = "";
 		findByName(linksVec[i], "href", tempLink, false);
 		formatLink(baseUrl, tempLink, argStr);
-		if (tempLink.find("login.php") != -1){
-			int x = 1;
-			x++;
-		}
 		pTempNewItem->setUrl(tempLink);
 		if ((pArgs = getAgrs(argStr)) != NULL)
 		{
@@ -179,9 +150,6 @@ vector<Item*>* CData::analyseHtml(Item*pItem, string& strHtml)
 		if (!checkInLinks(*pTempNewItem, crawlerLinksItemVec))
 		{
 			pTempNewItem->setLayer(pItem->getLayer() + 1);
-		//	crawlerLinksItemVec.push_back(*pTempNewItem);	//mutex area;
-		//	CExtractJob *job = new CExtractJob(pTempNewItem, this);
-		//	pThreadManage->Run(job, NULL);
 			pItemVec->push_back(pTempNewItem);
 			putItem(pTempNewItem);
 		}
@@ -195,10 +163,10 @@ vector<Item*>* CData::analyseHtml(Item*pItem, string& strHtml)
 	//3. 获取所有的form表单。对每个表单中的input标签进行提取并格式化为Field。最后将每个表单存储为Item,设置请求方式为post。去重比较，若不重复则加入待扫描队列。
 	findByRegex(strHtml, HtmlForm::FORM_REGEX, formStrVec, false);
 	HtmlForm* form;
-	string debugtemp;
+	
 	for (unsigned int i = 0; i < formStrVec.size(); i++)
 	{
-		 debugtemp = formStrVec[i];
+		
 		form = new HtmlForm(formStrVec[i]);
 		//cout << form->toString().c_str() << endl;
 		formVec.push_back(*form);
@@ -209,19 +177,12 @@ vector<Item*>* CData::analyseHtml(Item*pItem, string& strHtml)
 		tempLink = temp;
 		pTempNewItem = new Item();
 		formatLink(baseUrl, tempLink, argStr);
-		if (tempLink.find("login.php") != -1){
-			int x = 1;
-			x++;
-		}
 		pTempNewItem->setUrl(tempLink);
 		pTempNewItem->setMethod(HttpMethod::post);
 		pTempNewItem->setArgs(formVec[i].getFields());
 		if (!checkInLinks(*pTempNewItem, crawlerLinksItemVec))
 		{
 			pTempNewItem->setLayer(pItem->getLayer() + 1);
-		//	crawlerLinksItemVec.push_back(*pTempNewItem);	//mutex area
-		//	CExtractJob *job = new CExtractJob(pTempNewItem, this);
-		//	pThreadManage->Run(job, NULL);
 			pItemVec->push_back(pTempNewItem);
 			putItem(pTempNewItem);
 		}
@@ -233,9 +194,32 @@ vector<Item*>* CData::analyseHtml(Item*pItem, string& strHtml)
 	}
 	linksVec.clear();
 	formVec.clear();
-	baseVec.clear();
 	formStrVec.clear();
 	return pItemVec;
+}
+
+Item* CData::analyseRedirectHeader(Item* pItem, string headerStr)
+{
+	Item *tempItem = NULL;
+	regex e("Location: (.*)");
+	smatch m;
+	regex_search(headerStr, m, e);
+	if (m.size() > 1){
+		string link=m[1];
+		string args;
+		string baseUrl = getBaseUrl("", pItem);
+		formatLink(baseUrl, link, args);
+		tempItem = new Item(HttpMethod::get, link);
+		if (!checkInLinks(*tempItem, crawlerLinksItemVec))
+		{
+			tempItem->setLayer(pItem->getLayer());
+			putItem(tempItem);
+		}
+		else{
+			tempItem = NULL;
+		}
+	}
+	return tempItem;
 }
 
 Item* CData::getItem()
@@ -257,6 +241,7 @@ Item* CData::getItem()
 void CData::putItem(Item* pItem)
 {
 	AcquireSRWLockExclusive(&m_linksVecSRW);
+	pItem->setId(crawlerLinksItemVec.size());
 	crawlerLinksItemVec.push_back(pItem);
 	ReleaseSRWLockExclusive(&m_linksVecSRW);
 }
@@ -265,10 +250,6 @@ void CData::getCookie(Cookie& tempCookie)
 {
 	AcquireSRWLockShared(&m_cookieSRW);
 	tempCookie = cookie;
-	if (tempCookie.toString() == ""){
-		int x = 1;
-		x++;
-	}
 	ReleaseSRWLockShared(&m_cookieSRW);
 }
 
@@ -279,5 +260,42 @@ int CData::getRestLinksNum()
 	num = crawlerLinksItemVec.size();
 	ReleaseSRWLockExclusive(&m_linksVecSRW);
 	return num;
+}
+
+std::string CData::getBaseUrl(string strHtml, Item *pItem)
+{
+	vector<string>baseVec;		//暂存 从一个网页中提取的base
+	findByRegex(strHtml, baseRegex, baseVec, false);
+	string baseUrl;
+	if (baseVec.size() > 1)
+	{
+		string FileName = "Base" + pItem->getUrl();
+		WriteLog("多于一个base标签:" + vecStrToString(baseVec) + "\n原文见文件:" + FileName + "\n");
+		baseUrl = pItem->getUrl();
+	}
+	else if (baseVec.size() == 1)
+	{
+		if (!findByName(baseVec[0], "href", baseUrl, false))
+		{
+			WriteLog("BaseUrl提取失败: baseTag = " + baseVec[0] + "提取内容:" + baseUrl.c_str() + "\n");
+			baseUrl = pItem->getUrl();
+		}
+	}
+	else
+	{
+		baseUrl = pItem->getUrl();
+	}
+	//_cprintf("baseUrl:%s\n", baseUrl.c_str());
+	int posOfEnd = baseUrl.rfind('/');
+	if (posOfEnd < 6)
+	{
+		WriteLog("Url 太短,里面没有/，只有协议（http://）:" + pItem->getUrl() + "\n");
+		exit(1);
+	}
+	else
+	{
+		baseUrl = baseUrl.substr(0, posOfEnd + 1);
+	}
+	return baseUrl;
 }
 

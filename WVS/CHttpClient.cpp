@@ -16,6 +16,33 @@ size_t header_callback(const char  *ptr, size_t size, size_t nmemb, std::string 
 	return len;
 }
 
+static int OnDebug(CURL *, curl_infotype itype, char * pData, size_t size, void *)
+{
+	//if (itype == CURLINFO_TEXT)
+	//{
+	//	//printf("[TEXT]%s\n", pData);  
+	//}
+	//else if (itype == CURLINFO_HEADER_IN)
+	//{
+	//	_cprintf("[HEADER_IN]%s\n", pData);
+	//}
+	//else if (itype == CURLINFO_HEADER_OUT)
+	//{
+	//	_cprintf("[HEADER_OUT]%s\n", pData);
+	//}
+	//else if (itype == CURLINFO_DATA_IN)
+	//{
+	//	//printf("[DATA_IN]%s\n", pData);
+	//}
+	//else if (itype == CURLINFO_DATA_OUT)
+	//{
+	//	//printf("[DATA_OUT]%s\n", pData);
+	//}
+	//_cprintf("\n\n\n*******************************************************************\n\
+	//		 		%s\n---------------------------------------------------------------------\n\n\n", pData);
+	return 0;
+}
+
 CHttpClient::CHttpClient()
 {
 	if (!this->g_INIT_FLAG)
@@ -51,13 +78,20 @@ void CHttpClient::setHeaderOpt(const std::string &strHeaderParam, string& header
 	chunk = curl_slist_append(chunk, "Connection: keep-alive");
 	curl_easy_setopt(this->m_pCurl, CURLOPT_HTTPHEADER, chunk);
 	curl_easy_setopt(this->m_pCurl, CURLOPT_VERBOSE, 1);		//调试阶段，会在cmd中输出链接相关信息。
+	curl_easy_setopt(this->m_pCurl, CURLOPT_DEBUGFUNCTION, &OnDebug);
 	curl_easy_setopt(this->m_pCurl, CURLOPT_WRITEFUNCTION, &WriteFunction);
-	curl_easy_setopt(this->m_pCurl, CURLOPT_FOLLOWLOCATION, 1);	//自动跳转，处理302类型的回复。
+	//curl_easy_setopt(this->m_pCurl, CURLOPT_FOLLOWLOCATION, 0);	//自动跳转，处理302类型的回复。
 	curl_easy_setopt(this->m_pCurl, CURLOPT_HEADEROPT, 1);
 	curl_easy_setopt(this->m_pCurl, CURLOPT_HEADERFUNCTION, &header_callback);
 	curl_easy_setopt(this->m_pCurl, CURLOPT_HEADERDATA, &headerStr);
+	//curl_easy_setopt(this->m_pCurl, CURLOPT_PROXY, "127.0.0.1:8888");
 }
 
+
+void CHttpClient::setTimeOut(long millsec)
+{
+	curl_easy_setopt(m_pCurl, CURLOPT_TIMEOUT_MS, millsec);
+}
 
 CURLcode CHttpClient::send(HttpMethod method, const std::string &strCookie, const std::string & strUrl, const std::string & strParam, std::string & strResponse)
 {
@@ -89,12 +123,7 @@ CURLcode CHttpClient::send(HttpMethod method, const std::string &strCookie, cons
 {
 	m_curCode = CURLE_FTP_WEIRD_SERVER_REPLY; //8
 	string args;
-	curl_easy_setopt(this->m_pCurl, CURLOPT_URL, strUrl.c_str());
-	curl_easy_setopt(this->m_pCurl, CURLOPT_WRITEDATA, &strResponse);
-	if (strCookie != "")
-	{
-		curl_easy_setopt(this->m_pCurl, CURLOPT_COOKIE, strCookie.c_str());
-	}
+	
 	if (method == HttpMethod::post)
 	{
 		curl_easy_setopt(this->m_pCurl, CURLOPT_POST, 1);
@@ -119,6 +148,12 @@ CURLcode CHttpClient::send(HttpMethod method, const std::string &strCookie, cons
 	{
 		WriteLog("HttpMethod:other");
 	}
+	curl_easy_setopt(this->m_pCurl, CURLOPT_URL, strUrl.c_str());
+	curl_easy_setopt(this->m_pCurl, CURLOPT_WRITEDATA, &strResponse);
+	if (strCookie != "")
+	{
+		curl_easy_setopt(this->m_pCurl, CURLOPT_COOKIE, strCookie.c_str());
+	}
 	return performRequest(strUrl);
 	//return curl_easy_perform(this->m_pCurl);
 }
@@ -136,12 +171,37 @@ CURLcode CHttpClient::send(HttpMethod method, const std::string &strCookie, cons
 }
 
 
+CURLcode CHttpClient::send(HttpMethod method, const std::string &strCookie, const std::string & strUrl, const std::string & strParam,  bool onlyHeader/*=true*/)
+{
+	curl_easy_setopt(this->m_pCurl, CURLOPT_NOBODY, 1);
+	m_curCode = CURLE_FTP_WEIRD_SERVER_REPLY; //8
+	curl_easy_setopt(this->m_pCurl, CURLOPT_URL, strUrl.c_str());
+	if (strCookie != "")
+	{
+		curl_easy_setopt(this->m_pCurl, CURLOPT_COOKIE, strCookie.c_str());
+	}
+	if (method == HttpMethod::post)
+	{
+		curl_easy_setopt(this->m_pCurl, CURLOPT_POST, 1);
+		curl_easy_setopt(this->m_pCurl, CURLOPT_POSTFIELDS, strParam.c_str());
+	}
+	else if (HttpMethod::get == method)
+	{
+		//curl_easy_setopt(this->m_pCurl, CURLOPT_HTTPGET, 1);
+	}
+	else
+	{
+		WriteLog("HttpMethod:other");
+	}
+	return performRequest(strUrl);
+}
+
 CURLcode CHttpClient::performRequest(string strUrl)
 {
 	m_curCode = curl_easy_perform(this->m_pCurl);
 	if (m_curCode == CURLE_OK){
-		curl_easy_getinfo(m_pCurl, CURLINFO_RESPONSE_CODE, &m_statuCode);
-		WriteFile("网址树_3.txt", to_string(m_statuCode) + "\t" + strUrl);
+		curl_easy_getinfo(m_pCurl, CURLINFO_RESPONSE_CODE, &m_statusCode);
+		WriteFile("网址树_3.txt", to_string(m_statusCode) + "\t" + strUrl);
 	}
 	else{
 		WriteFile("网址树_3.txt", "-1\t" + strUrl);
