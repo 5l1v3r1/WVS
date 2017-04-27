@@ -38,7 +38,7 @@ public:
 	string htmlFile = "";				//存储所有的网页字符串。测试用。
 	string domain = "";  //"192.168.8.191/DVWA-master";	//域名常量字符串，作为格式化之后的去重使用。只测试本网站内的网址。
 	string originUrl;
-
+	static unsigned crawlerLayer;
 	
 private:
 	SRWLOCK m_linksVecSRW;

@@ -24,8 +24,8 @@ public:
 	void setUrl(std::string val) { m_url = val; }
 	std::vector<Field> getArgs() const { return m_args; }
 	void setArgs(std::vector<Field> val) { m_args = val; }
-	int getLayer() const { return m_layer; }
-	void setLayer(int val) { m_layer = val; }
+	unsigned getLayer() const { return m_layer; }
+	void setLayer(unsigned val) { m_layer = val; }
 	int getId() const { return id; }
 	void setId(int val) { id = val; }
 
@@ -33,6 +33,6 @@ private:
 	HttpMethod m_method;
 	string m_url;
 	vector<Field> m_args;
-	int m_layer;
+	unsigned m_layer;
 	int id;
 };

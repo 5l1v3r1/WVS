@@ -61,9 +61,10 @@ public:
 	bool errorBasedTest(CHttpClient* pHttpClient, Item *pItem, unsigned pos, long &averageTime);
 	bool boolBasedTest(CHttpClient* pHttpClient, Item *pItem, unsigned pos, long &averageTime);
 	bool timeBasedTest(CHttpClient* pHttpClient, Item *pItem, unsigned pos, long averageTime);
-
+	void setTestMode(bool errorBased, bool boolBased, bool timeBased);
 	string resultToString();
 	string resultToStringForCSV();
+	void clearResult();
 private:
 	BOOL m_errorBased = TRUE;
 	BOOL m_boolBased = TRUE;

@@ -8,8 +8,6 @@
 using namespace std;
 
 size_t WriteFunction(void *input, size_t uSize, size_t uCount, void *avg);
-
-
 size_t header_callback(const char  *ptr, size_t size, size_t nmemb, std::string *stream);
 
 
@@ -20,7 +18,7 @@ public:
 	~CHttpClient();
 	void setHeaderOpt(const std::string &strHeaderParam, string& headerStr);
 	void setTimeOut(long millsec);
-
+	void setProxy(bool useProxy, string proxy);
 	CURLcode send(HttpMethod method,
 		const std::string &strCookie,
 		const std::string & strUrl,
@@ -51,6 +49,9 @@ public:
 
 	int getStatusCode() const { return m_statusCode; }
 	void setStatusCode(int val) { m_statusCode = val; }
+
+	static bool s_useProxy;
+	static string s_proxy;
 private:
 	CURLcode performRequest(string);
 
@@ -59,4 +60,5 @@ private:
 	CURL *m_pCurl = NULL;
 	CURLcode m_curCode;		
 	int m_statusCode = 0;	//当一次调用成功后，返回的状态码。
+
 };

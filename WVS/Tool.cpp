@@ -342,3 +342,21 @@ string deescapeURL(const string &URL) {
 	}
 	return result;
 }
+
+std::string CStrToStr(CString& cstr)
+{
+	const int bufInlen = 100;
+	char buf[bufInlen];
+	WideCharToMultiByte(CP_ACP, 0, cstr, -1, buf, bufInlen, NULL, NULL);
+	return string(buf);
+}
+
+CString StrToCStr(string &str)
+{
+	const int bufInlen = 100;
+	WCHAR wbuf[100];
+	MultiByteToWideChar(CP_ACP, 0, str.c_str(), str.size()+1, wbuf, bufInlen);
+	return CString(wbuf);
+}
+
+

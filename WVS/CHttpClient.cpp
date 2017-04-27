@@ -84,7 +84,7 @@ void CHttpClient::setHeaderOpt(const std::string &strHeaderParam, string& header
 	curl_easy_setopt(this->m_pCurl, CURLOPT_HEADEROPT, 1);
 	curl_easy_setopt(this->m_pCurl, CURLOPT_HEADERFUNCTION, &header_callback);
 	curl_easy_setopt(this->m_pCurl, CURLOPT_HEADERDATA, &headerStr);
-	curl_easy_setopt(this->m_pCurl, CURLOPT_PROXY, "127.0.0.1:8888");
+	setProxy(s_useProxy, s_proxy);
 }
 
 
@@ -93,7 +93,8 @@ void CHttpClient::setTimeOut(long millsec)
 	curl_easy_setopt(m_pCurl, CURLOPT_TIMEOUT_MS, millsec);
 }
 
-CURLcode CHttpClient::send(HttpMethod method, const std::string &strCookie, const std::string & strUrl, const std::string & strParam, std::string & strResponse)
+CURLcode CHttpClient::send(HttpMethod method, const std::string &strCookie, const std::string & strUrl,
+						   const std::string & strParam, std::string & strResponse)
 {
 	m_curCode = CURLE_FTP_WEIRD_SERVER_REPLY; //8
 	
@@ -228,6 +229,25 @@ CURLcode CHttpClient::performRequest(string strUrl)
 	}
 	return m_curCode;
 }
+
+void CHttpClient::setProxy(bool useProxy, string proxy)
+{
+	if (useProxy)
+	{
+		
+		curl_easy_setopt(this->m_pCurl, CURLOPT_PROXY, proxy.c_str());
+	}
+	else{
+		curl_easy_setopt(this->m_pCurl, CURLOPT_PROXY, "");
+	}
+	//curl_easy_setopt(this->m_pCurl, CURLOPT_PROXY, "127.0.0.1:8888");
+}
+
+
+std::string CHttpClient::s_proxy = "";
+
+bool CHttpClient::s_useProxy = false;
+
 
 bool CHttpClient::g_INIT_FLAG = false;
 

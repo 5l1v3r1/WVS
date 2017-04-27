@@ -169,6 +169,13 @@ void CMyWorkerThread::Run(void)
 	WriteLog("thead_id" + to_string(m_ThreadID) + "  end");
 }
 
+CHttpClient* CMyWorkerThread::getHttpClient()
+{
+	m_pHttpClient->setProxy(CHttpClient::s_useProxy, CHttpClient::s_proxy);
+	return m_pHttpClient;
+}
+
+
 CJob::CJob()
 {
 	m_isDeleteAfterDone = true;

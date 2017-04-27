@@ -454,7 +454,7 @@ bool CSQLiTest::boolBasedTest(CHttpClient* pHttpClient, Item *pItem, unsigned po
 
 	if (url.find("blind") != -1)
 	{
-		int x = 1;
+		//int x = 1;
 	}
 
 	string oriHtml;
@@ -678,6 +678,20 @@ CURLcode CSQLiTest::send(CHttpClient*pHttpClient, HttpMethod method, string cook
 	sendCount++;
 	return code;
 }
+
+void CSQLiTest::setTestMode(bool errorBased, bool boolBased, bool timeBased)
+{
+	m_errorBased = errorBased;
+	m_boolBased = boolBased;
+	m_timeBased = timeBased;
+}
+
+void CSQLiTest::clearResult()
+{
+	resultVec.clear();
+}
+
+
 
 
 

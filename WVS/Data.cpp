@@ -147,10 +147,6 @@ void CData::analyseHeader(string& strHeader)
 vector<Item*>* CData::analyseHtml(Item*pItem, string& strHtml)
 {
 	string baseUrl = getBaseUrl(strHtml, pItem);
-	//if (baseUrl.find("blind") != -1)
-	//{
-	//	int x = 1;
-	//}
 	vector<Item*> *pItemVec = new vector<Item*>();
 	vector<string>linksVec;		//暂存 从一个网页中提取的多个links，
 	vector<string>formStrVec;	//暂存  form
@@ -181,6 +177,7 @@ vector<Item*>* CData::analyseHtml(Item*pItem, string& strHtml)
 		if (!checkInLinks(*pTempNewItem, crawlerLinksItemVec))
 		{
 			pTempNewItem->setLayer(pItem->getLayer() + 1);
+
 			pItemVec->push_back(pTempNewItem);
 			putItem(pTempNewItem);
 		}
@@ -336,6 +333,9 @@ void CData::setCookie(Cookie& tempCookie)
 	cookie = tempCookie;
 	ReleaseSRWLockExclusive(&m_cookieSRW);
 }
+
+unsigned CData::crawlerLayer = 100000;
+
 
 
 

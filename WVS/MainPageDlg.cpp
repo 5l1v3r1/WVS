@@ -99,33 +99,33 @@ void CMainPageDlg::OnBnClickedBegin()
 	//m_workState =-2;	//testState: -2,   normalState =1;
 	
 
-	/*start = clock();
-	const int bufInlen = 100;
-	char buf[bufInlen];
-	WideCharToMultiByte(CP_ACP, 0, m_strOriUrl, -1, buf, bufInlen, NULL, NULL);
-	strcpy_s(buf, 100, (string("http://192.168.8.191/DVWA-master/")).c_str());
-	_cprintf("%d,%d,%s,%d\n", m_totalNum, m_totalTestNum, buf, sizeof(buf));
-	m_pData->setUrl(buf);
+	//start = clock();
+	//const int bufInlen = 100;
+	//char buf[bufInlen];
+	//WideCharToMultiByte(CP_ACP, 0, m_strOriUrl, -1, buf, bufInlen, NULL, NULL);
+	//strcpy_s(buf, 100, (string("http://192.168.8.191/DVWA-master/")).c_str());
+	//_cprintf("%d,%d,%s,%d\n", m_totalNum, m_totalTestNum, buf, sizeof(buf));
+	//m_pData->setUrl(buf);
 
-	Item *pItem = new Item(HttpMethod::get,"http://192.168.8.191/DVWA-master/vulnerabilities/sqli_blind/");
-	vector<Field> args;
-	Field field("id", "");
-	args.push_back(field);
-	Field field2("Submit", "Submit");
-	args.push_back(field2);
-	
-	pItem->setArgs(args);
-	string str = "Set-Cookie: PHPSESSID=6be1gvqmug35a7qc0tau0tn007; security=low";
-	m_pData->analyseHeader(str);
+	//Item *pItem = new Item(HttpMethod::get,"http://192.168.8.191/DVWA-master/vulnerabilities/sqli_blind/");
+	//vector<Field> args;
+	//Field field("id", "");
+	//args.push_back(field);
+	//Field field2("Submit", "Submit");
+	//args.push_back(field2);
+	//
+	//pItem->setArgs(args);
+	//string str = "Set-Cookie: PHPSESSID=6be1gvqmug35a7qc0tau0tn007; security=low";
+	//m_pData->analyseHeader(str);
 
-	string headerStr;
-	CHttpClient *pHttp = new CHttpClient();
-	pHttp->setHeaderOpt("", headerStr);
-	pSQLiTest->test(pHttp, pItem);
+	//string headerStr;
+	//CHttpClient *pHttp = new CHttpClient();
+	//pHttp->setHeaderOpt("", headerStr);
+	//pSQLiTest->test(pHttp, pItem);
 
 
-	_cprintf("%s\n used Time:%d\n", pSQLiTest->resultToString().c_str(), (clock() - start) / CLOCKS_PER_SEC);
-	WriteFile("ÍøÖ·Ê÷¡ª¡ª²âÊÔ½á¹û.csv", pSQLiTest->resultToStringForCSV());*/
+	//_cprintf("%s\n used Time:%d\n", pSQLiTest->resultToString().c_str(), (clock() - start) / CLOCKS_PER_SEC);
+	//WriteFile("ÍøÖ·Ê÷¡ª¡ª²âÊÔ½á¹û.csv", pSQLiTest->resultToStringForCSV());
 
 
 	if (m_workState > 0)
@@ -149,6 +149,7 @@ void CMainPageDlg::OnBnClickedBegin()
 		//	pSQLiTest = new CSQLiTest(m_pData);
 
 			Item *pItem = new Item(HttpMethod::get, buf);
+			pItem->setLayer(0);
 			MonitorJob *pMJob = new MonitorJob(this->m_hWnd, start, m_pThreadPool);
 			m_pThreadPool->addJob(pMJob, NULL);
 			CExtractJob *pJob = new CExtractJob(pItem, m_pData,pSQLiTest);

@@ -2,6 +2,8 @@
 #include "Data.h"
 #include "MyThreadPool.h"
 #include "SQLiTest.h"
+#include "Item.h"
+#include "TestJob.h"
 
 // CConfigDlg 对话框
 
@@ -31,4 +33,28 @@ public:
 	CMyThreadPool *m_pThreadPool;
 	CSQLiTest* pSQLiTest;
 	afx_msg void OnBnClickedButton1();
+	// 爬行深度
+	UINT g_crawlerLayer;
+	UINT m_numOfThread;
+	BOOL m_isUseProxy;
+	CString m_proxy;
+	BOOL m_useErrorBased = TRUE;
+	BOOL m_useBoolBased = TRUE;
+	BOOL m_useTimeBased = TRUE;
+	afx_msg void OnBnClickedButton3();
+	afx_msg void OnBnClickedButton2();
+	afx_msg LRESULT OnTestJob(WPARAM wParam, LPARAM lParam);
+	// 测试单个网址的url
+	CString m_testUrl;
+	// 测试单个网址的参数
+	CString m_testArgs;
+	// 测试单个网址的cookie
+	CString m_testCookie;
+	Item *pTestItem;
+	vector<Field>*pTestArgs;
+	afx_msg void OnBnClickedButton5();
+	CString m_testArgName;
+	CString m_testArgValue;
+	afx_msg void OnBnClickedButton4();
+	BOOL m_methodRadio;
 };

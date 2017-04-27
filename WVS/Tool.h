@@ -109,3 +109,5 @@ const string argRegex = "([^=&]*)=([^=&]*)";
 
 string deescapeURL(const string &URL);
 string escapeURL(const string &URL);
+string CStrToStr(CString& cstr);
+CString StrToCStr(string &str);

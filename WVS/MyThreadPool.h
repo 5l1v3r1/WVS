@@ -56,16 +56,18 @@ public:
 	}
 
 	//为了网络添加的属性add_net
-	CHttpClient* m_pHttpClient;
+	
 	CURLcode m_curlCode;
 	string m_strHeader = "";
 	CMyThreadPool* m_pThreadPool;
 	unsigned long getThreadID(){ return m_ThreadID; }
+	CHttpClient* getHttpClient();
 private:
 	CJob* m_Job;
 	void* m_JobData;
 	unsigned long m_ThreadID;
 	TheadStatus m_status;	
+	CHttpClient* m_pHttpClient;
 };
 
 

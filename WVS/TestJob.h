@@ -4,17 +4,19 @@
 #include "Item.h"
 #include "Data.h"
 #include "SQLiTest.h"
+#include "MonitorJob.h"
+#define WM_TEST_JOB	WM_USER+9
 
 class TestJob :public CJob
 {
 public:
-	TestJob(CHttpClient *pHttpClient, Item*pItem, CData*pData, CSQLiTest*pSQLiTest);
+	TestJob(HWND hwnd, Item*pItem, CData*pData, CSQLiTest*pSQLiTest);
 	~TestJob();
 	void Run(void*ptr);
 private:
 	Item* m_pItem;
 	CData* m_pData;
 	Test* m_pTest;
-	CHttpClient *m_pHttpClient;
+	HWND m_hwnd;
 };
 
