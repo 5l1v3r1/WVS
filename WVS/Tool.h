@@ -11,7 +11,7 @@
 using namespace std;
 
 typedef enum HttpMethod{
-	post,
+	post = 1,
 	get,
 	other
 }HttpMethod;
@@ -106,3 +106,6 @@ bool findByRegex(string s, string regex, string &value, int flag);
 const string baseRegex = "<\\s*base[^>]*>";
 const string linksRegex = "<\\s*a[^>]*>";
 const string argRegex = "([^=&]*)=([^=&]*)";
+
+string deescapeURL(const string &URL);
+string escapeURL(const string &URL);

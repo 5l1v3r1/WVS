@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "SQLiTest.h"
+#include "tinyxml2.h"
 
 
 CSQLiTest::CSQLiTest(CData* pData)
@@ -18,36 +19,44 @@ CSQLiTest::~CSQLiTest()
 
 }
 
-BOOL CSQLiTest::loadConfiguration(string fileName/*="SQLiTestCase.xml"*/)
+BOOL CSQLiTest::loadConfiguration(string fileName)
 {
 	//读取Xml文件，并遍历
 	try
 	{
 		//创建一个XML的文档对象。
-		TiXmlDocument *myDocument = new TiXmlDocument(fileName.c_str());
-		if (!(myDocument->LoadFile()))
+
+		tinyxml2::XMLDocument *myDocument = new tinyxml2::XMLDocument();
+		if (myDocument->LoadFile(fileName.c_str()) == tinyxml2::XML_ERROR_FILE_NOT_FOUND)
 		{
 			_cprintf("文件不存在\n");
 			WriteLog("SQLiTest LoadConfiguration failed: file noe exist:" + fileName);
+			return false;
 		}
-		//获得根元素，即Persons。
-		TiXmlElement *RootElement = myDocument->RootElement();
-		//输出根元素名称，即输出Persons。
+
+		tinyxml2::XMLElement *RootElement = myDocument->RootElement();
+
 		_cprintf("%s\n", RootElement->Value());
 
-		TiXmlElement *EBCRoot = RootElement->FirstChildElement();
+		tinyxml2::XMLElement *EBCRoot = RootElement->FirstChildElement();
 
 		int num = 0;
 		EBCRoot->QueryIntAttribute("num", &num);
 		PErrorBasedCase pEBC;
-		TiXmlElement *caseElement = EBCRoot->FirstChildElement();
+		tinyxml2::XMLElement *caseElement = EBCRoot->FirstChildElement();
 		for (int i = 0; i < num; i++){
 			pEBC = new ErrorBasedCase();
 			caseElement->QueryIntAttribute("id", &(pEBC->id));
-			TiXmlElement *injectElement = caseElement->FirstChildElement();
-			TiXmlElement *identiEle = injectElement->NextSiblingElement();
-			TiXmlElement *checkElement = identiEle->NextSiblingElement();
-			pEBC->inject = injectElement->GetText();
+			tinyxml2::XMLElement *injectElement = caseElement->FirstChildElement();
+			tinyxml2::XMLElement *identiEle = injectElement->NextSiblingElement();
+			tinyxml2::XMLElement *checkElement = identiEle->NextSiblingElement();
+			if (injectElement->GetText() == 0){
+				pEBC->inject = " ";
+			}
+			else{
+				pEBC->inject = injectElement->GetText();
+			}
+
 			pEBC->identify = identiEle->FirstChild()->Value();
 			pEBC->check = checkElement->FirstChild()->Value();
 			_cprintf("id:%d\tinject:%s\tidentify:%s\tcheck:%s\n", pEBC->id, pEBC->inject.c_str(), pEBC->identify.c_str(), pEBC->check.c_str());
@@ -55,7 +64,7 @@ BOOL CSQLiTest::loadConfiguration(string fileName/*="SQLiTestCase.xml"*/)
 			caseElement = caseElement->NextSiblingElement();
 		}
 
-		TiXmlElement *BBCRoot = EBCRoot->NextSiblingElement();
+		tinyxml2::XMLElement *BBCRoot = EBCRoot->NextSiblingElement();
 
 		num = 0;
 		BBCRoot->QueryIntAttribute("num", &num);
@@ -64,10 +73,10 @@ BOOL CSQLiTest::loadConfiguration(string fileName/*="SQLiTestCase.xml"*/)
 		for (int i = 0; i < num; i++){
 			pBBC = new BoolBasedCase();
 			caseElement->QueryIntAttribute("id", &(pBBC->id));
-			TiXmlElement *injectElement = caseElement->FirstChildElement();
-			TiXmlElement *inject2Element = injectElement->NextSiblingElement();
-			TiXmlElement *identiEle = inject2Element->NextSiblingElement();
-			TiXmlElement *checkElement = identiEle->NextSiblingElement();
+			tinyxml2::XMLElement *injectElement = caseElement->FirstChildElement();
+			tinyxml2::XMLElement *inject2Element = injectElement->NextSiblingElement();
+			tinyxml2::XMLElement *identiEle = inject2Element->NextSiblingElement();
+			tinyxml2::XMLElement *checkElement = identiEle->NextSiblingElement();
 			pBBC->inject = injectElement->GetText();
 			pBBC->inject2 = inject2Element->FirstChild()->Value();
 			pBBC->identify = identiEle->FirstChild()->Value();
@@ -77,7 +86,7 @@ BOOL CSQLiTest::loadConfiguration(string fileName/*="SQLiTestCase.xml"*/)
 			caseElement = caseElement->NextSiblingElement();
 		}
 
-		TiXmlElement *TBCRoot = BBCRoot->NextSiblingElement();
+		tinyxml2::XMLElement *TBCRoot = BBCRoot->NextSiblingElement();
 
 		num = 0;
 		TBCRoot->QueryIntAttribute("num", &num);
@@ -86,15 +95,15 @@ BOOL CSQLiTest::loadConfiguration(string fileName/*="SQLiTestCase.xml"*/)
 		for (int i = 0; i < num; i++){
 			pTBC = new TimeBasedCase();
 			caseElement->QueryIntAttribute("id", &(pTBC->id));
-			TiXmlElement *injectElement = caseElement->FirstChildElement();
-			TiXmlElement *injectPostElement = injectElement->NextSiblingElement();
-			TiXmlElement *identiEle = injectPostElement->NextSiblingElement();
-			TiXmlElement *identiPostEle= identiEle->NextSiblingElement();
+			tinyxml2::XMLElement *injectElement = caseElement->FirstChildElement();
+			tinyxml2::XMLElement *injectPostElement = injectElement->NextSiblingElement();
+			tinyxml2::XMLElement *identiEle = injectPostElement->NextSiblingElement();
+			tinyxml2::XMLElement *identiPostEle = identiEle->NextSiblingElement();
 			pTBC->inject = injectElement->FirstChild()->Value();
 			pTBC->injectPost = injectPostElement->FirstChild()->Value();
 			pTBC->identify = identiEle->FirstChild()->Value();
 			pTBC->identifyPost = identiPostEle->FirstChild()->Value();
-			_cprintf("id:%d\tinject:%s\tinjectpost:%s\tidentify:%s\tidentifyPost:%s\n" ,
+			_cprintf("id:%d\tinject:%s\tinjectpost:%s\tidentify:%s\tidentifyPost:%s\n",
 					 pTBC->id, pTBC->inject.c_str(), pTBC->injectPost.c_str(), pTBC->identify.c_str(), pTBC->identifyPost.c_str());
 			TBCvec.push_back(pTBC);
 			caseElement = caseElement->NextSiblingElement();
@@ -110,87 +119,90 @@ BOOL CSQLiTest::loadConfiguration(string fileName/*="SQLiTestCase.xml"*/)
 	return true;
 }
 
+
+
 BOOL CSQLiTest::saveConfiguration(string fileName /*= "test.xml"*/)
 {
 	try
 	{
 		//创建一个XML的文档对象。
-		TiXmlDocument *myDocument = new TiXmlDocument();
+		tinyxml2::XMLDocument *myDocument = new tinyxml2::XMLDocument();
 		//创建一个根元素并连接。
-		TiXmlElement *RootElement = new TiXmlElement("SQLiTestCase");
+
+		tinyxml2::XMLElement *RootElement = myDocument->NewElement("SQLiTestCase");
 		myDocument->LinkEndChild(RootElement);
 
-		TiXmlElement *EBCRoot = new TiXmlElement("ErrorBasedTestCase");
+		tinyxml2::XMLElement *EBCRoot = myDocument->NewElement("ErrorBasedTestCase");
 		RootElement->LinkEndChild(EBCRoot);
 		EBCRoot->SetAttribute("num", 0);
-		TiXmlElement *BBCRoot = new TiXmlElement("BoolBasedTestCase");
+		tinyxml2::XMLElement *BBCRoot = myDocument->NewElement("BoolBasedTestCase");
 		RootElement->LinkEndChild(BBCRoot);
 		BBCRoot->SetAttribute("num", 0);
-		TiXmlElement *TBCRoot = new TiXmlElement("TimeBasedTestCase");
+		tinyxml2::XMLElement *TBCRoot = myDocument->NewElement("TimeBasedTestCase");
 		RootElement->LinkEndChild(TBCRoot);
 		TBCRoot->SetAttribute("num", 0);
 
 
 		ErrorBasedCase EBCcase = { 0, "'", "NULL", "You have an error in your SQL syntax;" };
-		insertEBC(&EBCcase, EBCRoot);
+		insertEBC(&EBCcase, EBCRoot, myDocument);
 		ErrorBasedCase EBCcase2 = { 0, "\"", "NULL", "You have an error in your SQL syntax;" };
-		insertEBC(&EBCcase2, EBCRoot);
-		ErrorBasedCase EBCcase3 = { 0, "___", "NULL", "You have an error in your SQL syntax;" };
-		insertEBC(&EBCcase3, EBCRoot);
+		insertEBC(&EBCcase2, EBCRoot, myDocument);
+		ErrorBasedCase EBCcase3 = { 0, "  ", "NULL", "You have an error in your SQL syntax;" };
+		insertEBC(&EBCcase3, EBCRoot, myDocument);
 
-		BoolBasedCase bbcCase = { 0, "' and 1=1 ", "NULL", "NULL", "NULL" };
-		insertBBC(&bbcCase, BBCRoot);
-		bbcCase = { 0, "\" and 1=1 ", "NULL", "NULL", "NULL" };
-		insertBBC(&bbcCase, BBCRoot);
-		bbcCase = { 0, "') and 1=1 ", "NULL", "NULL", "NULL" };
-		insertBBC(&bbcCase, BBCRoot);
-		bbcCase = { 0, "\") and 1=1 ", "NULL", "NULL", "NULL" };
-		insertBBC(&bbcCase, BBCRoot);
-		bbcCase = { 0, "2 and 1=1 ", "NULL", "NULL", "NULL" };
-		insertBBC(&bbcCase, BBCRoot);
-		bbcCase = { 0, "2) and 1=1 ", "NULL", "NULL", "NULL" };
-		insertBBC(&bbcCase, BBCRoot);
+		BoolBasedCase bbcCase = { 0, "' and 1=1 #", "NULL", "NULL", "NULL" };
+		insertBBC(&bbcCase, BBCRoot, myDocument);
+		bbcCase = { 0, "\" and 1=1 #", "NULL", "NULL", "NULL" };
+		insertBBC(&bbcCase, BBCRoot, myDocument);
+		bbcCase = { 0, "') and 1=1 #", "NULL", "NULL", "NULL" };
+		insertBBC(&bbcCase, BBCRoot, myDocument);
+		bbcCase = { 0, "\") and 1=1 #", "NULL", "NULL", "NULL" };
+		insertBBC(&bbcCase, BBCRoot, myDocument);
+		bbcCase = { 0, "2 and 1=1 #", "NULL", "NULL", "NULL" };
+		insertBBC(&bbcCase, BBCRoot, myDocument);
+		bbcCase = { 0, "2) and 1=1 #", "NULL", "NULL", "NULL" };
+		insertBBC(&bbcCase, BBCRoot, myDocument);
 
-		bbcCase = { 0, "' or 1=1 ", "NULL", "NULL", "NULL" };
-		insertBBC(&bbcCase, BBCRoot);
-		bbcCase = { 0, "\" or 1=1 ", "NULL", "NULL", "NULL" };
-		insertBBC(&bbcCase, BBCRoot);
-		bbcCase = { 0, "') or 1=1 ", "NULL", "NULL", "NULL" };
-		insertBBC(&bbcCase, BBCRoot);
-		bbcCase = { 0, "\") or 1=1 ", "NULL", "NULL", "NULL" };
-		insertBBC(&bbcCase, BBCRoot);
-		bbcCase = { 0, "2 or 1=1 ", "NULL", "NULL", "NULL" };
-		insertBBC(&bbcCase, BBCRoot);
-		bbcCase = { 0, "2) or 1=1 ", "NULL", "NULL", "NULL" };
-		insertBBC(&bbcCase, BBCRoot);
+		bbcCase = { 0, "' or 1=1 #", "NULL", "NULL", "NULL" };
+		insertBBC(&bbcCase, BBCRoot, myDocument);
+		bbcCase = { 0, "\" or 1=1 #", "NULL", "NULL", "NULL" };
+		insertBBC(&bbcCase, BBCRoot, myDocument);
+		bbcCase = { 0, "') or 1=1 #", "NULL", "NULL", "NULL" };
+		insertBBC(&bbcCase, BBCRoot, myDocument);
+		bbcCase = { 0, "\") or 1=1 #", "NULL", "NULL", "NULL" };
+		insertBBC(&bbcCase, BBCRoot, myDocument);
+		bbcCase = { 0, "2 or 1=1 #", "NULL", "NULL", "NULL" };
+		insertBBC(&bbcCase, BBCRoot, myDocument);
+		bbcCase = { 0, "2) or 1=1 #", "NULL", "NULL", "NULL" };
+		insertBBC(&bbcCase, BBCRoot, myDocument);
 
-		bbcCase = { 0, "' and 1=2 ", "NULL", "NULL", "NULL" };
-		insertBBC(&bbcCase, BBCRoot);
-		bbcCase = { 0, "\" and 1=2 ", "NULL", "NULL", "NULL" };
-		insertBBC(&bbcCase, BBCRoot);
-		bbcCase = { 0, "') and 1=2 ", "NULL", "NULL", "NULL" };
-		insertBBC(&bbcCase, BBCRoot);
-		bbcCase = { 0, "\") and 1=2 ", "NULL", "NULL", "NULL" };
-		insertBBC(&bbcCase, BBCRoot);
-		bbcCase = { 0, "2 and 1=2 ", "NULL", "NULL", "NULL" };
-		insertBBC(&bbcCase, BBCRoot);
-		bbcCase = { 0, "2) and 1=2 ", "NULL", "NULL", "NULL" };
-		insertBBC(&bbcCase, BBCRoot);
+		bbcCase = { 0, "' and 1=2 #", "NULL", "NULL", "NULL" };
+		insertBBC(&bbcCase, BBCRoot, myDocument);
+		bbcCase = { 0, "\" and 1=2 #", "NULL", "NULL", "NULL" };
+		insertBBC(&bbcCase, BBCRoot, myDocument);
+		bbcCase = { 0, "') and 1=2 #", "NULL", "NULL", "NULL" };
+		insertBBC(&bbcCase, BBCRoot, myDocument);
+		bbcCase = { 0, "\") and 1=2 #", "NULL", "NULL", "NULL" };
+		insertBBC(&bbcCase, BBCRoot, myDocument);
+		bbcCase = { 0, "2 and 1=2 #", "NULL", "NULL", "NULL" };
+		insertBBC(&bbcCase, BBCRoot, myDocument);
+		bbcCase = { 0, "2) and 1=2 #", "NULL", "NULL", "NULL" };
+		insertBBC(&bbcCase, BBCRoot, myDocument);
 
 
 
-		TimeBasedCase tbcCase = { 0, "' or if(1=1, sleep(", "), 0) ", "NULL", "NULL", 0 };
-		insertTBC(&tbcCase, TBCRoot);
-		TimeBasedCase tbcCase2 = { 0, "\" or if(1=1, sleep(", "), 0) ", "NULL", "NULL", 0 };
-		insertTBC(&tbcCase2, TBCRoot);
-		TimeBasedCase tbcCase3 = { 0, "') or if(1=1, sleep(", "), 0) ", "NULL", "NULL", 0 };
-		insertTBC(&tbcCase, TBCRoot);
-		TimeBasedCase tbcCase4 = { 0, "\") or if(1=1, sleep(", "), 0) ", "NULL", "NULL", 0 };
-		insertTBC(&tbcCase2, TBCRoot);
-		TimeBasedCase tbcCase5 = { 0, "23 or if(1=1, sleep(", "), 0) ", "NULL", "NULL", 0 };
-		insertTBC(&tbcCase, TBCRoot);
-		TimeBasedCase tbcCase6 = { 0, "23) or if(1=1, sleep(", "), 0) ", "NULL", "NULL", 0 };
-		insertTBC(&tbcCase2, TBCRoot);
+		TimeBasedCase tbcCase = { 0, "' or if(1=1, sleep(", "), 0) #", "NULL", "NULL", 0 };
+		insertTBC(&tbcCase, TBCRoot, myDocument);
+		TimeBasedCase tbcCase2 = { 0, "\" or if(1=1, sleep(", "), 0) #", "NULL", "NULL", 0 };
+		insertTBC(&tbcCase2, TBCRoot, myDocument);
+		TimeBasedCase tbcCase3 = { 0, "') or if(1=1, sleep(", "), 0) #", "NULL", "NULL", 0 };
+		insertTBC(&tbcCase, TBCRoot, myDocument);
+		TimeBasedCase tbcCase4 = { 0, "\") or if(1=1, sleep(", "), 0) #", "NULL", "NULL", 0 };
+		insertTBC(&tbcCase2, TBCRoot, myDocument);
+		TimeBasedCase tbcCase5 = { 0, "23 or if(1=1, sleep(", "), 0) #", "NULL", "NULL", 0 };
+		insertTBC(&tbcCase, TBCRoot, myDocument);
+		TimeBasedCase tbcCase6 = { 0, "23) or if(1=1, sleep(", "), 0) #", "NULL", "NULL", 0 };
+		insertTBC(&tbcCase2, TBCRoot, myDocument);
 
 		myDocument->SaveFile(fileName.c_str());//保存到文件
 	}
@@ -201,10 +213,10 @@ BOOL CSQLiTest::saveConfiguration(string fileName /*= "test.xml"*/)
 	}
 	return true;
 }
-void CSQLiTest::insertEBC(ErrorBasedCase *pEBC, TiXmlElement *EBCRoot)
+void CSQLiTest::insertEBC(ErrorBasedCase *pEBC, tinyxml2::XMLElement *EBCRoot, tinyxml2::XMLDocument* myDocument)
 {
 	int i = -1;
-	TiXmlElement *ele = (TiXmlElement*)EBCRoot->LastChild();
+	tinyxml2::XMLElement *ele = (tinyxml2::XMLElement*)EBCRoot->LastChild();
 	if (ele == NULL)
 	{
 		i = 0;
@@ -216,19 +228,19 @@ void CSQLiTest::insertEBC(ErrorBasedCase *pEBC, TiXmlElement *EBCRoot)
 
 	pEBC->id = i + 1;
 
-	TiXmlElement *caseElement = new TiXmlElement("case");
+	tinyxml2::XMLElement *caseElement = myDocument->NewElement("case");
 	EBCRoot->LinkEndChild(caseElement);
 	caseElement->SetAttribute("id", pEBC->id);
-	TiXmlElement *injectElement = new TiXmlElement("inject");
-	TiXmlElement *identiEle = new TiXmlElement("identify");
-	TiXmlElement *checkElement = new TiXmlElement("check");
+	tinyxml2::XMLElement *injectElement = myDocument->NewElement("inject");
+	tinyxml2::XMLElement *identiEle = myDocument->NewElement("identify");
+	tinyxml2::XMLElement *checkElement = myDocument->NewElement("check");
 	caseElement->LinkEndChild(injectElement);
 	caseElement->LinkEndChild(identiEle);
 	caseElement->LinkEndChild(checkElement);
 
-	TiXmlText *injectText = new TiXmlText(pEBC->inject.c_str());
-	TiXmlText *identiText = new TiXmlText(pEBC->identify.c_str());
-	TiXmlText *checkText = new TiXmlText(pEBC->check.c_str());
+	tinyxml2::XMLText *injectText = myDocument->NewText(pEBC->inject.c_str());
+	tinyxml2::XMLText *identiText = myDocument->NewText(pEBC->identify.c_str());
+	tinyxml2::XMLText *checkText = myDocument->NewText(pEBC->check.c_str());
 	injectElement->LinkEndChild(injectText);
 	identiEle->LinkEndChild(identiText);
 	checkElement->LinkEndChild(checkText);
@@ -236,10 +248,10 @@ void CSQLiTest::insertEBC(ErrorBasedCase *pEBC, TiXmlElement *EBCRoot)
 	EBCRoot->QueryIntAttribute("num", &i);
 	EBCRoot->SetAttribute("num", i + 1);
 }
-void CSQLiTest::insertBBC(BoolBasedCase *pBBC, TiXmlElement *BBCRoot)
+void CSQLiTest::insertBBC(BoolBasedCase *pBBC, tinyxml2::XMLElement *BBCRoot, tinyxml2::XMLDocument* myDocument)
 {
 	int i = -1;
-	TiXmlElement *ele = (TiXmlElement*)BBCRoot->LastChild();
+	tinyxml2::XMLElement *ele = (tinyxml2::XMLElement*)BBCRoot->LastChild();
 	if (ele == NULL)
 	{
 		i = 0;
@@ -251,22 +263,22 @@ void CSQLiTest::insertBBC(BoolBasedCase *pBBC, TiXmlElement *BBCRoot)
 
 	pBBC->id = i + 1;
 
-	TiXmlElement *caseElement = new TiXmlElement("case");
+	tinyxml2::XMLElement *caseElement = myDocument->NewElement("case");
 	BBCRoot->LinkEndChild(caseElement);
 	caseElement->SetAttribute("id", pBBC->id);
-	TiXmlElement *injectElement = new TiXmlElement("inject");
-	TiXmlElement *inject2Element = new TiXmlElement("inject2");
-	TiXmlElement *identiEle = new TiXmlElement("identify");
-	TiXmlElement *checkElement = new TiXmlElement("check");
+	tinyxml2::XMLElement *injectElement = myDocument->NewElement("inject");
+	tinyxml2::XMLElement *inject2Element = myDocument->NewElement("inject2");
+	tinyxml2::XMLElement *identiEle = myDocument->NewElement("identify");
+	tinyxml2::XMLElement *checkElement = myDocument->NewElement("check");
 	caseElement->LinkEndChild(injectElement);
 	caseElement->LinkEndChild(inject2Element);
 	caseElement->LinkEndChild(identiEle);
 	caseElement->LinkEndChild(checkElement);
 
-	TiXmlText *injectText = new TiXmlText(pBBC->inject.c_str());
-	TiXmlText *inject2Text = new TiXmlText(pBBC->inject2.c_str());
-	TiXmlText *identiText = new TiXmlText(pBBC->identify.c_str());
-	TiXmlText *checkText = new TiXmlText(pBBC->check.c_str());
+	tinyxml2::XMLText *injectText = myDocument->NewText(pBBC->inject.c_str());
+	tinyxml2::XMLText *inject2Text = myDocument->NewText(pBBC->inject2.c_str());
+	tinyxml2::XMLText *identiText = myDocument->NewText(pBBC->identify.c_str());
+	tinyxml2::XMLText *checkText = myDocument->NewText(pBBC->check.c_str());
 	injectElement->LinkEndChild(injectText);
 	inject2Element->LinkEndChild(inject2Text);
 	identiEle->LinkEndChild(identiText);
@@ -274,10 +286,10 @@ void CSQLiTest::insertBBC(BoolBasedCase *pBBC, TiXmlElement *BBCRoot)
 	BBCRoot->QueryIntAttribute("num", &i);
 	BBCRoot->SetAttribute("num", i + 1);
 }
-void CSQLiTest::insertTBC(TimeBasedCase *pTBC, TiXmlElement *TBCRoot)
+void CSQLiTest::insertTBC(TimeBasedCase *pTBC, tinyxml2::XMLElement *TBCRoot, tinyxml2::XMLDocument* myDocument)
 {
 	int i = -1;
-	TiXmlElement *ele = (TiXmlElement*)TBCRoot->LastChild();
+	tinyxml2::XMLElement *ele = (tinyxml2::XMLElement*)TBCRoot->LastChild();
 	if (ele == NULL)
 	{
 		i = 0;
@@ -287,22 +299,22 @@ void CSQLiTest::insertTBC(TimeBasedCase *pTBC, TiXmlElement *TBCRoot)
 		ele->QueryIntAttribute("id", &i);
 	}
 	pTBC->id = i + 1;
-	TiXmlElement *caseElement = new TiXmlElement("case");
+	tinyxml2::XMLElement *caseElement = myDocument->NewElement("case");
 	TBCRoot->LinkEndChild(caseElement);
 	caseElement->SetAttribute("id", pTBC->id);
-	TiXmlElement *injectElement = new TiXmlElement("inject");
-	TiXmlElement *identiEle = new TiXmlElement("identify");
-	TiXmlElement *injectPostElement = new TiXmlElement("injectPost");
-	TiXmlElement *identiPostEle = new TiXmlElement("identifyPost");
+	tinyxml2::XMLElement *injectElement = myDocument->NewElement("inject");
+	tinyxml2::XMLElement *identiEle = myDocument->NewElement("identify");
+	tinyxml2::XMLElement *injectPostElement = myDocument->NewElement("injectPost");
+	tinyxml2::XMLElement *identiPostEle = myDocument->NewElement("identifyPost");
 	caseElement->LinkEndChild(injectElement);
 	caseElement->LinkEndChild(injectPostElement);
 	caseElement->LinkEndChild(identiEle);
 	caseElement->LinkEndChild(identiPostEle);
 
-	TiXmlText *injectText = new TiXmlText(pTBC->inject.c_str());
-	TiXmlText *identiText = new TiXmlText(pTBC->identify.c_str());
-	TiXmlText *injectPostText = new TiXmlText(pTBC->injectPost.c_str());
-	TiXmlText *identiPostText = new TiXmlText(pTBC->identifyPost.c_str());
+	tinyxml2::XMLText *injectText = myDocument->NewText(pTBC->inject.c_str());
+	tinyxml2::XMLText *identiText = myDocument->NewText(pTBC->identify.c_str());
+	tinyxml2::XMLText *injectPostText = myDocument->NewText(pTBC->injectPost.c_str());
+	tinyxml2::XMLText *identiPostText = myDocument->NewText(pTBC->identifyPost.c_str());
 	injectElement->LinkEndChild(injectText);
 	identiEle->LinkEndChild(identiText);
 	injectPostElement->LinkEndChild(injectPostText);
@@ -314,10 +326,7 @@ void CSQLiTest::insertTBC(TimeBasedCase *pTBC, TiXmlElement *TBCRoot)
 
 bool CSQLiTest::test(CHttpClient *pHttpClient, Item *pItem)
 {
-	if ((pItem->getUrl().find("sqli/") != -1) )
-	{
-		int x = 1;
-	}
+
 	long averageTime1 = 0;
 	long averageTime2 = 0;
 
@@ -339,7 +348,7 @@ bool CSQLiTest::test(CHttpClient *pHttpClient, Item *pItem)
 		}
 		if (m_timeBased)
 		{
-			if (timeBasedTest(pHttpClient, pItem, i, (averageTime1+averageTime2)/2))
+			if (timeBasedTest(pHttpClient, pItem, i, (averageTime1 + averageTime2) / 2))
 			{
 				continue;
 			}
@@ -376,7 +385,8 @@ bool CSQLiTest::errorBasedTest(CHttpClient* pHttpClient, Item *pItem, unsigned p
 		if (pHttpClient->getStatusCode() / 100 == 5){
 			//返回码为服务器内部错误，则认为有漏洞。
 			resultState++;
-		}else if (html.find(EBCvec[i]->check) != -1)
+		}
+		else if (html.find(EBCvec[i]->check) != -1)
 		{
 			resultState++;
 		}
@@ -424,6 +434,7 @@ bool CSQLiTest::errorBasedTest(CHttpClient* pHttpClient, Item *pItem, unsigned p
 bool CSQLiTest::boolBasedTest(CHttpClient* pHttpClient, Item *pItem, unsigned pos, long &averageTime)
 {
 
+
 	long sumTime = 0;
 	int sendCount = 0;
 
@@ -434,82 +445,105 @@ bool CSQLiTest::boolBasedTest(CHttpClient* pHttpClient, Item *pItem, unsigned po
 	string args = "";
 	SQLiResult* pResult = NULL;
 	m_pData->getCookie(cookie);
-	int resultState = 0;	
+	int resultState = 0;
 	cookieStr = cookie.toString();
 	HttpMethod method = pItem->getMethod();
 	string url = pItem->getUrl();
 	unsigned int testCaseNum = BBCvec.size() / 3;
 	// and 1=1, or 1=1, and 1=2; 三种类型，每种类型数量都相同。
 
+	if (url.find("blind") != -1)
+	{
+		int x = 1;
+	}
+
 	string oriHtml;
 	string errorHtml;
 	string rightHtml;
+	unsigned i;
 
 	if ((pItem->getArgs())[pos].getValue() != "")	//是否有默认值
 	{
 		//该位置有默认值
 		args = pItem->getArgsStr();
 		send(pHttpClient, method, cookieStr, url, args, oriHtml, sumTime, sendCount);	//获取样本0
-		for (unsigned i = 0; i < testCaseNum; i++)
+		for (i = 0; i < testCaseNum; i++)
 		{
+			rightHtml = "";
+			errorHtml = "";
+
 			args = pItem->getArgsStr(pos, BBCvec[i]->inject) + getComment(method);
-
+			send(pHttpClient, method, cookieStr, url, args, rightHtml, sumTime, sendCount);	//获取样本1
+			if (htmlEqual(oriHtml, rightHtml))
+			{
+				args = pItem->getArgsStr(pos, BBCvec[testCaseNum * 2 + i]->inject) + getComment(method);
+				send(pHttpClient, method, cookieStr, url, args, errorHtml, sumTime, sendCount);	//获取样本2
+				if (!htmlEqual(rightHtml, errorHtml))
+				{
+					resultState = 101;
+					break;
+				}
+			}
 		}
+		if (i == testCaseNum)
+		{
+			//有默认值，但是是错误的。从 or 1=1类型开始测试
+			for (; i < testCaseNum * 2; i++)
+			{
+				rightHtml = "";
 
+				args = pItem->getArgsStr(pos, BBCvec[i]->inject) + getComment(method);
+				send(pHttpClient, method, cookieStr, url, args, rightHtml, sumTime, sendCount);	//获取样本1
+				if (!htmlEqual(oriHtml, rightHtml))
+				{
+					resultState = 102;
+					break;
+				}
+			}
+		}
+	}
+	else
+	{
+		for (i = testCaseNum; i < testCaseNum * 2; i++)
+		{
+			rightHtml = "";
+			errorHtml = "";
+			args = pItem->getArgsStr(pos, BBCvec[i]->inject) + getComment(method);
+			send(pHttpClient, method, cookieStr, url, args, rightHtml, sumTime, sendCount);	//获取样本1
+
+			args = pItem->getArgsStr(pos, BBCvec[testCaseNum + i]->inject) + getComment(method);
+			send(pHttpClient, method, cookieStr, url, args, errorHtml, sumTime, sendCount);	//获取样本2
+			if (!htmlEqual(rightHtml, errorHtml))
+			{
+				resultState =103;
+				break;
+			}
+		}
 	}
 
-
-
-
-
-
-
-
-
-
-	args = pItem->getArgsStr();
-	for (unsigned i = 0; BBCvec.size() < 1; i++)
+	if (resultState > 0)
 	{
-		resultState = 0;
+		//进一步验证   用基于时间的测试来验证。
+		
+	}
+	if (resultState > 0)
+	{
+		pResult = new SQLiResult();
+		pResult->id = resultVec.size();
+		pResult->itemId = pItem->getId();
+		pResult->url = pItem->getUrl();
+		pResult->caseId = BBCvec[i]->id;
+		pResult->injectPos = pos;
+		pResult->cookie = cookie.toString();
+		pResult->args = pItem->getArgsStr();
+		pResult->resultState = resultState;
+		pResult->type = 1;
 
-		args = pItem->getArgsStr(pos,BBCvec[i]->inject);
-
-		send(pHttpClient, method, cookieStr, url, args, html, sumTime, sendCount);
-		sendCount++;
-
-		args = pItem->getArgsStr(pos, BBCvec[i]->inject2);
-		send(pHttpClient, method, cookieStr, url, args, html, sumTime, sendCount);
-
-		sendCount++;
-		if (!htmlEqual(errorHtml, rightHtml))
-		{
-			resultState++;
-			if (1)
-			{
-				//进一步确认。不知道如何确认。
-			//	resultState++;
-			}
-			if (resultState != 0)
-			{
-				pResult = new SQLiResult();
-				pResult->id = resultVec.size();
-				pResult->itemId = pItem->getId();
-				pResult->url = pItem->getUrl();
-				pResult->caseId = BBCvec[i]->id;
-				pResult->injectPos = pos;
-				pResult->cookie = cookie.toString();
-				pResult->args = pItem->getArgsStr();
-				pResult->resultState = resultState;
-				pResult->type = 1;
-				resultVec.push_back(pResult);
-			}
-		}
-		if (resultState == 2)
-			break;
+		resultVec.push_back(pResult);
 	}
 
 	averageTime = sumTime / (sendCount * 1000 / CLOCKS_PER_SEC);
-	return resultState==2;
+	return resultState > 0;
 }
 
 bool CSQLiTest::timeBasedTest(CHttpClient* pHttpClient, Item *pItem, unsigned pos, long averageTime)
@@ -527,7 +561,7 @@ bool CSQLiTest::timeBasedTest(CHttpClient* pHttpClient, Item *pItem, unsigned po
 	for (unsigned i = 0; i < TBCvec.size(); i++)
 	{
 		resultState = 0;
-		args = pItem->getArgsStr(pos, TBCvec[i]->inject + to_string(averageTime/1000 + 1) + TBCvec[i]->injectPost + getComment(pItem->getMethod()));
+		args = pItem->getArgsStr(pos, TBCvec[i]->inject + to_string(averageTime / 1000 + 1) + TBCvec[i]->injectPost + getComment(pItem->getMethod()));
 
 
 		start = clock();
@@ -579,7 +613,7 @@ bool CSQLiTest::timeBasedTest(CHttpClient* pHttpClient, Item *pItem, unsigned po
 
 std::string CSQLiTest::resultToString()
 {
-	string args = "\n\n----------------showResult(resultId, type, resultState, caseId, url, args,cookie,injectPos)-------------------------------\n";
+	string args = "\n\n----------------showResult(resultId, type, resultState, caseId, url, args,injectPos)-------------------------------\n";
 	for (unsigned i = 0; i < resultVec.size(); i++)
 	{
 		args += to_string(resultVec[i]->id) +
@@ -588,9 +622,26 @@ std::string CSQLiTest::resultToString()
 			"\t" + to_string(resultVec[i]->caseId) +
 			"\t" + resultVec[i]->url +
 			"\t" + resultVec[i]->args +
-			"\t" + resultVec[i]->cookie +
 			"\t" + to_string(resultVec[i]->injectPos) +
-			"\n------------------------------index-----------------------------\n";
+			"\n-----------------------------------------------------------\n\n";
+	}
+	return args;
+}
+std::string CSQLiTest::resultToStringForCSV()
+{
+	string args = "resultId, type, resultState, caseId, url,injectPos, args,cookie\n";
+	for (unsigned i = 0; i < resultVec.size(); i++)
+	{
+		args += to_string(resultVec[i]->id) +
+			"," + to_string(resultVec[i]->type) +
+			"," + to_string(resultVec[i]->resultState) +
+			"," + to_string(resultVec[i]->caseId) +
+			"," + resultVec[i]->url +
+			"," + to_string(resultVec[i]->injectPos)+
+			"," + resultVec[i]->args +
+			"," + resultVec[i]->cookie +
+			
+			"\n";
 	}
 	return args;
 }
@@ -604,14 +655,14 @@ BOOL CSQLiTest::htmlEqual(string html, string html2)
 
 string CSQLiTest::getComment(HttpMethod method)
 {
-	string arg;
+	string arg="";
 	if (method == HttpMethod::get)
 	{
-		arg = "--+";
+		//arg = "%20%23";
 	}
 	else if (method == HttpMethod::post)
 	{
-		arg = "#";
+		//arg = "%20%23";
 	}
 	return arg;
 }
@@ -621,7 +672,7 @@ CURLcode CSQLiTest::send(CHttpClient*pHttpClient, HttpMethod method, string cook
 	CURLcode code;
 	static clock_t start, end;
 	start = clock();
-	code=pHttpClient->send(method, cookieStr, url, args, html);
+	code = pHttpClient->send(method, cookieStr, url, args, html);
 	end = clock();
 	sumTime += (end - start);
 	sendCount++;

@@ -16,8 +16,30 @@ CData::CData(string oriUrl)
 	
 	InitializeSRWLock(&m_linksVecSRW);
 	InitializeSRWLock(&m_cookieSRW);
-
+	hasSetUrl = true;
 }
+
+CData::CData()
+{
+	InitializeSRWLock(&m_linksVecSRW);
+	InitializeSRWLock(&m_cookieSRW);
+}
+void CData::setUrl(string oriUrl)
+{
+	originUrl = oriUrl;
+	int posBeg = oriUrl.find('/');
+	int posEnd = (oriUrl.substr(posBeg + 2, oriUrl.size())).find('/');
+	if (posEnd == -1){
+		//		http://www.baidu.com
+		domain = oriUrl.substr(posBeg + 2, oriUrl.size());
+	}
+	else{
+		domain = oriUrl.substr(posBeg + 2, posEnd);
+	}
+	hasSetUrl = true;
+}
+
+
 
 CData::~CData()
 {
@@ -50,7 +72,12 @@ bool CData::checkInLinks(Item &des, vector<Item*>&crawlerLinksVec)
 	}
 	else if (des.getUrl().find("setup-db.php") != -1)
 	{
-		cout << "数据库重置，不要" << des.getUrl() << endl;
+		cout << "sqli数据库重置，不要" << des.getUrl() << endl;
+		return true;
+	}
+	else if (des.getUrl().find("setup.php") != -1)
+	{
+		cout << "dvwa数据库重置，不要" << des.getUrl() << endl;
 		return true;
 	}
 	AcquireSRWLockShared(&m_linksVecSRW);
@@ -120,6 +147,10 @@ void CData::analyseHeader(string& strHeader)
 vector<Item*>* CData::analyseHtml(Item*pItem, string& strHtml)
 {
 	string baseUrl = getBaseUrl(strHtml, pItem);
+	//if (baseUrl.find("blind") != -1)
+	//{
+	//	int x = 1;
+	//}
 	vector<Item*> *pItemVec = new vector<Item*>();
 	vector<string>linksVec;		//暂存 从一个网页中提取的多个links，
 	vector<string>formStrVec;	//暂存  form
@@ -178,7 +209,7 @@ vector<Item*>* CData::analyseHtml(Item*pItem, string& strHtml)
 		pTempNewItem = new Item();
 		formatLink(baseUrl, tempLink, argStr);
 		pTempNewItem->setUrl(tempLink);
-		pTempNewItem->setMethod(HttpMethod::post);
+		pTempNewItem->setMethod(formVec[i].getMethod());
 		pTempNewItem->setArgs(formVec[i].getFields());
 		if (!checkInLinks(*pTempNewItem, crawlerLinksItemVec))
 		{
@@ -298,4 +329,14 @@ std::string CData::getBaseUrl(string strHtml, Item *pItem)
 	}
 	return baseUrl;
 }
+
+void CData::setCookie(Cookie& tempCookie)
+{
+	AcquireSRWLockExclusive(&m_cookieSRW);
+	cookie = tempCookie;
+	ReleaseSRWLockExclusive(&m_cookieSRW);
+}
+
+
+
 

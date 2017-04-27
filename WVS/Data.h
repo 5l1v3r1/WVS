@@ -12,6 +12,7 @@ class CData
 //全局类，用来存储所有的全局数据。
 public:
 	CData(string oriUrl);
+	CData();
 	~CData();
 	bool checkInLinks(Item &des, vector<Item*>&crawlerLinksVec);
 	string vecFieldToString(vector<Field> fieldVec);
@@ -25,8 +26,10 @@ public:
 	void putItem(Item* pItem);
 	vector<Item*>* readLinks();
 	void getCookie(Cookie& tempCookie);
+	void setCookie(Cookie& tempCookie);
 	int getRestLinksNum();
 	string getBaseUrl(string strHtml, Item *pItem);
+	void setUrl(string oriUrl);
 
 
 	vector<Item*> crawlerLinksItemVec;	//存储所有爬行的links
@@ -41,5 +44,6 @@ private:
 	SRWLOCK m_linksVecSRW;
 	SRWLOCK m_cookieSRW;
 	unsigned int crawledNum = 1;					//已经爬行过的链接数量，作为crawlerLinksItemVec的指示器。
+	bool hasSetUrl = false;
 };
 

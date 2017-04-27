@@ -72,13 +72,13 @@
     <ClInclude Include="SQLiTest.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="include\tinystr.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="include\tinyxml.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="Test.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="tinyxml2.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="TestJob.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -131,19 +131,13 @@
     <ClCompile Include="SQLiTest.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="tinystr.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="tinyxml.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="tinyxmlerror.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="tinyxmlparser.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="Test.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="tinyxml2.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="TestJob.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

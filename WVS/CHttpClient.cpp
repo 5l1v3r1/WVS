@@ -84,7 +84,7 @@ void CHttpClient::setHeaderOpt(const std::string &strHeaderParam, string& header
 	curl_easy_setopt(this->m_pCurl, CURLOPT_HEADEROPT, 1);
 	curl_easy_setopt(this->m_pCurl, CURLOPT_HEADERFUNCTION, &header_callback);
 	curl_easy_setopt(this->m_pCurl, CURLOPT_HEADERDATA, &headerStr);
-	//curl_easy_setopt(this->m_pCurl, CURLOPT_PROXY, "127.0.0.1:8888");
+	curl_easy_setopt(this->m_pCurl, CURLOPT_PROXY, "127.0.0.1:8888");
 }
 
 
@@ -96,7 +96,7 @@ void CHttpClient::setTimeOut(long millsec)
 CURLcode CHttpClient::send(HttpMethod method, const std::string &strCookie, const std::string & strUrl, const std::string & strParam, std::string & strResponse)
 {
 	m_curCode = CURLE_FTP_WEIRD_SERVER_REPLY; //8
-	curl_easy_setopt(this->m_pCurl, CURLOPT_URL, strUrl.c_str());
+	
 	curl_easy_setopt(this->m_pCurl, CURLOPT_WRITEDATA, &strResponse);
 	if (strCookie != "")
 	{
@@ -104,11 +104,22 @@ CURLcode CHttpClient::send(HttpMethod method, const std::string &strCookie, cons
 	}
 	if (method == HttpMethod::post)
 	{
+		curl_easy_setopt(this->m_pCurl, CURLOPT_URL, strUrl.c_str());
 		curl_easy_setopt(this->m_pCurl, CURLOPT_POST, 1);
 		curl_easy_setopt(this->m_pCurl, CURLOPT_POSTFIELDS, strParam.c_str());
 	}
 	else if (HttpMethod::get == method)
 	{
+		string url;
+		if (strParam != "")
+		{
+			url = strUrl + "?" + strParam;
+		}
+		else{
+			url = strUrl;
+		}
+		
+		curl_easy_setopt(this->m_pCurl, CURLOPT_URL, url.c_str());
 		curl_easy_setopt(this->m_pCurl, CURLOPT_HTTPGET, 1);
 	}
 	else
@@ -123,32 +134,41 @@ CURLcode CHttpClient::send(HttpMethod method, const std::string &strCookie, cons
 {
 	m_curCode = CURLE_FTP_WEIRD_SERVER_REPLY; //8
 	string args;
-	
+	for (unsigned int i = 0; i < fieldVec.size(); i++)
+	{
+		args += fieldVec[i].toString();
+		if (i != fieldVec.size() - 1)
+		{
+			args += "&";
+		}
+	}
 	if (method == HttpMethod::post)
 	{
+		curl_easy_setopt(this->m_pCurl, CURLOPT_URL, strUrl.c_str());
 		curl_easy_setopt(this->m_pCurl, CURLOPT_POST, 1);
-
-		for (unsigned  int i = 0; i < fieldVec.size(); i++)
-		{
-			args += fieldVec[i].toString();
-			if (i != fieldVec.size() - 1)
-			{
-				args += "&";
-			}
-		}
-		//cout << "args:" << args << endl;
 		curl_easy_setopt(this->m_pCurl, CURLOPT_POSTFIELDS, args.c_str());
-		//	curl_easy_setopt(this->m_pCurl, CURLOPT_POSTFIELDSIZE, args.size());
+		curl_easy_setopt(this->m_pCurl, CURLOPT_POSTFIELDSIZE, args.size());
 	}
 	else if (HttpMethod::get == method)
 	{
+		string url;
+		if (args != "")
+		{
+			url = strUrl + "?" + args;
+		}
+		else{
+			url = strUrl;
+		}
+		 
+		escapeURL(url);
+		curl_easy_setopt(this->m_pCurl, CURLOPT_URL, url.c_str());
 		curl_easy_setopt(this->m_pCurl, CURLOPT_HTTPGET, 1);
 	}
 	else
 	{
 		WriteLog("HttpMethod:other");
 	}
-	curl_easy_setopt(this->m_pCurl, CURLOPT_URL, strUrl.c_str());
+
 	curl_easy_setopt(this->m_pCurl, CURLOPT_WRITEDATA, &strResponse);
 	if (strCookie != "")
 	{

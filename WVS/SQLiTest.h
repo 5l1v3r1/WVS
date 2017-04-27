@@ -1,7 +1,6 @@
 #pragma once
 #include <string>
-#include "tinystr.h"
-#include "tinyxml.h"
+#include "tinyxml2.h"
 #include <iostream>
 #include "Item.h"
 #include "CHttpClient.h"
@@ -55,15 +54,16 @@ public:
 	~CSQLiTest();
 	BOOL loadConfiguration(string fileName = "SQLiTestCase.xml");
 	BOOL saveConfiguration(string fileName = "SQLiTestCase.xml");
-	void insertEBC(ErrorBasedCase *pEBC, TiXmlElement *EBCRoot);
-	void insertBBC(BoolBasedCase *pBBC, TiXmlElement *BBCRoot);
-	void insertTBC(TimeBasedCase *pTBC, TiXmlElement *TBCRoot);
+	void insertEBC(ErrorBasedCase *pEBC, tinyxml2::XMLElement *EBCRoot, tinyxml2::XMLDocument* myDocument);
+	void insertBBC(BoolBasedCase *pBBC, tinyxml2::XMLElement *BBCRoot, tinyxml2::XMLDocument* myDocument);
+	void insertTBC(TimeBasedCase *pTBC, tinyxml2::XMLElement *TBCRoot, tinyxml2::XMLDocument* myDocument);
 	bool test(CHttpClient *pHttpClient, Item *pItem);
 	bool errorBasedTest(CHttpClient* pHttpClient, Item *pItem, unsigned pos, long &averageTime);
 	bool boolBasedTest(CHttpClient* pHttpClient, Item *pItem, unsigned pos, long &averageTime);
 	bool timeBasedTest(CHttpClient* pHttpClient, Item *pItem, unsigned pos, long averageTime);
 
 	string resultToString();
+	string resultToStringForCSV();
 private:
 	BOOL m_errorBased = TRUE;
 	BOOL m_boolBased = TRUE;

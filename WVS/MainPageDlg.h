@@ -6,6 +6,7 @@
 #include "ExtractJob.h"
 #include "MonitorJob.h"
 #include "SQLiTest.h"
+#include "TestJob.h"
 
 #include"curl\curl.h"
 
@@ -22,6 +23,10 @@ class CMainPageDlg : public CDialogEx
 public:
 	CMainPageDlg(CWnd* pParent = NULL);   // 标准构造函数
 	virtual ~CMainPageDlg();
+
+
+	void setGlobalData(CData *pData, CMyThreadPool *pThreadPool, CSQLiTest* pSQLiTest);
+
 
 // 对话框数据
 	enum { IDD = IDD_MAINPAGE_DIALOG };

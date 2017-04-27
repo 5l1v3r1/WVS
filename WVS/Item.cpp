@@ -10,14 +10,21 @@ Item::Item()
 std::string Item::getArgsStr(int pos, string inject)
 {
 	string args;
+	string name;
+	string value;
 	for (unsigned i = 0; i < m_args.size(); i++)
 	{
-		args = args + m_args[i].getName() + "=" + m_args[i].getValue();
+		name = m_args[i].getName();
+		value = m_args[i].getValue();
 		if (i == pos)
 		{
-			args += inject;
+			value += inject;
 		}
-		if (i <= args.size() - 1)
+		name = escapeURL(name);
+		value = escapeURL(value);
+
+		args = args +name + "=" + value;
+		if (i < m_args.size() - 1)
 		{
 			args += "&";
 		}

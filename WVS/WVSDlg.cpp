@@ -37,6 +37,7 @@ protected:
 
 CAboutDlg::CAboutDlg() : CDialogEx(CAboutDlg::IDD)
 {
+
 }
 
 void CAboutDlg::DoDataExchange(CDataExchange* pDX)
@@ -48,14 +49,192 @@ BEGIN_MESSAGE_MAP(CAboutDlg, CDialogEx)
 END_MESSAGE_MAP()
 
 
+void cls(void)
+{
+	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+	COORD coordScreen = { 0, 0 }; //光标位置  
+	DWORD cCharsWritten;
+	CONSOLE_SCREEN_BUFFER_INFO csbi;
+	DWORD dwConSize;
+
+	// 当前buf中的文字cell数目  
+	if (!GetConsoleScreenBufferInfo(hConsole, &csbi))
+	{
+		return;
+	}
+	dwConSize = csbi.dwSize.X * csbi.dwSize.Y;
+
+	// 将整个屏幕填充空格  
+	if (!FillConsoleOutputCharacter(hConsole,
+		TEXT(' '),
+		dwConSize,
+		coordScreen,
+		&cCharsWritten))
+	{
+		return;
+	}
+	//获取文字属性  
+	if (!GetConsoleScreenBufferInfo(hConsole, &csbi))
+	{
+		return;
+	}
+
+	// 设置buf属性  
+	if (!FillConsoleOutputAttribute(hConsole,
+		csbi.wAttributes,
+		dwConSize,
+		coordScreen,
+		&cCharsWritten))
+	{
+		return;
+	}
+	// 将光标移动起始位置  
+	SetConsoleCursorPosition(hConsole, coordScreen);
+}
+
+// SetConsoleMode();  
+BOOL SetConsoleMode(int cols, int lines)
+{
+	BOOL retval = FALSE;
+	HANDLE handle = ::CreateFile(
+		TEXT("CONOUT$"),
+		GENERIC_READ | GENERIC_WRITE,
+		FILE_SHARE_READ | FILE_SHARE_WRITE,
+		NULL,
+		OPEN_EXISTING,
+		0,
+		NULL);
+	if (handle == INVALID_HANDLE_VALUE)
+	{
+		return retval;
+	}
+
+	// 获取原始大小  
+	CONSOLE_SCREEN_BUFFER_INFO OldConsoleScreenBufferInfo = { 0 };
+	if (!GetConsoleScreenBufferInfo(handle, &OldConsoleScreenBufferInfo))
+	{
+		CloseHandle(handle);
+		return retval;
+	}
+
+	// 读取原来buf内容  
+	DWORD dwsize = OldConsoleScreenBufferInfo.dwSize.X*OldConsoleScreenBufferInfo.dwCursorPosition.Y + OldConsoleScreenBufferInfo.dwCursorPosition.X;
+	LPWSTR buf = new WCHAR[dwsize];
+	COORD readpos = { 0, 0 };
+	DWORD dwBytes = 0;
+	ReadConsoleOutputCharacter(handle, buf, dwsize, readpos, &dwBytes);
+
+	do
+	{
+		SMALL_RECT rect;
+		rect.Left = 0;
+		rect.Top = 0;
+		rect.Right = cols - 1;
+		rect.Bottom = lines - 1;
+		SetConsoleWindowInfo(handle, TRUE, &rect);
+
+		// 设置buf  
+		COORD dwnewPosition;
+		dwnewPosition.X = cols;
+		dwnewPosition.Y = lines;
+		SetConsoleScreenBufferSize(handle, dwnewPosition);
+
+		// 设置新窗口大小  
+		CONSOLE_SCREEN_BUFFER_INFO NewConsoleScreenBufferInfo = { 0 };
+		if (!GetConsoleScreenBufferInfo(handle, &NewConsoleScreenBufferInfo))
+			break;
+		if (lines >= 80)
+		{
+			rect.Right = NewConsoleScreenBufferInfo.dwMaximumWindowSize.X - 1;
+		}
+		else
+		{
+			rect.Right = (lines << 1);
+		}
+
+		if (cols >= 25)
+		{
+			rect.Bottom = NewConsoleScreenBufferInfo.dwMaximumWindowSize.Y - 1;
+		}
+		else
+		{
+			rect.Bottom = (cols >> 1);
+		}
+
+		if (SetConsoleWindowInfo(handle, TRUE, &rect))
+		{
+			retval = TRUE;
+		}
+	} while (0);
+
+	CloseHandle(handle);
+
+	// 写入原始内容   
+	DWORD curpos = 0;
+	HANDLE outhandle = GetStdHandle(STD_OUTPUT_HANDLE);
+	cls();
+	for (unsigned int i = 0; i < dwsize; i += OldConsoleScreenBufferInfo.dwSize.X)
+	{
+		BOOL newline = FALSE;
+		if (dwsize - i < 79)
+		{
+			WriteFile(outhandle, buf + i, dwsize - i, &dwBytes, NULL);
+			break;
+		}
+		DWORD dwwritebyte = 79;
+		while (*(buf + i + dwwritebyte) == 0x20)
+		{
+			newline = TRUE;
+			dwwritebyte--;
+		}
+		WriteFile(outhandle, buf + i, dwwritebyte + 1, &dwBytes, NULL);
+		if (newline)
+		{
+			WriteFile(outhandle, "\r\n", 2, &dwBytes, NULL);
+		}
+	}
+	delete[]buf;
+	return retval;
+}
+
+
+void setConsole()
+{
+	AllocConsole();
+	//Retrieves a handle to the specified standard device (standard input, standard output, or standard error).   
+	HANDLE hin = ::GetStdHandle(STD_INPUT_HANDLE);
+	HANDLE hout = ::GetStdHandle(STD_OUTPUT_HANDLE);
+	//Associates a C run-time file descriptor with an existing operating-system file handle.   
+	int hcin = _open_osfhandle((intptr_t)hin, _O_TEXT);                 // 此时hcin 就成了一个file descriptor 了   
+	//      When a program opens a file, the operating system returns a corresponding file descriptor that the program refers to   
+	//     in order to process the file. A file descriptor is a low positive integer. The first three file descriptors (0,1, and 2,)   
+	//     are associated with the standard input (stdin), the standard output (stdout), and the standard error (stderr), respectively.   
+	//     Thus, the function scanf() uses stdin and the function printf() uses stdout. You can override the default setting and   
+	//     re-direct the process's I/O to different files by using different file descriptors:   
+	//     #include <cstdio>   
+	//     fprintf(stdout, "writing to stdout"); //write to stdout instead of a physical file   
+	FILE * fpin = _fdopen(hcin, "r");
+	*stdin = *fpin;                                                  //stdin 就指向了文件指针   
+	int hcout = _open_osfhandle((intptr_t)hout, _O_TEXT);
+	FILE * fpout = _fdopen(hcout, "wt");
+	*stdout = *fpout;
+	std::ios_base::sync_with_stdio();           // 将iostream 流同c runtime lib 的stdio 同步，标准是同步的   
+	//	_cprintf("%d, %d, (%d, %d, %d, %d)\t(%d,%d,%d,%d)\n", cx, cy, rectWnd.left,rectWnd.top, rectWnd.Width(),rectWnd.Height(), wnd.left, wnd.top, wnd.Width(), wnd.Height());
+	SetConsoleMode(240, 80);
+}
+
+
 // CWVSDlg 对话框
-
-
-
 CWVSDlg::CWVSDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(CWVSDlg::IDD, pParent)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
+	setConsole();
+	m_pData = new CData();
+	m_pThreadPool = new	CMyThreadPool(8);
+	pSQLiTest = new CSQLiTest(m_pData);
+	m_config.setGlobalData(m_pData, m_pThreadPool, pSQLiTest);
+	m_mainPage.setGlobalData(m_pData, m_pThreadPool, pSQLiTest);
 }
 
 void CWVSDlg::DoDataExchange(CDataExchange* pDX)
@@ -188,26 +367,7 @@ void CWVSDlg::OnSize(UINT nType, int cx, int cy)
 		OnTcnSelchangeTab1(NULL, NULL);
 	}
 
-	AllocConsole();
-	//Retrieves a handle to the specified standard device (standard input, standard output, or standard error).   
-	HANDLE hin = ::GetStdHandle(STD_INPUT_HANDLE);
-	HANDLE hout = ::GetStdHandle(STD_OUTPUT_HANDLE);
-	//Associates a C run-time file descriptor with an existing operating-system file handle.   
-	int hcin = _open_osfhandle((intptr_t)hin, _O_TEXT);                 // 此时hcin 就成了一个file descriptor 了   
-	//      When a program opens a file, the operating system returns a corresponding file descriptor that the program refers to   
-	//     in order to process the file. A file descriptor is a low positive integer. The first three file descriptors (0,1, and 2,)   
-	//     are associated with the standard input (stdin), the standard output (stdout), and the standard error (stderr), respectively.   
-	//     Thus, the function scanf() uses stdin and the function printf() uses stdout. You can override the default setting and   
-	//     re-direct the process's I/O to different files by using different file descriptors:   
-	//     #include <cstdio>   
-	//     fprintf(stdout, "writing to stdout"); //write to stdout instead of a physical file   
-	FILE * fpin = _fdopen(hcin, "r");
-	*stdin = *fpin;                                                  //stdin 就指向了文件指针   
-	int hcout = _open_osfhandle((intptr_t)hout, _O_TEXT);
-	FILE * fpout = _fdopen(hcout, "wt");
-	*stdout = *fpout;
-	std::ios_base::sync_with_stdio();           // 将iostream 流同c runtime lib 的stdio 同步，标准是同步的   
-//	_cprintf("%d, %d, (%d, %d, %d, %d)\t(%d,%d,%d,%d)\n", cx, cy, rectWnd.left,rectWnd.top, rectWnd.Width(),rectWnd.Height(), wnd.left, wnd.top, wnd.Width(), wnd.Height());
+	
 	
 }
 

@@ -10,154 +10,6 @@
 
 IMPLEMENT_DYNAMIC(CMainPageDlg, CDialogEx)
 
-void cls(void)
-{
-	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-	COORD coordScreen = { 0, 0 }; //光标位置  
-	DWORD cCharsWritten;
-	CONSOLE_SCREEN_BUFFER_INFO csbi;
-	DWORD dwConSize;
-
-	// 当前buf中的文字cell数目  
-	if (!GetConsoleScreenBufferInfo(hConsole, &csbi))
-	{
-		return;
-	}
-	dwConSize = csbi.dwSize.X * csbi.dwSize.Y;
-
-	// 将整个屏幕填充空格  
-	if (!FillConsoleOutputCharacter(hConsole,
-		TEXT(' '),
-		dwConSize,
-		coordScreen,
-		&cCharsWritten))
-	{
-		return;
-	}
-	//获取文字属性  
-	if (!GetConsoleScreenBufferInfo(hConsole, &csbi))
-	{
-		return;
-	}
-
-	// 设置buf属性  
-	if (!FillConsoleOutputAttribute(hConsole,
-		csbi.wAttributes,
-		dwConSize,
-		coordScreen,
-		&cCharsWritten))
-	{
-		return;
-	}
-	// 将光标移动起始位置  
-	SetConsoleCursorPosition(hConsole, coordScreen);
-}
-
-// SetConsoleMode();  
-BOOL SetConsoleMode(int cols, int lines)
-{
-	BOOL retval = FALSE;
-	HANDLE handle = ::CreateFile(
-		TEXT("CONOUT$"),
-		GENERIC_READ | GENERIC_WRITE,
-		FILE_SHARE_READ | FILE_SHARE_WRITE,
-		NULL,
-		OPEN_EXISTING,
-		0,
-		NULL);
-	if (handle == INVALID_HANDLE_VALUE)
-	{
-		return retval;
-	}
-
-	// 获取原始大小  
-	CONSOLE_SCREEN_BUFFER_INFO OldConsoleScreenBufferInfo = { 0 };
-	if (!GetConsoleScreenBufferInfo(handle, &OldConsoleScreenBufferInfo))
-	{
-		CloseHandle(handle);
-		return retval;
-	}
-
-	// 读取原来buf内容  
-	DWORD dwsize = OldConsoleScreenBufferInfo.dwSize.X*OldConsoleScreenBufferInfo.dwCursorPosition.Y + OldConsoleScreenBufferInfo.dwCursorPosition.X;
-	LPWSTR buf = new WCHAR[dwsize];
-	COORD readpos = { 0, 0 };
-	DWORD dwBytes = 0;
-	ReadConsoleOutputCharacter(handle, buf, dwsize, readpos, &dwBytes);
-
-	do
-	{
-		SMALL_RECT rect;
-		rect.Left = 0;
-		rect.Top = 0;
-		rect.Right = cols - 1;
-		rect.Bottom = lines - 1;
-		SetConsoleWindowInfo(handle, TRUE, &rect);
-
-		// 设置buf  
-		COORD dwnewPosition;
-		dwnewPosition.X = cols;
-		dwnewPosition.Y = lines;
-		SetConsoleScreenBufferSize(handle, dwnewPosition);
-
-		// 设置新窗口大小  
-		CONSOLE_SCREEN_BUFFER_INFO NewConsoleScreenBufferInfo = { 0 };
-		if (!GetConsoleScreenBufferInfo(handle, &NewConsoleScreenBufferInfo))
-			break;
-		if (lines >= 80)
-		{
-			rect.Right = NewConsoleScreenBufferInfo.dwMaximumWindowSize.X - 1;
-		}
-		else
-		{
-			rect.Right = (lines << 1);
-		}
-
-		if (cols >= 25)
-		{
-			rect.Bottom = NewConsoleScreenBufferInfo.dwMaximumWindowSize.Y - 1;
-		}
-		else
-		{
-			rect.Bottom = (cols >> 1);
-		}
-
-		if (SetConsoleWindowInfo(handle, TRUE, &rect))
-		{
-			retval = TRUE;
-		}
-	} while (0);
-
-	CloseHandle(handle);
-
-	// 写入原始内容   
-	DWORD curpos = 0;
-	HANDLE outhandle = GetStdHandle(STD_OUTPUT_HANDLE);
-	cls();
-	for (unsigned int i = 0; i < dwsize; i += OldConsoleScreenBufferInfo.dwSize.X)
-	{
-		BOOL newline = FALSE;
-		if (dwsize - i < 79)
-		{
-			WriteFile(outhandle, buf + i, dwsize - i, &dwBytes, NULL);
-			break;
-		}
-		DWORD dwwritebyte = 79;
-		while (*(buf + i + dwwritebyte) == 0x20)
-		{
-			newline = TRUE;
-			dwwritebyte--;
-		}
-		WriteFile(outhandle, buf + i, dwwritebyte + 1, &dwBytes, NULL);
-		if (newline)
-		{
-			WriteFile(outhandle, "\r\n", 2, &dwBytes, NULL);
-		}
-	}
-	delete[]buf;
-	return retval;
-}
-
 
 CMainPageDlg::CMainPageDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(CMainPageDlg::IDD, pParent)
@@ -225,7 +77,7 @@ LRESULT CMainPageDlg::OnMONITOR(WPARAM wParam, LPARAM lParam)
 				   SetDlgItemText(ID_BEGIN, L"结束");
 				   m_workState = 0;	//结束了。
 				   _cprintf("%s\n used Time:%d\n", pSQLiTest->resultToString().c_str(), (clock() - start) / CLOCKS_PER_SEC);
-				  // _cprintf("%s*****", pSQLiTest->resultToString().c_str());
+				   WriteFile("网址树——测试结果.csv", pSQLiTest->resultToStringForCSV());
 				break;
 		}
 		case 1:{
@@ -239,48 +91,41 @@ LRESULT CMainPageDlg::OnMONITOR(WPARAM wParam, LPARAM lParam)
 	return NULL;
 }
 
-size_t header_callback2(const char  *ptr, size_t size, size_t nmemb, std::string *stream)
-{
-	size_t len = size * nmemb;
-	stream->append(ptr, len);
-	return len;
-}
-size_t WriteFunction2(void *input, size_t uSize, size_t uCount, void *avg)
-{
-	size_t uLen = uSize*uCount;
-	string *pStr = (string *)(avg);
-	pStr->append((char *)(input), uLen);
-	return uLen;
-}
 
 void CMainPageDlg::OnBnClickedBegin()
 {
-	SetConsoleMode(200, 100);
 	// TODO:  在此添加控件通知处理程序代码
 
-	//const int bufInlen = 100;
-	//char buf[bufInlen];
-	//WideCharToMultiByte(CP_ACP, 0, m_strOriUrl, -1, buf, bufInlen, NULL, NULL);
-	//strcpy_s(buf, 100, (string("http://192.168.8.191/sqli-labs-master/")).c_str());
-	//_cprintf("%d,%d,%s,%d\n", m_totalNum, m_totalTestNum, buf, sizeof(buf));
-	//m_pData = new CData(buf);
+	//m_workState =-2;	//testState: -2,   normalState =1;
+	
 
-	m_workState =-2;	//testState: -2,   normalState =1;
-	pSQLiTest = new CSQLiTest(m_pData);
-	pSQLiTest->saveConfiguration();
-	//vector<Field> arg;
-	//Field field("uname", "");
-	//arg.push_back(field);
-	//Field field2("passwd", "");
-	//arg.push_back(field2);
-	//Field field3("submit", "Submit");
-	//arg.push_back(field3);
-	//Item *pItem = new Item(HttpMethod::post, "http://192.168.8.191/sqli-labs-master/Less-15/",arg);
-	//CHttpClient *pHttp = new CHttpClient();
-	//string headerStr;
-	//pHttp->setHeaderOpt("", headerStr);
-	//pSQLiTest->test(pHttp, pItem);
-	//_cprintf("%s\n used Time:%d\n", pSQLiTest->resultToString().c_str(), (clock()- start)/CLOCKS_PER_SEC);
+	/*start = clock();
+	const int bufInlen = 100;
+	char buf[bufInlen];
+	WideCharToMultiByte(CP_ACP, 0, m_strOriUrl, -1, buf, bufInlen, NULL, NULL);
+	strcpy_s(buf, 100, (string("http://192.168.8.191/DVWA-master/")).c_str());
+	_cprintf("%d,%d,%s,%d\n", m_totalNum, m_totalTestNum, buf, sizeof(buf));
+	m_pData->setUrl(buf);
+
+	Item *pItem = new Item(HttpMethod::get,"http://192.168.8.191/DVWA-master/vulnerabilities/sqli_blind/");
+	vector<Field> args;
+	Field field("id", "");
+	args.push_back(field);
+	Field field2("Submit", "Submit");
+	args.push_back(field2);
+	
+	pItem->setArgs(args);
+	string str = "Set-Cookie: PHPSESSID=6be1gvqmug35a7qc0tau0tn007; security=low";
+	m_pData->analyseHeader(str);
+
+	string headerStr;
+	CHttpClient *pHttp = new CHttpClient();
+	pHttp->setHeaderOpt("", headerStr);
+	pSQLiTest->test(pHttp, pItem);
+
+
+	_cprintf("%s\n used Time:%d\n", pSQLiTest->resultToString().c_str(), (clock() - start) / CLOCKS_PER_SEC);
+	WriteFile("网址树——测试结果.csv", pSQLiTest->resultToStringForCSV());*/
 
 
 	if (m_workState > 0)
@@ -299,9 +144,9 @@ void CMainPageDlg::OnBnClickedBegin()
 			WideCharToMultiByte(CP_ACP, 0, m_strOriUrl, -1, buf, bufInlen, NULL, NULL);
 			strcpy_s(buf, 100, (string("http://192.168.8.191/DVWA-master/")).c_str());
 			_cprintf("%d,%d,%s,%d\n", m_totalNum, m_totalTestNum, buf, sizeof(buf));
-			m_pData = new CData(buf);
-			m_pThreadPool = new CMyThreadPool(8);
-			pSQLiTest = new CSQLiTest(m_pData);
+			m_pData->setUrl(buf);
+		//	m_pThreadPool = new CMyThreadPool(8);
+		//	pSQLiTest = new CSQLiTest(m_pData);
 
 			Item *pItem = new Item(HttpMethod::get, buf);
 			MonitorJob *pMJob = new MonitorJob(this->m_hWnd, start, m_pThreadPool);
@@ -332,6 +177,13 @@ void CMainPageDlg::OnBnClickedBegin()
 		//cstr.Format(L"异常状态!%d", m_workState);
 		//AfxMessageBox(cstr);
 	}
+}
+
+void CMainPageDlg::setGlobalData(CData *pData, CMyThreadPool *pThreadPool, CSQLiTest* pSQLiTestG)
+{
+	m_pData = pData;
+	m_pThreadPool = pThreadPool;
+	pSQLiTest = pSQLiTestG;
 }
 
 
