@@ -13,7 +13,7 @@ IMPLEMENT_DYNAMIC(CConfigDlg, CDialogEx)
 
 CConfigDlg::CConfigDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(CConfigDlg::IDD, pParent)
-	, g_crawlerLayer(3)
+	, m_crawlerLayer(3)
 	, m_numOfThread(8)
 	, m_isUseProxy(TRUE)
 	, m_proxy(_T("http://127.0.0.1:8888"))
@@ -33,7 +33,6 @@ CConfigDlg::CConfigDlg(CWnd* pParent /*=NULL*/)
 	pTestArgs = new vector<Field>();
 	CHttpClient::s_useProxy = m_isUseProxy;
 	CHttpClient::s_proxy = CStrToStr(m_proxy);
-	
 }
 
 CConfigDlg::~CConfigDlg()
@@ -44,7 +43,7 @@ CConfigDlg::~CConfigDlg()
 void CConfigDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
-	DDX_Text(pDX, IDC_LAYER_EDIT, g_crawlerLayer);
+	DDX_Text(pDX, IDC_LAYER_EDIT, m_crawlerLayer);
 	DDX_Text(pDX, IDC_NUM_OF_THREAD_EDIT, m_numOfThread);
 	DDV_MinMaxUInt(pDX, m_numOfThread, 2, 20);
 	DDX_Check(pDX, IDC_USE_PROXY_CHECK, m_isUseProxy);
@@ -62,7 +61,6 @@ void CConfigDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_CHECK3, m_testXSS);
 }
 
-
 BEGIN_MESSAGE_MAP(CConfigDlg, CDialogEx)
 	ON_BN_CLICKED(IDOK, &CConfigDlg::OnBnClickedOk)
 	ON_BN_CLICKED(IDC_BUTTON1, &CConfigDlg::OnBnClickedButton1)
@@ -75,26 +73,23 @@ END_MESSAGE_MAP()
 
 
 // CConfigDlg 消息处理程序
-
-
 void CConfigDlg::OnBnClickedOk()
 {
 	// TODO:  在此添加控件通知处理程序代码
-	pSQLiTest->loadConfiguration();
+	m_pTestManager->loadConfiguration();
 }
 
-void CConfigDlg::setGlobalData(CData *pData, CMyThreadPool *pThreadPool, CSQLiTest* pSQLiTestG)
+void CConfigDlg::setGlobalData(CData *pData, CMyThreadPool *pThreadPool, TestManager* pTestManager)
 {
 	m_pData = pData;
 	m_pThreadPool = pThreadPool;
-	pSQLiTest = pSQLiTestG;
+	m_pTestManager = pTestManager;
 }
 
 
 void CConfigDlg::OnBnClickedButton1()
 {
-	// TODO:  在此添加控件通知处理程序代码
-	pSQLiTest->saveConfiguration();
+	m_pTestManager->saveConfiguration();
 }
 
 
@@ -102,7 +97,6 @@ void CConfigDlg::OnBnClickedButton1()
 void CConfigDlg::OnBnClickedButton3()
 {
 	UpdateData(TRUE);
-	// TODO:  在此添加控件通知处理程序代码
 	if (m_isUseProxy)
 	{
 		CHttpClient::s_useProxy = true;
@@ -114,9 +108,9 @@ void CConfigDlg::OnBnClickedButton3()
 	}
 
 	//m_pThreadPool->setThreadNum(m_numOfThread);	暂不支持
-	m_pData->crawlerLayer = g_crawlerLayer;
+	m_pData->crawlerLayer = m_crawlerLayer;
 
-	pSQLiTest->setTestMode((bool)m_useErrorBased, (bool)m_useBoolBased, (bool)m_useTimeBased);
+	m_pTestManager->setTestMode((bool)m_useErrorBased, (bool)m_useBoolBased, (bool)m_useTimeBased);
 
 }
 
@@ -124,7 +118,6 @@ void CConfigDlg::OnBnClickedButton3()
 //开始测试
 void CConfigDlg::OnBnClickedButton2()
 {
-	// TODO:  在此添加控件通知处理程序代码
 	UpdateData(TRUE);
 
 	HttpMethod method;
@@ -153,14 +146,13 @@ void CConfigDlg::OnBnClickedButton2()
 	//pTestItem->setUrl("http://192.168.8.191/DVWA-master/vulnerabilities/sqli_blind/");
 	//string str = "Set-Cookie: security=low; PHPSESSID=6be1gvqmug35a7qc0tau0tn007";
 	m_pData->analyseHeader(str);
-	TestJob *pJob = new TestJob(this->m_hWnd, pTestItem, m_pData, pSQLiTest);
+	TestJob *pJob = new TestJob(this->m_hWnd, pTestItem, m_pData, m_pTestManager);
 	m_pThreadPool->addJob(pJob, NULL);
 }
 
 //添加参数
 void CConfigDlg::OnBnClickedButton5()
 {
-	// TODO:  在此添加控件通知处理程序代码
 	UpdateData(TRUE);
 	Field field(CStrToStr(m_testArgName), CStrToStr(m_testArgValue));
 	if (!m_testSQLi)
@@ -183,7 +175,6 @@ void CConfigDlg::OnBnClickedButton5()
 			showArgs += "&";
 		}
 	}
-	
 	m_testArgs = StrToCStr(showArgs);
 	m_testArgValue = "";
 	m_testArgName = "";
@@ -194,7 +185,6 @@ void CConfigDlg::OnBnClickedButton5()
 
 void CConfigDlg::OnBnClickedButton4()
 {
-	// TODO:  在此添加控件通知处理程序代码
 	pTestArgs->clear();
 	m_testArgs = "";
 	UpdateData(FALSE);
@@ -205,8 +195,8 @@ LRESULT CConfigDlg::OnTestJob(WPARAM wParam, LPARAM lParam)
 	switch (wParam)
 	{
 		case 0:
-			_cprintf("%s\n used Time:%d\n", pSQLiTest->resultToString().c_str(), (clock() - lParam) / CLOCKS_PER_SEC);
-			WriteFile("网址树——测试结果.csv", pSQLiTest->resultToStringForCSV());
+			_cprintf("%s\n used Time:%d\n", m_pTestManager->resultToString().c_str(), (clock() - lParam) / CLOCKS_PER_SEC);
+			WriteFile("网址树——测试结果.csv", m_pTestManager->resultToStringForCSV());
 			break;
 		default:
 			_cprintf(" CConfigDlg::OnTestJob(WPARAM wParam, LPARAM lParam)   unknown command%d", wParam);

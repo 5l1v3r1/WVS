@@ -491,7 +491,8 @@ std::string CStrToStr(CString& cstr)
 CString StrToCStr(string &str)
 {
 	const int bufInlen = 100;
-	WCHAR wbuf[100] = {};
+	WCHAR wbuf[100];
+	memset(wbuf, 0, 100 * sizeof(WCHAR));
 	MultiByteToWideChar(CP_ACP, 0, str.c_str(), str.size() + 1, wbuf, bufInlen);
 	return CString(wbuf);
 }

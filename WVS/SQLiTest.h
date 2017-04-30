@@ -52,8 +52,8 @@ class CSQLiTest:public Test
 public:
 	CSQLiTest(CData* pData);
 	~CSQLiTest();
-	BOOL loadConfiguration(string fileName = "SQLiTestCase.xml");
-	BOOL saveConfiguration(string fileName = "SQLiTestCase.xml");
+	bool loadConfiguration(string fileName = "SQLiTestCase.xml");
+	bool saveConfiguration(string fileName = "SQLiTestCase.xml");
 	void insertEBC(ErrorBasedCase *pEBC, tinyxml2::XMLElement *EBCRoot, tinyxml2::XMLDocument* myDocument);
 	void insertBBC(BoolBasedCase *pBBC, tinyxml2::XMLElement *BBCRoot, tinyxml2::XMLDocument* myDocument);
 	void insertTBC(TimeBasedCase *pTBC, tinyxml2::XMLElement *TBCRoot, tinyxml2::XMLDocument* myDocument);

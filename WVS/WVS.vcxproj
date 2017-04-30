@@ -121,10 +121,12 @@
     <ClInclude Include="targetver.h" />
     <ClInclude Include="Test.h" />
     <ClInclude Include="TestJob.h" />
+    <ClInclude Include="TestManager.h" />
     <ClInclude Include="tinyxml2.h" />
     <ClInclude Include="Tool.h" />
     <ClInclude Include="WVS.h" />
     <ClInclude Include="WVSDlg.h" />
+    <ClInclude Include="XSSTest.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ConfigDlg.cpp" />
@@ -145,12 +147,14 @@
     </ClCompile>
     <ClCompile Include="Test.cpp" />
     <ClCompile Include="TestJob.cpp" />
+    <ClCompile Include="TestManager.cpp" />
     <ClCompile Include="tinyxml2.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Tool.cpp" />
     <ClCompile Include="WVS.cpp" />
     <ClCompile Include="WVSDlg.cpp" />
+    <ClCompile Include="XSSTest.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="WVS.rc" />

@@ -20,7 +20,7 @@ CSQLiTest::~CSQLiTest()
 
 }
 
-BOOL CSQLiTest::loadConfiguration(string fileName)
+bool CSQLiTest::loadConfiguration(string fileName /*= "SQLiTestCase.xml"*/)
 {
 	//读取Xml文件，并遍历
 	try
@@ -122,7 +122,7 @@ BOOL CSQLiTest::loadConfiguration(string fileName)
 
 
 
-BOOL CSQLiTest::saveConfiguration(string fileName /*= "test.xml"*/)
+bool CSQLiTest::saveConfiguration(string fileName /*= "SQLiTestCase.xml"*/)
 {
 	try
 	{
@@ -652,7 +652,7 @@ std::string CSQLiTest::resultToString()
 }
 std::string CSQLiTest::resultToStringForCSV()
 {
-	string args = "resultId, type, resultState, caseId, url,injectPos, args,cookie\n";
+	string args = "SQLi\nresultId, type, resultState, caseId, url,injectPos, args,cookie\n";
 	for (unsigned i = 0; i < resultVec.size(); i++)
 	{
 		args += to_string(resultVec[i]->id) +

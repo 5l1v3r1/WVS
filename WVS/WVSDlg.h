@@ -8,6 +8,7 @@
 
 #include "ConfigDlg.h"
 #include "MainPageDlg.h"
+#include "TestManager.h"
 
 // CWVSDlg ¶Ô»°¿ò
 class CWVSDlg : public CDialogEx
@@ -44,6 +45,7 @@ public:
 
 	CData *m_pData;
 	CMyThreadPool *m_pThreadPool;
-	CSQLiTest* pSQLiTest;
+//	CSQLiTest* pSQLiTest;
+	TestManager *m_pTestManager;
 	
 };

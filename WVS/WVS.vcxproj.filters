@@ -81,6 +81,12 @@
     <ClInclude Include="TestJob.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="XSSTest.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="TestManager.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="WVS.cpp">
@@ -138,6 +144,12 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="TestJob.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="XSSTest.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="TestManager.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

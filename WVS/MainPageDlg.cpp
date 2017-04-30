@@ -46,27 +46,10 @@ void CMainPageDlg::DoDataExchange(CDataExchange* pDX)
 
 BEGIN_MESSAGE_MAP(CMainPageDlg, CDialogEx)
 	
-	ON_EN_CHANGE(IDC_NETADDRESS1, &CMainPageDlg::OnEnChangeNetaddress1)
 	ON_BN_CLICKED(ID_BEGIN, &CMainPageDlg::OnBnClickedBegin)
 	ON_MESSAGE(WM_MY_MONITOR, &CMainPageDlg::OnMONITOR)
 	ON_NOTIFY(TVN_SELCHANGED, IDC_TREE1, &CMainPageDlg::OnTvnSelchangedTree1)
 END_MESSAGE_MAP()
-
-// CMainPageDlg 消息处理程序
-
-
-
-void CMainPageDlg::OnEnChangeNetaddress1()
-{
-	// TODO:  如果该控件是 RICHEDIT 控件，它将不
-	// 发送此通知，除非重写 CDialogEx::OnInitDialog()
-	// 函数并调用 CRichEditCtrl().SetEventMask()，
-	// 同时将 ENM_CHANGE 标志“或”运算到掩码中。
-
-	// TODO:  在此添加控件通知处理程序代码
-	//m_oriUrl.DisplayErrorTip();
-}
-
 
 LRESULT CMainPageDlg::OnMONITOR(WPARAM wParam, LPARAM lParam)
 {
@@ -76,8 +59,8 @@ LRESULT CMainPageDlg::OnMONITOR(WPARAM wParam, LPARAM lParam)
 				   m_usedTime = lParam;
 				   SetDlgItemText(ID_BEGIN, L"结束");
 				   m_workState = 0;	//结束了。
-				   _cprintf("%s\n used Time:%d\n", pSQLiTest->resultToString().c_str(), (clock() - start) / CLOCKS_PER_SEC);
-				   WriteFile("网址树——测试结果.csv", pSQLiTest->resultToStringForCSV());
+				   _cprintf("%s\n used Time:%d\n", m_pTestManager->resultToString().c_str(), (clock() - start) / CLOCKS_PER_SEC);
+				   WriteFile("网址树——测试结果.csv", m_pTestManager->resultToStringForCSV());
 				break;
 		}
 		case 1:{
@@ -95,7 +78,6 @@ LRESULT CMainPageDlg::OnMONITOR(WPARAM wParam, LPARAM lParam)
 
 void CMainPageDlg::OnBnClickedBegin()
 {
-	// TODO:  在此添加控件通知处理程序代码
 
 	//m_workState =-2;	//testState: -2,   normalState =1;
 
@@ -158,13 +140,11 @@ void CMainPageDlg::OnBnClickedBegin()
 			strcpy_s(buf, 100, (string("http://192.168.8.191/DVWA-master/")).c_str());
 			_cprintf("%d,%d,%s,%d\n", m_totalNum, m_totalTestNum, buf, sizeof(buf));
 			m_pData->setUrl(buf);
-		//	m_pThreadPool = new CMyThreadPool(8);
-		//	pSQLiTest = new CSQLiTest(m_pData);
 			Item *pItem = new Item(HttpMethod::get, buf);
 			pItem->setLayer(0);
 			MonitorJob *pMJob = new MonitorJob(this->m_hWnd, start, m_pThreadPool);
 			m_pThreadPool->addJob(pMJob, NULL);
-			CExtractJob *pJob = new CExtractJob(pItem, m_pData,pSQLiTest);
+			CExtractJob *pJob = new CExtractJob(pItem, m_pData,m_pTestManager);
 			m_pThreadPool->addJob(pJob, NULL);
 		}
 		else{
@@ -192,11 +172,11 @@ void CMainPageDlg::OnBnClickedBegin()
 	}
 }
 
-void CMainPageDlg::setGlobalData(CData *pData, CMyThreadPool *pThreadPool, CSQLiTest* pSQLiTestG)
+void CMainPageDlg::setGlobalData(CData *pData, CMyThreadPool *pThreadPool, TestManager* pTestManager)
 {
 	m_pData = pData;
 	m_pThreadPool = pThreadPool;
-	pSQLiTest = pSQLiTestG;
+	m_pTestManager = pTestManager;
 }
 
 void CMainPageDlg::updateTree()

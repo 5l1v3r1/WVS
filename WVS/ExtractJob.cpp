@@ -17,11 +17,11 @@ string vecFieldToString2(vector<Field> fieldVec)
 }
 
 
-CExtractJob::CExtractJob(Item*pItem, CData* pData, Test*pTest)
+CExtractJob::CExtractJob(Item*pItem, CData* pData, TestManager*pTestManager)
 {
 	m_pData = pData;
 	m_pItem = pItem;
-	m_pTest = pTest;
+	m_pTestManager = pTestManager;
 }
 
 CExtractJob::~CExtractJob()
@@ -66,7 +66,7 @@ void CExtractJob::Run(void *ptr)
 					Item* tempItem = m_pData->analyseRedirectHeader(m_pItem, m_pWorkThread->m_strHeader);
 					if (tempItem != NULL)
 					{
-						pJob = new CExtractJob(tempItem, m_pData, m_pTest);
+						pJob = new CExtractJob(tempItem, m_pData, m_pTestManager);
 						m_pWorkThread->m_pThreadPool->addJob(pJob, NULL);
 					}
 				}
@@ -77,7 +77,7 @@ void CExtractJob::Run(void *ptr)
 
 				for (unsigned int i = 0; i < pItemVec->size(); i++)
 				{
-					pJob = new CExtractJob((*pItemVec)[i], m_pData, m_pTest);
+					pJob = new CExtractJob((*pItemVec)[i], m_pData, m_pTestManager);
 					_cprintf("addNewJob%s\n", (*pItemVec)[i]->getUrl().c_str());
 					m_pWorkThread->m_pThreadPool->addJob(pJob, NULL);
 				}
@@ -100,7 +100,7 @@ void CExtractJob::Run(void *ptr)
 	_cprintf("TestItem£º%s\n", m_pItem->getUrl().c_str());
 	if (m_pItem->getArgs().size() > 0)
 	{
-		m_pTest->test(pHttpClient, m_pItem);
+		m_pTestManager->test(pHttpClient, m_pItem);
 	}
 
 }

@@ -232,9 +232,9 @@ CWVSDlg::CWVSDlg(CWnd* pParent /*=NULL*/)
 	setConsole();
 	m_pData = new CData();
 	m_pThreadPool = new	CMyThreadPool(2);
-	pSQLiTest = new CSQLiTest(m_pData);
-	m_config.setGlobalData(m_pData, m_pThreadPool, pSQLiTest);
-	m_mainPage.setGlobalData(m_pData, m_pThreadPool, pSQLiTest);
+	m_pTestManager = new TestManager(m_pData);
+	m_config.setGlobalData(m_pData, m_pThreadPool, m_pTestManager);
+	m_mainPage.setGlobalData(m_pData, m_pThreadPool, m_pTestManager);
 }
 
 void CWVSDlg::DoDataExchange(CDataExchange* pDX)
@@ -366,9 +366,6 @@ void CWVSDlg::OnSize(UINT nType, int cx, int cy)
 		phWnd->SetWindowPos(NULL, 10, 12, cx-24, cy - 25, SWP_SHOWWINDOW);
 		OnTcnSelchangeTab1(NULL, NULL);
 	}
-
-	
-	
 }
 
 //当用户拖动最小化窗口时系统调用此函数取得光标
