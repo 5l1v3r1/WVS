@@ -11,6 +11,7 @@ CSQLiTest::CSQLiTest(CData* pData)
 	resultVec = vector<SQLiResult*>();
 	m_pData = pData;
 	loadConfiguration();
+	InitializeSRWLock(&m_resultSRW);
 }
 
 
@@ -158,22 +159,22 @@ BOOL CSQLiTest::saveConfiguration(string fileName /*= "test.xml"*/)
 		insertBBC(&bbcCase, BBCRoot, myDocument);
 		bbcCase = { 0, "\") and 1=1 #", "NULL", "NULL", "NULL" };
 		insertBBC(&bbcCase, BBCRoot, myDocument);
-		bbcCase = { 0, "2 and 1=1 #", "NULL", "NULL", "NULL" };
+		bbcCase = { 0, "1524024 and 1=1 #", "NULL", "NULL", "NULL" };
 		insertBBC(&bbcCase, BBCRoot, myDocument);
-		bbcCase = { 0, "2) and 1=1 #", "NULL", "NULL", "NULL" };
+		bbcCase = { 0, "1524024) and 1=1 #", "NULL", "NULL", "NULL" };
 		insertBBC(&bbcCase, BBCRoot, myDocument);
 
-		bbcCase = { 0, "' or 1=1 #", "NULL", "NULL", "NULL" };
+		bbcCase = { 0, "' or 1=1 #", "NULL", "' or 'a' = 'a' #", "NULL" };
 		insertBBC(&bbcCase, BBCRoot, myDocument);
-		bbcCase = { 0, "\" or 1=1 #", "NULL", "NULL", "NULL" };
+		bbcCase = { 0, "\" or 1=1 #", "NULL", "\" or 'a' = 'a' #", "NULL" };
 		insertBBC(&bbcCase, BBCRoot, myDocument);
-		bbcCase = { 0, "') or 1=1 #", "NULL", "NULL", "NULL" };
+		bbcCase = { 0, "') or 1=1 #", "NULL", "') or 'a' = 'a' #", "NULL" };
 		insertBBC(&bbcCase, BBCRoot, myDocument);
-		bbcCase = { 0, "\") or 1=1 #", "NULL", "NULL", "NULL" };
+		bbcCase = { 0, "\") or 1=1 #", "NULL", "\") or 'a' = 'a' #", "NULL" };
 		insertBBC(&bbcCase, BBCRoot, myDocument);
-		bbcCase = { 0, "2 or 1=1 #", "NULL", "NULL", "NULL" };
+		bbcCase = { 0, "1524024 or 1=1 #", "NULL", "1816807 or 'a' = 'a' #", "NULL" };
 		insertBBC(&bbcCase, BBCRoot, myDocument);
-		bbcCase = { 0, "2) or 1=1 #", "NULL", "NULL", "NULL" };
+		bbcCase = { 0, "1524024) or 1=1 #", "NULL", "1816807) or 'a' = 'a' #", "NULL" };
 		insertBBC(&bbcCase, BBCRoot, myDocument);
 
 		bbcCase = { 0, "' and 1=2 #", "NULL", "NULL", "NULL" };
@@ -332,6 +333,8 @@ bool CSQLiTest::test(CHttpClient *pHttpClient, Item *pItem)
 
 	for (unsigned i = 0; i < pItem->getArgs().size(); i++)
 	{
+		if (((pItem->getArgs())[i].getSecurityFlag()&1) !=0)	//这个参数肯定不用测试，如submit。
+			continue;
 		if (m_errorBased)
 		{
 			if (errorBasedTest(pHttpClient, pItem, i, averageTime1))
@@ -382,14 +385,21 @@ bool CSQLiTest::errorBasedTest(CHttpClient* pHttpClient, Item *pItem, unsigned p
 
 		send(pHttpClient, method, cookieStr, url, args, html, sumTime, sendCount);
 
-		if (pHttpClient->getStatusCode() / 100 == 5){
+		if (pHttpClient->getStatusCode() / 100 == 5)
+		{
 			//返回码为服务器内部错误，则认为有漏洞。
-			resultState++;
+			resultState=1500;
+		}
+		else if (pHttpClient->getStatusCode() / 100 == 4)
+		{
+		//	resultState = 1000 + pHttpClient->getStatusCode();
+			continue;
 		}
 		else if (html.find(EBCvec[i]->check) != -1)
 		{
-			resultState++;
+			resultState=101;
 		}
+
 		//如果找到了报错，则不用验证。
 		//html = "";
 		//if (resultState == 1)
@@ -422,7 +432,8 @@ bool CSQLiTest::errorBasedTest(CHttpClient* pHttpClient, Item *pItem, unsigned p
 			pResult->args = pItem->getArgsStr();
 			pResult->resultState = resultState;
 			pResult->type = 0;
-			resultVec.push_back(pResult);
+
+			putResultItem(pResult);
 			break;
 		}
 	}
@@ -452,14 +463,15 @@ bool CSQLiTest::boolBasedTest(CHttpClient* pHttpClient, Item *pItem, unsigned po
 	unsigned int testCaseNum = BBCvec.size() / 3;
 	// and 1=1, or 1=1, and 1=2; 三种类型，每种类型数量都相同。
 
-	if (url.find("blind") != -1)
-	{
-		//int x = 1;
-	}
+	//if (url.find("blind") != -1)
+	//{
+	//	//int x = 1;
+	//}
 
 	string oriHtml;
 	string errorHtml;
 	string rightHtml;
+	string identiHtml;
 	unsigned i;
 
 	if ((pItem->getArgs())[pos].getValue() != "")	//是否有默认值
@@ -480,52 +492,63 @@ bool CSQLiTest::boolBasedTest(CHttpClient* pHttpClient, Item *pItem, unsigned po
 				send(pHttpClient, method, cookieStr, url, args, errorHtml, sumTime, sendCount);	//获取样本2
 				if (!htmlEqual(rightHtml, errorHtml))
 				{
-					resultState = 101;
+					resultState = 201;
 					break;
 				}
 			}
 		}
-		if (i == testCaseNum)
-		{
-			//有默认值，但是是错误的。从 or 1=1类型开始测试
-			for (; i < testCaseNum * 2; i++)
-			{
-				rightHtml = "";
+		//if (i == testCaseNum)
+		//{
+		//	//有默认值，但是是错误的。从 or 1=1类型开始测试
+		//	for (; i < testCaseNum * 2; i++)
+		//	{
+		//		rightHtml = "";
 
-				args = pItem->getArgsStr(pos, BBCvec[i]->inject) + getComment(method);
-				send(pHttpClient, method, cookieStr, url, args, rightHtml, sumTime, sendCount);	//获取样本1
-				if (!htmlEqual(oriHtml, rightHtml))
-				{
-					resultState = 102;
-					break;
-				}
-			}
-		}
+		//		args = pItem->getArgsStr(pos, BBCvec[i]->inject) + getComment(method);
+		//		send(pHttpClient, method, cookieStr, url, args, rightHtml, sumTime, sendCount);	//获取样本1
+		//		if (!htmlEqual(oriHtml, rightHtml))
+		//		{
+		//			resultState = 102;
+		//			break;
+		//		}
+		//	}
+		//}
 	}
-	else
+	if (resultState == 0)
 	{
+		//无论有没有默认值，只有没有查出注入点就继续
 		for (i = testCaseNum; i < testCaseNum * 2; i++)
 		{
 			rightHtml = "";
 			errorHtml = "";
-			args = pItem->getArgsStr(pos, BBCvec[i]->inject) + getComment(method);
+			identiHtml = "";
+			args = pItem->getArgsStr(pos, BBCvec[i]->inject, false) + getComment(method);
 			send(pHttpClient, method, cookieStr, url, args, rightHtml, sumTime, sendCount);	//获取样本1
 
-			args = pItem->getArgsStr(pos, BBCvec[testCaseNum + i]->inject) + getComment(method);
+			args = pItem->getArgsStr(pos, BBCvec[testCaseNum + i]->inject, false) + getComment(method);
 			send(pHttpClient, method, cookieStr, url, args, errorHtml, sumTime, sendCount);	//获取样本2
 			if (!htmlEqual(rightHtml, errorHtml))
 			{
-				resultState =103;
-				break;
+			
+				//进一步验证		//可以避免因为反射型网页误导。
+				args = pItem->getArgsStr(pos, BBCvec[i]->identify, false);
+				send(pHttpClient, method, cookieStr, url, args, identiHtml, sumTime, sendCount);	//获取验证样本1
+				if (htmlEqual(rightHtml, identiHtml))
+				{
+					resultState = 203;
+					args = pItem->getArgsStr(pos, BBCvec[testCaseNum + i]->identify, false);
+					send(pHttpClient, method, cookieStr, url, args, identiHtml, sumTime, sendCount);	//获取验证样本2
+					if (htmlEqual(errorHtml, identiHtml))
+					{
+						resultState = 2031;
+					}
+					break;
+				}
 			}
 		}
 	}
 
-	if (resultState > 0)
-	{
-		//进一步验证   用基于时间的测试来验证。
-		
-	}
+
 	if (resultState > 0)
 	{
 		pResult = new SQLiResult();
@@ -539,7 +562,7 @@ bool CSQLiTest::boolBasedTest(CHttpClient* pHttpClient, Item *pItem, unsigned po
 		pResult->resultState = resultState;
 		pResult->type = 1;
 
-		resultVec.push_back(pResult);
+		putResultItem(pResult);
 	}
 
 	averageTime = sumTime / (sendCount * 1000 / CLOCKS_PER_SEC);
@@ -571,20 +594,20 @@ bool CSQLiTest::timeBasedTest(CHttpClient* pHttpClient, Item *pItem, unsigned po
 		{
 			case CURLE_OPERATION_TIMEDOUT:
 				//超时，说明if起作用了,即可插入
-				resultState++;
+				resultState = 301;
 				break;
 			case CURLE_OK:
 				if ((end - start) > averageTime + m_lateTime)
 				{
 					//也说明延迟时间有问题。可能执行的sleep函数
-					resultState++;
+					resultState=302;
 				}
 				break;
 			default:
 				WriteLog("timeBasedTest(CHttpClient* pHttpClient, Item *pItem, unsigned pos, long averageTime)----curlCode=" + to_string(code));
 				break;
 		}
-		if (resultState == 1)
+		if (resultState > 0)
 		{
 			//进一步验证，不知道如何验证。
 		}
@@ -600,7 +623,7 @@ bool CSQLiTest::timeBasedTest(CHttpClient* pHttpClient, Item *pItem, unsigned po
 			pResult->args = pItem->getArgsStr();
 			pResult->resultState = resultState;
 			pResult->type = 2;
-			resultVec.push_back(pResult);
+			putResultItem(pResult);
 			break;
 		}
 	}
@@ -673,6 +696,10 @@ CURLcode CSQLiTest::send(CHttpClient*pHttpClient, HttpMethod method, string cook
 	static clock_t start, end;
 	start = clock();
 	code = pHttpClient->send(method, cookieStr, url, args, html);
+	if (pHttpClient->getStatusCode() / 100 == 4)
+	{
+		html = "";
+	}
 	end = clock();
 	sumTime += (end - start);
 	sendCount++;
@@ -690,6 +717,14 @@ void CSQLiTest::clearResult()
 {
 	resultVec.clear();
 }
+
+void CSQLiTest::putResultItem(void* pResult)
+{
+	AcquireSRWLockExclusive(&m_resultSRW);
+	resultVec.push_back((SQLiResult*)pResult);
+	ReleaseSRWLockExclusive(&m_resultSRW);
+}
+
 
 
 

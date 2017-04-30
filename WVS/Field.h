@@ -24,11 +24,15 @@ public:
 	void setType(std::string val) { m_type = val; }
 	std::string getDefaultValue() const { return m_defaultValue; }
 	void setDefaultValue(std::string val) { m_defaultValue = val; }
+	unsigned getSecurityFlag() const { return securityFlag; }
+	void setSecurityFlag(unsigned val) { securityFlag  = securityFlag|val; }
 private:
 	string m_name;
 	string m_value;
 	string m_defaultValue;
 	string m_type;
+	unsigned securityFlag = 0;	//作为肯定安全的标记，这个参数不用测试
+
 	static const string DEFAULT_NAME_VALUE;
 	static const string DEFAULT_PASSWORD;
 };

@@ -9,8 +9,8 @@
 #include <math.h>
 
 using namespace std;
-#ifndef TEST_CASE
-#define TEST_CASE
+//#ifndef TEST_CASE
+//#define TEST_CASE
 typedef struct ErrorBasedCase{
 	int id;
 	string inject;
@@ -44,7 +44,7 @@ typedef struct SQLiResult{
 	string args;
 	string ext;	//用于基于bool的注入记录详情； 格式为。caseId:length;
 }SQLiResult;
-#endif
+//#endif
 
 
 class CSQLiTest:public Test
@@ -65,6 +65,7 @@ public:
 	string resultToString();
 	string resultToStringForCSV();
 	void clearResult();
+	void putResultItem( void* pResult);
 private:
 	BOOL m_errorBased = TRUE;
 	BOOL m_boolBased = TRUE;
@@ -75,6 +76,7 @@ private:
 	vector<SQLiResult*>resultVec;
 	CData* m_pData;
 	long m_lateTime = 1000;	//允许意外的网络延迟时间（ms）
+	SRWLOCK m_resultSRW;
 
 	BOOL htmlEqual(string html, string html2);
 	string getComment(HttpMethod method);

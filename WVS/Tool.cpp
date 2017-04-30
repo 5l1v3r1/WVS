@@ -36,7 +36,7 @@ template<typename T>
 int ci_find_substr(const T& str1, const T& str2, const std::locale& loc = std::locale())
 {
 	typename T::const_iterator it = std::search(str1.begin(), str1.end(),
-		str2.begin(), str2.end(), my_equal<typename T::value_type>(loc));
+												str2.begin(), str2.end(), my_equal<typename T::value_type>(loc));
 	if (it != str1.end()) return it - str1.begin();
 	else return -1; // not found
 }
@@ -184,7 +184,7 @@ void formatLink(string baseUrl, string &link, string &args)
 		args = link.substr(posOfQuestionMark + 1, link.size() - posOfQuestionMark - 1);
 		link = link.substr(0, posOfQuestionMark);
 	}
-	//考虑以/开头的地址。problem 1
+	//考虑以/开头的地址。problem 1  需要在前面拼接上域名。
 	if (link[0] == '/')
 	{
 		//绝对地址  只用加上域名即可。
@@ -200,7 +200,7 @@ void formatLink(string baseUrl, string &link, string &args)
 		}
 	}
 
-	//考虑去除../以及./的问题，否则无法比较去重
+	//考虑去除../以及./的问题，否则无法比较去重    意
 	int posOfLastUnderline = -1;
 	while (link.size() > 2)
 	{
@@ -216,7 +216,8 @@ void formatLink(string baseUrl, string &link, string &args)
 				//cout << "这个链接无效!" << baseUrl.c_str() << "\t\t" << link.c_str() << endl;
 				//WriteLog("这个链接无效!" + baseUrl + "\t\t" + link);
 			}
-			else{
+			else
+			{
 				baseUrl = baseUrl.substr(0, posOfLastUnderline + 1);
 			}
 			link = link.substr(3, link.size() - 3);
@@ -227,18 +228,154 @@ void formatLink(string baseUrl, string &link, string &args)
 		}
 	}
 
-	//以#结尾的去掉#号
-	while (link.size() >= 1 && link[link.size() - 1] == '#'){
-		link = link.substr(0, link.size() - 1);
-	}
 
+	
 
 	if ((ci_find_substr(link, string("http://")) == -1) && (ci_find_substr(link, string("https://")) == -1))
 	{
 		//没有找到，视为相对地址
 		link = baseUrl + link;
 	}
+
+	//以#结尾的去掉#号
+	while (link.size() >= 1 && link[link.size() - 1] == '#'){
+		link = link.substr(0, link.size() - 1);
+	}
+	//去掉结尾的.号和..号   http://192.168.8.191/DVWA-master/.   由于之前已经去掉了../和./所以，此次最多只有位于最后面的一种情况。
+
+	////最后去掉结尾的点号 .    暂时不管..  。
+	if ((link.size() >= 2) && (link.substr(link.size() - 2, 2) == "/."))
+	{
+		link = link.substr(0, link.size() - 1);
+	}
 }
+
+
+//改进版formatlink，但是效率太低。
+//void formatLinkV2(string baseUrl, string &link, string &args)
+//{
+//	//首先截取？  之后的部分。
+//	int posOfQuestionMark = link.find('?', 0);
+//	if (posOfQuestionMark >= 0)
+//	{
+//		args = link.substr(posOfQuestionMark + 1, link.size() - posOfQuestionMark - 1);
+//		link = link.substr(0, posOfQuestionMark);
+//	}
+//	//考虑以/开头的地址。problem 1  需要在前面拼接上域名。
+//	if (link[0] == '/')
+//	{
+//		//绝对地址  只用加上域名即可。
+//		int pos = -1;		//  '/'的位置
+//		//获取域名
+//		pos = baseUrl.find('/', 7);
+//		if (pos != -1)
+//		{
+//			baseUrl = baseUrl.substr(0, pos);  //只留下域名  http://192.168.8.191      link中为 /DVWA-master
+//		}
+//		else{
+//			WriteLog("这个链接有问题！(baseUrl, link)" + baseUrl + "\t" + link);
+//		}
+//	}
+//
+//	//以#结尾的去掉#号
+//	while (link.size() >= 1 && link[link.size() - 1] == '#'){
+//		link = link.substr(0, link.size() - 1);
+//	}
+//	//去掉结尾的.号和..号   http://192.168.8.191/DVWA-master/.   由于之前已经去掉了../和./所以，此次最多只有位于最后面的一种情况。
+//
+//
+//
+//	if ((ci_find_substr(link, string("http://")) == -1) && (ci_find_substr(link, string("https://")) == -1))
+//	{
+//		//没有找到，视为相对地址
+//		link = baseUrl + link;
+//	}
+//
+//	string domain;
+//	int pos = link.find('/', 7);
+//	if (pos != -1)
+//	{
+//		domain = link.substr(0, pos + 1);  //只留下域名  http://192.168.8.191/      link中为 /DVWA-master
+//	}
+//
+//	//考虑去除../以及./的问题，否则无法比较去重    意外情况  name../  
+//	int posOfLastUnderline = -1;
+//	int pos2;
+//	int find = false;
+//
+//	while (link.size() > (int)(2 + pos + 1))
+//	{
+//		find = false;
+//		pos2 = link.find("/./");
+//		if (pos2 != -1)
+//		{
+//			link = link.substr(0, pos2) + link.substr(pos2 + 2);
+//			find = true;
+//		}
+//
+//		pos2 = link.find("/../");
+//		if (pos2 != -1)
+//		{
+//			if (pos2 == pos)
+//			{
+//				link = link.substr(0, pos) + link.substr(pos2 + 3);
+//			}
+//			else
+//			{
+//				int pos3 = link.rfind("/", pos2 - 1);
+//				assert(pos3 != -1);
+//				link = link.substr(0, pos3) + link.substr(pos2 + 3);
+//			}
+//			find = true;
+//		}
+//		if (!find)
+//		{
+//			break;
+//		}
+//
+//		//if (link.substr(0, 2) == "./")
+//		//{
+//		//	link = link.substr(2, link.size() - 2);
+//		//}
+//		//else if (link.size() > 3 && link.substr(0, 3) == string("../"))
+//		//{
+//		//	posOfLastUnderline = baseUrl.rfind("/", baseUrl.size() - 2);
+//		//	if (posOfLastUnderline == -1)
+//		//	{
+//		//		//cout << "这个链接无效!" << baseUrl.c_str() << "\t\t" << link.c_str() << endl;
+//		//		//WriteLog("这个链接无效!" + baseUrl + "\t\t" + link);
+//		//	}
+//		//	else
+//		//	{
+//		//		baseUrl = baseUrl.substr(0, posOfLastUnderline + 1);
+//		//	}
+//		//	link = link.substr(3, link.size() - 3);
+//		//}
+//		//else{
+//		//	//cout << "当前状态!" << baseUrl.c_str() << "\t\t" << link.c_str() << endl;
+//		//	break;
+//		//}
+//	}
+//
+//	//最后去掉结尾的点号 . 和..
+//	if (link.substr(link.size() - 2, 2) == "/.")
+//	{
+//		link = link.substr(0, link.size() - 1);
+//	}
+//	else if (link.size() > (3 + pos) && link.substr(link.size() - 3, 3) == string("/.."))
+//	{
+//		pos2 = link.rfind("/", link.size() - 4);
+//		if (pos2 < pos)
+//		{
+//			link = link.substr(0, link.size() - 2);
+//		}
+//		else
+//		{
+//			link = link.substr(0, pos2 + 1);
+//		}
+//	}
+//}
+
 
 vector<Field>* getAgrs(string argStr)
 {
@@ -354,9 +491,25 @@ std::string CStrToStr(CString& cstr)
 CString StrToCStr(string &str)
 {
 	const int bufInlen = 100;
-	WCHAR wbuf[100];
-	MultiByteToWideChar(CP_ACP, 0, str.c_str(), str.size()+1, wbuf, bufInlen);
+	WCHAR wbuf[100] = {};
+	MultiByteToWideChar(CP_ACP, 0, str.c_str(), str.size() + 1, wbuf, bufInlen);
 	return CString(wbuf);
+}
+
+void split(std::string& s, std::string& delim, std::vector< std::string >* ret)
+{
+	size_t last = 0;
+	size_t index = s.find_first_of(delim, last);
+	while (index != std::string::npos)
+	{
+		ret->push_back(s.substr(last, index - last));
+		last = index + 1;
+		index = s.find_first_of(delim, last);
+	}
+	if (index - last > 0)
+	{
+		ret->push_back(s.substr(last, index - last));
+	}
 }
 
 

@@ -177,7 +177,7 @@ vector<Item*>* CData::analyseHtml(Item*pItem, string& strHtml)
 		if (!checkInLinks(*pTempNewItem, crawlerLinksItemVec))
 		{
 			pTempNewItem->setLayer(pItem->getLayer() + 1);
-
+			pTempNewItem->setOriId(pItem->getId());
 			pItemVec->push_back(pTempNewItem);
 			putItem(pTempNewItem);
 		}
@@ -196,7 +196,6 @@ vector<Item*>* CData::analyseHtml(Item*pItem, string& strHtml)
 	{
 		
 		form = new HtmlForm(formStrVec[i]);
-		//cout << form->toString().c_str() << endl;
 		formVec.push_back(*form);
 	}
 	for (unsigned int i = 0; i < formVec.size(); i++)
@@ -211,6 +210,7 @@ vector<Item*>* CData::analyseHtml(Item*pItem, string& strHtml)
 		if (!checkInLinks(*pTempNewItem, crawlerLinksItemVec))
 		{
 			pTempNewItem->setLayer(pItem->getLayer() + 1);
+			pTempNewItem->setOriId(pItem->getId());
 			pItemVec->push_back(pTempNewItem);
 			putItem(pTempNewItem);
 		}
@@ -232,7 +232,8 @@ Item* CData::analyseRedirectHeader(Item* pItem, string headerStr)
 	regex e("Location: (.*)");
 	smatch m;
 	regex_search(headerStr, m, e);
-	if (m.size() > 1){
+	if (m.size() > 1)
+	{
 		string link=m[1];
 		string args;
 		string baseUrl = getBaseUrl("", pItem);
@@ -241,6 +242,7 @@ Item* CData::analyseRedirectHeader(Item* pItem, string headerStr)
 		if (!checkInLinks(*tempItem, crawlerLinksItemVec))
 		{
 			tempItem->setLayer(pItem->getLayer());
+			tempItem->setOriId(pItem->getId());
 			putItem(tempItem);
 		}
 		else{
@@ -250,21 +252,40 @@ Item* CData::analyseRedirectHeader(Item* pItem, string headerStr)
 	return tempItem;
 }
 
-Item* CData::getItem()
+//Item* CData::getItem()
+//{
+//	Item * pItme;
+//	AcquireSRWLockExclusive(&m_linksVecSRW);
+//	if (crawlerLinksItemVec.size() <= crawledNum)
+//	{
+//		pItme = NULL;
+//	}
+//	else
+//	{
+//		pItme = crawlerLinksItemVec[crawledNum];
+//		crawledNum++;
+//	}
+//	ReleaseSRWLockExclusive(&m_linksVecSRW);
+//	return pItme;
+//}
+
+Item* CData::getItem(unsigned index)
 {
 	Item * pItme;
-	AcquireSRWLockExclusive(&m_linksVecSRW);
-	if (crawlerLinksItemVec.size() <= crawledNum)
+	AcquireSRWLockShared(&m_linksVecSRW);
+	if (crawlerLinksItemVec.size() <= index)
 	{
 		pItme = NULL;
 	}
-	else{
-		pItme = crawlerLinksItemVec[crawledNum];
-		crawledNum++;
+	else
+	{
+		pItme = crawlerLinksItemVec[index];
 	}
-	ReleaseSRWLockExclusive(&m_linksVecSRW);
+	ReleaseSRWLockShared(&m_linksVecSRW);
 	return pItme;
 }
+
+
 
 void CData::putItem(Item* pItem)
 {

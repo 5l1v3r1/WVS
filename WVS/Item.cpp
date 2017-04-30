@@ -4,21 +4,33 @@
 
 Item::Item()
 {
+
 }
 
 
-std::string Item::getArgsStr(int pos, string inject)
+std::string Item::getArgsStr(int pos /*= -1*/, string inject /*= ""*/, bool needDefaultValue /*= true*/)
 {
 	string args;
 	string name;
 	string value;
 	for (unsigned i = 0; i < m_args.size(); i++)
 	{
-		name = m_args[i].getName();
-		value = m_args[i].getValue();
 		if (i == pos)
 		{
-			value += inject;
+			name = m_args[i].getName();
+			if (needDefaultValue)
+			{
+				value += m_args[i].getValue() + inject;
+			}
+			else{
+				value += inject;
+			}
+			
+		}
+		else
+		{
+			name = m_args[i].getName();
+			value = m_args[i].getValue();
 		}
 		name = escapeURL(name);
 		value = escapeURL(value);
@@ -31,6 +43,9 @@ std::string Item::getArgsStr(int pos, string inject)
 	}
 	return args;
 }
+
+
+
 
 Item::~Item()
 {
@@ -102,4 +117,3 @@ bool Item::equal(Item& a)
 	}
 	return false;
 }
-

@@ -13,19 +13,21 @@ IMPLEMENT_DYNAMIC(CConfigDlg, CDialogEx)
 
 CConfigDlg::CConfigDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(CConfigDlg::IDD, pParent)
-	, g_crawlerLayer(100)
+	, g_crawlerLayer(3)
 	, m_numOfThread(8)
 	, m_isUseProxy(TRUE)
 	, m_proxy(_T("http://127.0.0.1:8888"))
-	, m_useErrorBased(TRUE)
-	, m_useBoolBased(TRUE)
-	, m_useTimeBased(TRUE)
+	, m_useErrorBased(FALSE)
+	, m_useBoolBased(FALSE)
+	, m_useTimeBased(FALSE)
 	, m_testUrl(_T("http://192.168.8.191/DVWA-master/vulnerabilities/sqli_blind/"))
 	, m_testArgs(_T(""))
 	, m_testCookie(_T("security=low; PHPSESSID=r91ckd08o4mc3q1aci621f11k4"))
 	, m_testArgName(_T(""))
 	, m_testArgValue(_T(""))
 	, m_methodRadio(0)
+	, m_testSQLi(TRUE)
+	, m_testXSS(TRUE)
 {
 	pTestItem = new Item();
 	pTestArgs = new vector<Field>();
@@ -56,6 +58,8 @@ void CConfigDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_NAME_EDIT, m_testArgName);
 	DDX_Text(pDX, IDC_VALUE_EDIT, m_testArgValue);
 	DDX_Radio(pDX, IDC_RADIO1, m_methodRadio);
+	DDX_Check(pDX, IDC_CHECK2, m_testSQLi);
+	DDX_Check(pDX, IDC_CHECK3, m_testXSS);
 }
 
 
@@ -159,19 +163,31 @@ void CConfigDlg::OnBnClickedButton5()
 	// TODO:  在此添加控件通知处理程序代码
 	UpdateData(TRUE);
 	Field field(CStrToStr(m_testArgName), CStrToStr(m_testArgValue));
+	if (!m_testSQLi)
+	{
+		//该参数不进行SQLi测试
+		field.setSecurityFlag(1);
+	}
+	if (!m_testXSS)
+	{
+		field.setSecurityFlag(2);
+	}
 	pTestArgs->push_back(field);
+
 	string showArgs = "";
 	for (unsigned i = 0; i < pTestArgs->size(); i++)
 	{
-		showArgs += (*pTestArgs)[i].getName() + "=" + (*pTestArgs)[i].getValue();
+		showArgs += (*pTestArgs)[i].getName() + "=" + (*pTestArgs)[i].getValue() + "{"+ (m_testSQLi? "0":"1")+ "}";
 		if (i < pTestArgs->size() - 1)
 		{
 			showArgs += "&";
 		}
 	}
+	
 	m_testArgs = StrToCStr(showArgs);
 	m_testArgValue = "";
 	m_testArgName = "";
+	
 	UpdateData(FALSE);
 }
 

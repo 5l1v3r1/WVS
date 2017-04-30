@@ -17,7 +17,7 @@ MonitorJob::~MonitorJob()
 
 void MonitorJob::Run(void*ptr) 
 {
-	int waitTime = 5000;
+	int waitTime = 1000;
 	while (true)
 	{
 		Sleep(waitTime);

@@ -40,8 +40,13 @@ public:
 	afx_msg void OnEnChangeNetaddress1();
 	afx_msg void OnBnClickedBegin();
 	afx_msg LRESULT OnMONITOR(WPARAM wParam, LPARAM lParam);
-	CTreeCtrl m_urlTree;
 
+	void updateTree();
+	HTREEITEM FindItem(const CString& name, CTreeCtrl& tree, HTREEITEM hRoot);
+
+
+
+	CTreeCtrl m_urlTree;
 	UINT m_totalNum; 	// 网址总数
 	CString m_crawledNum;// 已爬行的网址数，由于格式为int(%int)，所以写成string型。
 	UINT m_totalTestNum; // 总的测试项，每一个参数为单位1。
@@ -54,5 +59,7 @@ public:
 	UINT m_usedTime;
 	int m_workState = 1; //1：第一次开始前， -1，工作中，非第一次, 2:暂停
 	CSQLiTest* pSQLiTest;
+	HTREEITEM m_hRoot = NULL;
 	
+	afx_msg void OnTvnSelchangedTree1(NMHDR *pNMHDR, LRESULT *pResult);
 };

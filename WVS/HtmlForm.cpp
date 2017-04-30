@@ -20,6 +20,7 @@ HtmlForm::HtmlForm(string s)
 		if (findByName(inputVec[i], string("value"), value, false))
 		{
 			temp->m_value = value;
+			
 		}
 		if (temp->getType() == "text" && temp->getValue() == "")
 		{
@@ -28,6 +29,10 @@ HtmlForm::HtmlForm(string s)
 		else if (temp->getType() == "password" && temp->getValue() == "")
 		{
 			temp->m_defaultValue = temp->DEFAULT_PASSWORD;
+		}
+		else if (_stricmp(temp->getType().c_str(), string("Submit").c_str()) == 0)
+		{
+			//temp->setSecurityFlag(1);
 		}
 		this->m_fields.push_back(*temp);
 	}

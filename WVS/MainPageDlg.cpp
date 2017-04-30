@@ -29,7 +29,6 @@ CMainPageDlg::CMainPageDlg(CWnd* pParent /*=NULL*/)
 CMainPageDlg::~CMainPageDlg()
 {
 
-
 }
 
 void CMainPageDlg::DoDataExchange(CDataExchange* pDX)
@@ -50,6 +49,7 @@ BEGIN_MESSAGE_MAP(CMainPageDlg, CDialogEx)
 	ON_EN_CHANGE(IDC_NETADDRESS1, &CMainPageDlg::OnEnChangeNetaddress1)
 	ON_BN_CLICKED(ID_BEGIN, &CMainPageDlg::OnBnClickedBegin)
 	ON_MESSAGE(WM_MY_MONITOR, &CMainPageDlg::OnMONITOR)
+	ON_NOTIFY(TVN_SELCHANGED, IDC_TREE1, &CMainPageDlg::OnTvnSelchangedTree1)
 END_MESSAGE_MAP()
 
 // CMainPageDlg 消息处理程序
@@ -86,6 +86,7 @@ LRESULT CMainPageDlg::OnMONITOR(WPARAM wParam, LPARAM lParam)
 		default:{
 					WriteLog("monitor other command:" + to_string(wParam));
 		}
+		updateTree();
 	}
 	UpdateData(FALSE);
 	return NULL;
@@ -97,35 +98,47 @@ void CMainPageDlg::OnBnClickedBegin()
 	// TODO:  在此添加控件通知处理程序代码
 
 	//m_workState =-2;	//testState: -2,   normalState =1;
+
+
+
+
+	/*
+	//测试formatlink    //baseurl="http://123.com/", link
+	string baseurl = "http://123.com/";
+	string link = ".././dir1/../dir2../..?a=b#";
+	string args;
+	formatLink(baseurl, link, args);
+	*/
+
+	/*
+	//测试  单条item sqlitest
+	start = clock();
+	const int bufInlen = 100;
+	char buf[bufInlen];
+	WideCharToMultiByte(CP_ACP, 0, m_strOriUrl, -1, buf, bufInlen, NULL, NULL);
+	strcpy_s(buf, 100, (string("http://192.168.8.191/DVWA-master/")).c_str());
+	_cprintf("%d,%d,%s,%d\n", m_totalNum, m_totalTestNum, buf, sizeof(buf));
+	m_pData->setUrl(buf);
+
+	Item *pItem = new Item(HttpMethod::get,"http://192.168.8.191/DVWA-master/vulnerabilities/sqli_blind/");
+	vector<Field> args;
+	Field field("id", "");
+	args.push_back(field);
+	Field field2("Submit", "Submit");
+	args.push_back(field2);
+
+	pItem->setArgs(args);
+	string str = "Set-Cookie: PHPSESSID=6be1gvqmug35a7qc0tau0tn007; security=low";
+	m_pData->analyseHeader(str);
+
+	string headerStr;
+	CHttpClient *pHttp = new CHttpClient();
+	pHttp->setHeaderOpt("", headerStr);
+	pSQLiTest->test(pHttp, pItem);
+	_cprintf("%s\n used Time:%d\n", pSQLiTest->resultToString().c_str(), (clock() - start) / CLOCKS_PER_SEC);
+	WriteFile("网址树——测试结果.csv", pSQLiTest->resultToStringForCSV());
+	*/
 	
-
-	//start = clock();
-	//const int bufInlen = 100;
-	//char buf[bufInlen];
-	//WideCharToMultiByte(CP_ACP, 0, m_strOriUrl, -1, buf, bufInlen, NULL, NULL);
-	//strcpy_s(buf, 100, (string("http://192.168.8.191/DVWA-master/")).c_str());
-	//_cprintf("%d,%d,%s,%d\n", m_totalNum, m_totalTestNum, buf, sizeof(buf));
-	//m_pData->setUrl(buf);
-
-	//Item *pItem = new Item(HttpMethod::get,"http://192.168.8.191/DVWA-master/vulnerabilities/sqli_blind/");
-	//vector<Field> args;
-	//Field field("id", "");
-	//args.push_back(field);
-	//Field field2("Submit", "Submit");
-	//args.push_back(field2);
-	//
-	//pItem->setArgs(args);
-	//string str = "Set-Cookie: PHPSESSID=6be1gvqmug35a7qc0tau0tn007; security=low";
-	//m_pData->analyseHeader(str);
-
-	//string headerStr;
-	//CHttpClient *pHttp = new CHttpClient();
-	//pHttp->setHeaderOpt("", headerStr);
-	//pSQLiTest->test(pHttp, pItem);
-
-
-	//_cprintf("%s\n used Time:%d\n", pSQLiTest->resultToString().c_str(), (clock() - start) / CLOCKS_PER_SEC);
-	//WriteFile("网址树——测试结果.csv", pSQLiTest->resultToStringForCSV());
 
 
 	if (m_workState > 0)
@@ -147,7 +160,6 @@ void CMainPageDlg::OnBnClickedBegin()
 			m_pData->setUrl(buf);
 		//	m_pThreadPool = new CMyThreadPool(8);
 		//	pSQLiTest = new CSQLiTest(m_pData);
-
 			Item *pItem = new Item(HttpMethod::get, buf);
 			pItem->setLayer(0);
 			MonitorJob *pMJob = new MonitorJob(this->m_hWnd, start, m_pThreadPool);
@@ -187,6 +199,99 @@ void CMainPageDlg::setGlobalData(CData *pData, CMyThreadPool *pThreadPool, CSQLi
 	pSQLiTest = pSQLiTestG;
 }
 
+void CMainPageDlg::updateTree()
+{
+	if (m_hRoot == NULL)
+	{
+		m_hRoot = m_urlTree.InsertItem(StrToCStr(m_pData->domain), 0, 0);
+	}
+
+	static string delim = "/";
+	static unsigned currentNum = 0;
+	Item *pItem = m_pData->getItem(currentNum);
+	bool  isEndWithDelim = FALSE;
+	HTREEITEM hTemp = m_hRoot;
+	CString tempCstr;
+	bool isExist = false;
+	while (pItem != NULL)
+	{
+		string url = pItem->getUrl();
+		string path = url.substr(url.find("/", 8)+1);
+		if (path[path.size() - 1] == '/')
+		{
+			isEndWithDelim = true;
+			path = path.substr(0, path.size() - 1);
+		}
+		vector<string> vecStr;
+		split(path, delim, &vecStr);
+		if (isEndWithDelim)
+		{
+			/*vecStr[vecStr.size() - 1].append("/");*/
+			vecStr.push_back("/");
+		}
+		for (unsigned i = 0; i < vecStr.size(); i++)
+		{
+			isExist = false;
+			tempCstr = StrToCStr(vecStr[i]);
+			HTREEITEM hSub = m_urlTree.GetChildItem(hTemp);
+			while (hSub)
+			{
+				// check the children of the current item  
+				CString text = m_urlTree.GetItemText(hSub);
+				if (text.Compare(tempCstr) == 0)
+				{
+					hTemp = hSub;
+					isExist = true;
+					break;
+				}
+				else //因为有序，这里可以直接比较大小，如果已经大于树上的，则直接返回未找到。
+				{
+					hSub = m_urlTree.GetNextSiblingItem(hSub);
+				}
+			}
+			if (!isExist)
+			{
+				hTemp = m_urlTree.InsertItem(tempCstr, 0, 0, hTemp, TVI_SORT);
+			}
+			if (i == vecStr.size() - 1)
+			{
+				//最后一段，需要将参数设置进去。
+				m_urlTree.SetItemData(hTemp, pItem->getId());
+			}
+		}
+		pItem = m_pData->getItem(++currentNum);
+		hTemp = m_hRoot;
+		isEndWithDelim = false;
+		path = "";
+		url = "";
+		vecStr.clear();
+	}
+}
+
+HTREEITEM FindItem(const CString& name, CTreeCtrl& tree, HTREEITEM hRoot)
+{
+	// check whether the current item is the searched one  
+	CString text = tree.GetItemText(hRoot);
+	if (text.Compare(name) == 0)
+		return hRoot;
+
+	// get a handle to the first child item  
+	HTREEITEM hSub = tree.GetChildItem(hRoot);
+	// iterate as long a new item is found  
+	while (hSub)
+	{
+		// check the children of the current item  
+		HTREEITEM hFound = FindItem(name, tree, hSub);
+		if (hFound)
+			return hFound;
+
+		// get the next sibling of the current item  
+		hSub = tree.GetNextSiblingItem(hSub);
+	}
+
+	// return NULL if nothing was found  
+	return NULL;
+}
 
 
 
@@ -231,3 +336,15 @@ pHttp->send(HttpMethod::get, "", "http://192.168.8.191/sqli-labs-master/Less-11/
 
 
 */
+
+void CMainPageDlg::OnTvnSelchangedTree1(NMHDR *pNMHDR, LRESULT *pResult)
+{
+	LPNMTREEVIEW pNMTreeView = reinterpret_cast<LPNMTREEVIEW>(pNMHDR);
+	// TODO:  在此添加控件通知处理程序代码
+	*pResult = 0;
+
+	CString str = pNMTreeView->itemNew.pszText;
+	//str.Format(L"%lu", pNMTreeView->itemNew.lParam);
+	//AfxMessageBox(pNMTreeView->itemNew.pszText + str);
+	_cprintf("%s, id:%lu\n", CStrToStr(str).c_str(), pNMTreeView->itemNew.lParam);
+}

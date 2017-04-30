@@ -231,7 +231,7 @@ CWVSDlg::CWVSDlg(CWnd* pParent /*=NULL*/)
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 	setConsole();
 	m_pData = new CData();
-	m_pThreadPool = new	CMyThreadPool(10);
+	m_pThreadPool = new	CMyThreadPool(2);
 	pSQLiTest = new CSQLiTest(m_pData);
 	m_config.setGlobalData(m_pData, m_pThreadPool, pSQLiTest);
 	m_mainPage.setGlobalData(m_pData, m_pThreadPool, pSQLiTest);

@@ -22,7 +22,8 @@ public:
 	void analyseHeader(string& strHeader);
 	vector<Item*>* analyseHtml(Item*pItem, string& strHtml);
 	Item* analyseRedirectHeader(Item* pItem, string headerStr);
-	Item* getItem();	
+	//Item* getItem();	
+	Item* getItem(unsigned index);
 	void putItem(Item* pItem);
 	vector<Item*>* readLinks();
 	void getCookie(Cookie& tempCookie);
@@ -39,7 +40,7 @@ public:
 	string domain = "";  //"192.168.8.191/DVWA-master";	//域名常量字符串，作为格式化之后的去重使用。只测试本网站内的网址。
 	string originUrl;
 	static unsigned crawlerLayer;
-	
+
 private:
 	SRWLOCK m_linksVecSRW;
 	SRWLOCK m_cookieSRW;

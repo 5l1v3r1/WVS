@@ -57,4 +57,8 @@ public:
 	CString m_testArgValue;
 	afx_msg void OnBnClickedButton4();
 	BOOL m_methodRadio;
+	// 该参数是否进行xss测试
+	BOOL m_testSQLi;
+	// 该参数是否进行XSS测试
+	BOOL m_testXSS;
 };
