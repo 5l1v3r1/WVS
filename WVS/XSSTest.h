@@ -2,38 +2,28 @@
 #include "Test.h"
 #include "Tool.h"
 #include "Data.h"
-typedef struct XSSResult{
+#include "tinyxml2.h"
+
+typedef struct XSSTestCase
+{
 	int id;
-	int caseId;
-	int itemId;
-	int injectPos;
-	int resultState;
-	int type;
-	string url;
-	string cookie;
-	string args;
-	string ext;	//用于基于bool的注入记录详情； 格式为。caseId:length;
-	~XSSResult(){
-		_cprintf("~XSSResult()");
-	}
-}XSSResult;
+	string inject;
+	string identify;
+}XSSTestCase,*PXSSTestCase;
+
 class XSSTest: public Test
 {
 public:
-	XSSTest();
-	XSSTest(CData* pData);
+	XSSTest(CData* pData, TestManager* pTestManager);
 	~XSSTest();
 	virtual bool loadConfiguration(string fileName = "XSSConf.xml");
 	virtual bool saveConfiguration(string fileName = "XSSConf.xml");
+	void insertTestCase(XSSTestCase *pTestCase, tinyxml2::XMLElement *RootEle, tinyxml2::XMLDocument* myDocument);
 	virtual bool test(CHttpClient *pHttpClient, Item *pItem);
-	virtual void putResultItem(void*ptr);
-	virtual string resultToString();
-	virtual string resultToStringForCSV();
-	void clearResult();
-
+	void setTestMode(bool useXSS);
 private:
-	SRWLOCK m_resultSRW;
-	vector<XSSResult*> m_vecpResult;
-	CData* m_pData;
+	
+	vector<XSSTestCase*>m_vecTestCase;
+	bool m_useXSS;
 };
 

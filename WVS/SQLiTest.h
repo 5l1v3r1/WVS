@@ -7,10 +7,10 @@
 #include "Data.h"
 #include "Test.h"
 #include <math.h>
+#include "TestResult.h"
 
 using namespace std;
-//#ifndef TEST_CASE
-//#define TEST_CASE
+
 typedef struct ErrorBasedCase{
 	int id;
 	string inject;
@@ -21,7 +21,7 @@ typedef struct BoolBasedCase{
 	int id;
 	string inject;
 	string inject2;	//无用
-	string identify;	//无用
+	string identify;	
 	string check;		//无用
 }BoolBasedCase, *PBoolBasedCase;
 typedef struct TimeBasedCase{
@@ -32,25 +32,13 @@ typedef struct TimeBasedCase{
 	string identifyPost;
 	double waitTime;
 }TimeBasedCase, *PTimeBasedCase;
-typedef struct SQLiResult{
-	int id;
-	int caseId;
-	int itemId;
-	int injectPos;
-	int resultState;
-	int type;
-	string url;
-	string cookie;
-	string args;
-	string ext;	//用于基于bool的注入记录详情； 格式为。caseId:length;
-}SQLiResult;
-//#endif
+
 
 
 class CSQLiTest:public Test
 {
 public:
-	CSQLiTest(CData* pData);
+	CSQLiTest(CData* pData, TestManager* pTestManger);
 	~CSQLiTest();
 	bool loadConfiguration(string fileName = "SQLiTestCase.xml");
 	bool saveConfiguration(string fileName = "SQLiTestCase.xml");
@@ -62,21 +50,15 @@ public:
 	bool boolBasedTest(CHttpClient* pHttpClient, Item *pItem, unsigned pos, long &averageTime);
 	bool timeBasedTest(CHttpClient* pHttpClient, Item *pItem, unsigned pos, long averageTime);
 	void setTestMode(bool errorBased, bool boolBased, bool timeBased);
-	string resultToString();
-	string resultToStringForCSV();
-	void clearResult();
-	void putResultItem( void* pResult);
 private:
 	BOOL m_errorBased = TRUE;
 	BOOL m_boolBased = TRUE;
 	BOOL m_timeBased = TRUE;
-	vector<ErrorBasedCase*> EBCvec;
-	vector<TimeBasedCase*>TBCvec;
-	vector<BoolBasedCase*>BBCvec;
-	vector<SQLiResult*>resultVec;
-	CData* m_pData;
+	vector<ErrorBasedCase*> m_vecEBTestCase;
+	vector<TimeBasedCase*> m_veerTBTestCase;
+	vector<BoolBasedCase*> m_vecBBTestCase;
 	long m_lateTime = 1000;	//允许意外的网络延迟时间（ms）
-	SRWLOCK m_resultSRW;
+
 
 	BOOL htmlEqual(string html, string html2);
 	string getComment(HttpMethod method);

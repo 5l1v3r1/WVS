@@ -6,7 +6,6 @@
 #include "ConfigDlg.h"
 #include "afxdialogex.h"
 
-
 // CConfigDlg 对话框
 
 IMPLEMENT_DYNAMIC(CConfigDlg, CDialogEx)
@@ -14,30 +13,34 @@ IMPLEMENT_DYNAMIC(CConfigDlg, CDialogEx)
 CConfigDlg::CConfigDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(CConfigDlg::IDD, pParent)
 	, m_crawlerLayer(3)
-	, m_numOfThread(8)
-	, m_isUseProxy(TRUE)
+	, m_numOfThread(5)
+	, m_isUseProxy(FALSE)
 	, m_proxy(_T("http://127.0.0.1:8888"))
-	, m_useErrorBased(FALSE)
-	, m_useBoolBased(FALSE)
-	, m_useTimeBased(FALSE)
-	, m_testUrl(_T("http://192.168.8.191/DVWA-master/vulnerabilities/sqli_blind/"))
+	, m_useErrorBased(TRUE)
+	, m_useBoolBased(TRUE)
+	, m_useTimeBased(TRUE)
+	, m_testUrl(_T(""))
 	, m_testArgs(_T(""))
-	, m_testCookie(_T("security=low; PHPSESSID=r91ckd08o4mc3q1aci621f11k4"))
+	, m_testCookie(_T(""))
 	, m_testArgName(_T(""))
 	, m_testArgValue(_T(""))
 	, m_methodRadio(0)
 	, m_testSQLi(TRUE)
 	, m_testXSS(TRUE)
+	, m_useXSSTest(TRUE)
 {
 	pTestItem = new Item();
 	pTestArgs = new vector<Field>();
-	CHttpClient::s_useProxy = m_isUseProxy;
+	CHttpClient::s_useProxy = (bool)m_isUseProxy;
 	CHttpClient::s_proxy = CStrToStr(m_proxy);
 }
 
 CConfigDlg::~CConfigDlg()
 {
-
+	if (m_pResultDialog != NULL)
+	{
+		delete m_pResultDialog;
+	}
 }
 
 void CConfigDlg::DoDataExchange(CDataExchange* pDX)
@@ -59,6 +62,8 @@ void CConfigDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Radio(pDX, IDC_RADIO1, m_methodRadio);
 	DDX_Check(pDX, IDC_CHECK2, m_testSQLi);
 	DDX_Check(pDX, IDC_CHECK3, m_testXSS);
+	DDX_Check(pDX, IDC_XSS_CHECK, m_useXSSTest);
+	DDX_Control(pDX, IDC_BUTTON2, m_butStart);
 }
 
 BEGIN_MESSAGE_MAP(CConfigDlg, CDialogEx)
@@ -69,6 +74,7 @@ BEGIN_MESSAGE_MAP(CConfigDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON5, &CConfigDlg::OnBnClickedButton5)
 	ON_BN_CLICKED(IDC_BUTTON4, &CConfigDlg::OnBnClickedButton4)
 	ON_MESSAGE(WM_TEST_JOB, &CConfigDlg::OnTestJob)
+	ON_BN_CLICKED(IDC_BUTTON6, &CConfigDlg::OnBnClickedButton6)
 END_MESSAGE_MAP()
 
 
@@ -107,10 +113,15 @@ void CConfigDlg::OnBnClickedButton3()
 		CHttpClient::s_useProxy = false;
 	}
 
-	//m_pThreadPool->setThreadNum(m_numOfThread);	暂不支持
 	m_pData->crawlerLayer = m_crawlerLayer;
+	m_pTestManager->setTestMode(m_useErrorBased, m_useBoolBased, m_useTimeBased, m_useXSSTest);
+	m_pThreadPool->setThreadNum(m_numOfThread + 1);	//有一个线程作为监视线程
 
-	m_pTestManager->setTestMode((bool)m_useErrorBased, (bool)m_useBoolBased, (bool)m_useTimeBased);
+
+	string fileName = "网址\\" + to_string(time(NULL));
+	system(("mkdir " + fileName).c_str());
+	system(("move 网址* " + fileName).c_str());
+	WriteLog("------------------------------------------新的一次扫描" + to_string(time(NULL)) + "-----------------------------------------------------");
 
 }
 
@@ -118,8 +129,7 @@ void CConfigDlg::OnBnClickedButton3()
 //开始测试
 void CConfigDlg::OnBnClickedButton2()
 {
-	UpdateData(TRUE);
-
+	OnBnClickedButton3();//初始化测试环境
 	HttpMethod method;
 	if (m_methodRadio == 0)
 	{
@@ -128,26 +138,40 @@ void CConfigDlg::OnBnClickedButton2()
 	else{
 		method = HttpMethod::post;
 	}
-
 	string headerStr;
 	pTestItem->setMethod(method);
-	pTestItem->setUrl(CStrToStr(m_testUrl));
-	vector<Field> args;
-	Field field("id", "");
-	args.push_back(field);
-	Field field2("Submit", "Submit");
-	args.push_back(field2);
+	
+	//测试用
+	//vector<Field> args;
+	//Field field("txtName", "");
+	////field.setSecurityFlag(2);
+	//args.push_back(field);
+	//Field field2("btnSign", "Sign Guestbook");
+	////field.setSecurityFlag(2);
+	//args.push_back(field2);
+	//Field field3("mtxMessage", "");
+	////field.setSecurityFlag(2);
+	//args.push_back(field3);
+	//pTestItem->setArgs(args);
+	//string str = string("Set-Cookie: ") + "security=low; PHPSESSID=rk50b0hvkdtjc3kbea37ilq9r6";        //"Set-Cookie: PHPSESSID=6be1gvqmug35a7qc0tau0tn007; security=low";
+	//pTestItem->setUrl("http://192.168.152.128/DVWA-master/vulnerabilities/xss_s/");
+	//以上测试用
 
-	pTestItem->setArgs(args);
+	pTestItem->setArgs(*pTestArgs);
+	string str = "Set-Cookie: " + CStrToStr(m_testCookie);
+	string url = CStrToStr(m_testUrl);
+	if (url.find("http") != 0)
+	{
+		url= "http://" + url;
+	}
+	pTestItem->setUrl(url);
 
-	//pTestItem->setArgs(*pTestArgs);
-	string str = "Set-Cookie: " + CStrToStr(m_testCookie);//"Set-Cookie: PHPSESSID=6be1gvqmug35a7qc0tau0tn007; security=low";
-
-	//pTestItem->setUrl("http://192.168.8.191/DVWA-master/vulnerabilities/sqli_blind/");
-	//string str = "Set-Cookie: security=low; PHPSESSID=6be1gvqmug35a7qc0tau0tn007";
 	m_pData->analyseHeader(str);
 	TestJob *pJob = new TestJob(this->m_hWnd, pTestItem, m_pData, m_pTestManager);
 	m_pThreadPool->addJob(pJob, NULL);
+	m_testWorkStatus = -1;
+	SetDlgItemText(ID_BEGIN, L"测试中");
+	m_butStart.EnableWindow(0);
 }
 
 //添加参数
@@ -162,7 +186,7 @@ void CConfigDlg::OnBnClickedButton5()
 	}
 	if (!m_testXSS)
 	{
-		field.setSecurityFlag(2);
+		field.setSecurityFlag(3);
 	}
 	pTestArgs->push_back(field);
 
@@ -197,6 +221,10 @@ LRESULT CConfigDlg::OnTestJob(WPARAM wParam, LPARAM lParam)
 		case 0:
 			_cprintf("%s\n used Time:%d\n", m_pTestManager->resultToString().c_str(), (clock() - lParam) / CLOCKS_PER_SEC);
 			WriteFile("网址树——测试结果.csv", m_pTestManager->resultToStringForCSV());
+			m_testWorkStatus = 0;
+			m_testCstrResult = StrToCStr(m_pTestManager->resultToStringFormat());
+			OnBnClickedButton6();
+			m_butStart.EnableWindow(1);
 			break;
 		default:
 			_cprintf(" CConfigDlg::OnTestJob(WPARAM wParam, LPARAM lParam)   unknown command%d", wParam);
@@ -204,3 +232,23 @@ LRESULT CConfigDlg::OnTestJob(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
+void CConfigDlg::OnBnClickedButton6()
+{
+	if (m_testWorkStatus == 0)
+	{
+		if (m_pResultDialog == NULL)
+		{
+			m_pResultDialog = new ResultDialog(NULL, m_testCstrResult);
+			m_pResultDialog->Create(IDD_RESULT_DIALOG); //创建一个非模态对话框  
+		}
+		else{
+			m_pResultDialog->m_result = m_testCstrResult;
+			m_pResultDialog->UpdateData(FALSE);
+		}
+		m_pResultDialog->ShowWindow(SW_SHOWNORMAL); //显示非模态对话框 
+	}
+	else
+	{
+		AfxMessageBox(L"检测尚未结束，请稍等....");
+	}
+}

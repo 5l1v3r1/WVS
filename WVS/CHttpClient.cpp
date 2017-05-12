@@ -84,13 +84,23 @@ void CHttpClient::setHeaderOpt(const std::string &strHeaderParam, string& header
 	curl_easy_setopt(this->m_pCurl, CURLOPT_HEADEROPT, 1);
 	curl_easy_setopt(this->m_pCurl, CURLOPT_HEADERFUNCTION, &header_callback);
 	curl_easy_setopt(this->m_pCurl, CURLOPT_HEADERDATA, &headerStr);
+	
+	curl_easy_setopt(m_pCurl, CURLOPT_TIMEOUT_MS, m_defaultTimeOut);
+
 	setProxy(s_useProxy, s_proxy);
 }
 
 
-void CHttpClient::setTimeOut(long millsec)
+void CHttpClient::setTimeOut(long millsec = -1)
 {
-	curl_easy_setopt(m_pCurl, CURLOPT_TIMEOUT_MS, millsec);
+	if (millsec == -1)
+	{
+		curl_easy_setopt(m_pCurl, CURLOPT_TIMEOUT_MS,  m_defaultTimeOut);
+	}
+	else{
+		curl_easy_setopt(m_pCurl, CURLOPT_TIMEOUT_MS, millsec);
+	}
+	
 }
 
 CURLcode CHttpClient::send(HttpMethod method, const std::string &strCookie, const std::string & strUrl,
@@ -108,6 +118,7 @@ CURLcode CHttpClient::send(HttpMethod method, const std::string &strCookie, cons
 		curl_easy_setopt(this->m_pCurl, CURLOPT_URL, strUrl.c_str());
 		curl_easy_setopt(this->m_pCurl, CURLOPT_POST, 1);
 		curl_easy_setopt(this->m_pCurl, CURLOPT_POSTFIELDS, strParam.c_str());
+		curl_easy_setopt(this->m_pCurl, CURLOPT_POSTFIELDSIZE, strParam.size());
 	}
 	else if (HttpMethod::get == method)
 	{

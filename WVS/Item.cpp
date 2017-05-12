@@ -8,7 +8,15 @@ Item::Item()
 }
 
 
-std::string Item::getArgsStr(int pos /*= -1*/, string inject /*= ""*/, bool needDefaultValue /*= true*/)
+//************************************
+// Returns:   std::string
+// Parameter: int pos :  -1 不插入
+// Parameter: string inject :
+// Parameter: bool needDefaultValue :
+// Parameter: bool urlEncoding : 是否将参数使用url编码；不编码，便于显示；编码，便于发送请求
+// Function:  
+//************************************
+std::string Item::getArgsStr(int pos /*= -1*/, string inject /*= ""*/, bool needDefaultValue /*= true*/, bool urlEncoding /*= true*/)
 {
 	string args;
 	string name;
@@ -20,10 +28,10 @@ std::string Item::getArgsStr(int pos /*= -1*/, string inject /*= ""*/, bool need
 			name = m_args[i].getName();
 			if (needDefaultValue)
 			{
-				value += m_args[i].getValue() + inject;
+				value = m_args[i].getValue() + inject;
 			}
 			else{
-				value += inject;
+				value = inject;
 			}
 			
 		}
@@ -32,8 +40,13 @@ std::string Item::getArgsStr(int pos /*= -1*/, string inject /*= ""*/, bool need
 			name = m_args[i].getName();
 			value = m_args[i].getValue();
 		}
-		name = escapeURL(name);
-		value = escapeURL(value);
+
+
+		if (urlEncoding)
+		{
+			name = escapeURL(name);
+			value = escapeURL(value);
+		}
 
 		args = args +name + "=" + value;
 		if (i < m_args.size() - 1)

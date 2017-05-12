@@ -41,7 +41,6 @@ int ci_find_substr(const T& str1, const T& str2, const std::locale& loc = std::l
 	else return -1; // not found
 }
 
-
 bool findByName(string s, string name, string& value, bool isCaseSensitive)
 {
 	int posOfName = -1;
@@ -51,6 +50,7 @@ bool findByName(string s, string name, string& value, bool isCaseSensitive)
 	bool flag = false;	//是否有看到"="号
 	int posOfEqual = -1;
 	unsigned int i;
+	value = "";
 	while (!flag)
 	{
 		if (isCaseSensitive)
@@ -123,19 +123,20 @@ bool findByName(string s, string name, string& value, bool isCaseSensitive)
 }
 
 
-int findByRegex(string s, string sRegex, vector<string>&sVex, bool isCaseSensitive)
+int findByRegex(string& s, const string& sRegex, vector<string>&sVex, bool isCaseSensitive)
 {
+
 	if (s.size() > 0)
 	{
 		string temp = s;
 		regex e;
 		if (isCaseSensitive)
 		{
-			e = regex(sRegex, std::regex_constants::icase);
+			e = regex(sRegex);
 		}
 		else
 		{
-			e = regex(sRegex);
+			e = regex(sRegex, std::regex_constants::icase);
 		}
 		smatch m;
 		smatch::iterator k;
@@ -161,11 +162,11 @@ void WriteLog(string log)
 {
 	SYSTEMTIME st;
 	GetLocalTime(&st);
-	ofstream logOut("MyLog.txt");
-	cout << st.wHour << ":" << st.wMinute << "." << st.wSecond << "." << st.wMilliseconds << endl;
+	ofstream logOut("MyLog.txt", ios::out|ios::app);
+	logOut << st.wHour << ":" << st.wMinute << "." << st.wSecond << "." << st.wMilliseconds <<"\t";
 	logOut << log << endl;
 	logOut.close();
-	OutputDebugStringA(log.c_str());
+	//OutputDebugStringA(log.c_str());
 }
 
 void WriteFile(string FileName, string content)
@@ -227,9 +228,6 @@ void formatLink(string baseUrl, string &link, string &args)
 			break;
 		}
 	}
-
-
-	
 
 	if ((ci_find_substr(link, string("http://")) == -1) && (ci_find_substr(link, string("https://")) == -1))
 	{
@@ -482,17 +480,17 @@ string deescapeURL(const string &URL) {
 
 std::string CStrToStr(CString& cstr)
 {
-	const int bufInlen = 100;
-	char buf[bufInlen];
+	const int bufInlen = cstr.GetLength() +1;
+	char *buf = (char*)malloc(bufInlen);
 	WideCharToMultiByte(CP_ACP, 0, cstr, -1, buf, bufInlen, NULL, NULL);
 	return string(buf);
 }
 
 CString StrToCStr(string &str)
 {
-	const int bufInlen = 100;
-	WCHAR wbuf[100];
-	memset(wbuf, 0, 100 * sizeof(WCHAR));
+	const int bufInlen = str.size()+1;
+	WCHAR *wbuf = (WCHAR*)malloc(bufInlen*sizeof(WCHAR));
+	memset(wbuf, 0, bufInlen * sizeof(WCHAR));
 	MultiByteToWideChar(CP_ACP, 0, str.c_str(), str.size() + 1, wbuf, bufInlen);
 	return CString(wbuf);
 }
@@ -511,6 +509,55 @@ void split(std::string& s, std::string& delim, std::vector< std::string >* ret)
 	{
 		ret->push_back(s.substr(last, index - last));
 	}
+}
+
+std::string generateResult(int id, int type, string& url, int method, string& args, string& argstr, string& separator)
+{
+	string strType = "";
+	string str = "";
+	str += "ResultId:" + to_string(id) + "\r\n" +"Type:";
+	switch (type)
+	{
+		case 1500:
+		case 101:
+			str += "ErrorBased";
+			break;
+		case 201:
+		case 203:
+		case 2031:
+			str += "BoolBased";
+			break;
+		case 301:
+		case 302:
+			str += "TimeBased";
+			break;
+		case 4500:
+		case 401:
+			str += "XSS";
+			break;
+		default:
+			str += "unknown";
+	}
+	str += "(" + to_string(type) + ")\r\n";
+	if (method == 1)
+	{
+		str += "Get ";
+	}
+	else{
+		str += "Post ";
+	}
+	str += url +
+		"\r\nOriginal Parameters:  " + args +
+		"\r\nTest Parameter List:\r\n";
+	vector<string> vecArg;
+	split(argstr, separator, &vecArg);
+	int i = 0;
+	for (vector<string>::iterator iter = vecArg.begin(); iter != vecArg.end(); iter++, i++)
+	{
+		str += to_string(i)+".  " + (*iter) + "\r\n";
+	}
+	str += "------------------------------------------------------------------------\r\n\r\n";
+	return str;
 }
 
 

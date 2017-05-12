@@ -60,5 +60,5 @@ private:
 	CURL *m_pCurl = NULL;
 	CURLcode m_curCode;		
 	int m_statusCode = 0;	//当一次调用成功后，返回的状态码。
-
+	long m_defaultTimeOut = 10000;
 };

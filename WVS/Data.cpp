@@ -1,31 +1,30 @@
 #include "stdafx.h"
 #include "Data.h"
 
-CData::CData(string oriUrl)
+void CData::initData()
 {
-	originUrl = oriUrl;
-	int posBeg = oriUrl.find('/');
-	int posEnd = (oriUrl.substr(posBeg + 2, oriUrl.size())).find('/');
-	if (posEnd == -1){
-		//		http://www.baidu.com
-		domain = oriUrl.substr(posBeg + 2, oriUrl.size());
-	}
-	else{
-		domain = oriUrl.substr(posBeg + 2, posEnd);
-	}
-	
 	InitializeSRWLock(&m_linksVecSRW);
 	InitializeSRWLock(&m_cookieSRW);
-	hasSetUrl = true;
+	InitializeSRWLock(&m_extractLinkNumSRW);
+	InitializeSRWLock(&m_testedArgNumSRW);
+}
+
+CData::CData(string oriUrl)
+{
+	setUrl(oriUrl);
+	initData();
 }
 
 CData::CData()
 {
-	InitializeSRWLock(&m_linksVecSRW);
-	InitializeSRWLock(&m_cookieSRW);
+	initData();
 }
 void CData::setUrl(string oriUrl)
 {
+	if (oriUrl.find("http") != 0)
+	{
+		oriUrl = "http://" + oriUrl;
+	}
 	originUrl = oriUrl;
 	int posBeg = oriUrl.find('/');
 	int posEnd = (oriUrl.substr(posBeg + 2, oriUrl.size())).find('/');
@@ -78,6 +77,11 @@ bool CData::checkInLinks(Item &des, vector<Item*>&crawlerLinksVec)
 	else if (des.getUrl().find("setup.php") != -1)
 	{
 		cout << "dvwa数据库重置，不要" << des.getUrl() << endl;
+		return true;
+	}
+	else if (des.getUrl().find("csrf") != -1)
+	{
+		cout << "密码重置，不要" << des.getUrl() << endl;
 		return true;
 	}
 	AcquireSRWLockShared(&m_linksVecSRW);
@@ -160,9 +164,10 @@ vector<Item*>* CData::analyseHtml(Item*pItem, string& strHtml)
 	Item *pTempNewItem;
 	vector<Field>*pArgs;
 	string argStr;
+	pTempNewItem = new Item();
 	for (unsigned int i = 0; i < linksVec.size(); i++)
 	{
-		pTempNewItem = new Item();
+		
 		argStr = "";
 		findByName(linksVec[i], "href", tempLink, false);
 		formatLink(baseUrl, tempLink, argStr);
@@ -180,11 +185,7 @@ vector<Item*>* CData::analyseHtml(Item*pItem, string& strHtml)
 			pTempNewItem->setOriId(pItem->getId());
 			pItemVec->push_back(pTempNewItem);
 			putItem(pTempNewItem);
-		}
-		else
-		{
-			//	cout << "这个链接已经存在过！" << pTempNewItem->getUrl() << endl;
-			delete pTempNewItem;
+			pTempNewItem = new Item();
 		}
 	}
 
@@ -269,7 +270,7 @@ Item* CData::analyseRedirectHeader(Item* pItem, string headerStr)
 //	return pItme;
 //}
 
-Item* CData::getItem(unsigned index)
+Item* CData::getItemByIndex(unsigned index)
 {
 	Item * pItme;
 	AcquireSRWLockShared(&m_linksVecSRW);
@@ -292,6 +293,7 @@ void CData::putItem(Item* pItem)
 	AcquireSRWLockExclusive(&m_linksVecSRW);
 	pItem->setId(crawlerLinksItemVec.size());
 	crawlerLinksItemVec.push_back(pItem);
+	m_totalArgNum += pItem->getArgs().size();
 	ReleaseSRWLockExclusive(&m_linksVecSRW);
 }
 
@@ -300,15 +302,6 @@ void CData::getCookie(Cookie& tempCookie)
 	AcquireSRWLockShared(&m_cookieSRW);
 	tempCookie = cookie;
 	ReleaseSRWLockShared(&m_cookieSRW);
-}
-
-int CData::getRestLinksNum()
-{
-	int num;
-	AcquireSRWLockExclusive(&m_linksVecSRW);
-	num = crawlerLinksItemVec.size();
-	ReleaseSRWLockExclusive(&m_linksVecSRW);
-	return num;
 }
 
 std::string CData::getBaseUrl(string strHtml, Item *pItem)
@@ -339,6 +332,7 @@ std::string CData::getBaseUrl(string strHtml, Item *pItem)
 	if (posOfEnd < 6)
 	{
 		WriteLog("Url 太短,里面没有/，只有协议（http://）:" + pItem->getUrl() + "\n");
+		AfxMessageBox(L"Url 太短,里面没有/，只有协议（http://）");
 		exit(1);
 	}
 	else
@@ -353,6 +347,48 @@ void CData::setCookie(Cookie& tempCookie)
 	AcquireSRWLockExclusive(&m_cookieSRW);
 	cookie = tempCookie;
 	ReleaseSRWLockExclusive(&m_cookieSRW);
+}
+
+int CData::getExtractLinkNum()
+{
+	int tmp = 0;
+	AcquireSRWLockExclusive(&m_extractLinkNumSRW);
+	tmp = m_extractedLinkNum;
+	ReleaseSRWLockExclusive(&m_extractLinkNumSRW);
+	return tmp;
+}
+
+void CData::addExtractLinkNum()
+{
+	AcquireSRWLockExclusive(&m_extractLinkNumSRW);
+	m_extractedLinkNum++;
+	ReleaseSRWLockExclusive(&m_extractLinkNumSRW);
+}
+
+int CData::getTestedArgNum()
+{
+	int tmp = 0;
+	AcquireSRWLockExclusive(&m_testedArgNumSRW);
+	tmp = m_testedArgNum;
+	ReleaseSRWLockExclusive(&m_testedArgNumSRW);
+	return tmp;
+}
+
+void CData::addTestedArgNum(int val)
+{
+	AcquireSRWLockExclusive(&m_testedArgNumSRW);
+	m_testedArgNum += val;
+	ReleaseSRWLockExclusive(&m_testedArgNumSRW);
+}
+
+int CData::getTotalArgNum()
+{
+	return m_totalArgNum;
+}
+
+void CData::setTotalArgNum(int val)
+{
+	m_totalArgNum = val;
 }
 
 unsigned CData::crawlerLayer = 100000;

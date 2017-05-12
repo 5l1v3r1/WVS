@@ -87,6 +87,12 @@
     <ClInclude Include="TestManager.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="TestResult.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="ResultDialog.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="WVS.cpp">
@@ -150,6 +156,12 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="TestManager.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="TestResult.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="ResultDialog.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

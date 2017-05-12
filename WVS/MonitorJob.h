@@ -1,6 +1,6 @@
 #pragma once
 #include "MyThreadPool.h"
-#define WM_MY_MONITOR	WM_USER+8
+
 
 class MonitorJob :public CJob
 {

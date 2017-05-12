@@ -67,7 +67,7 @@ bool findByName(string s, string name, string& value, bool isCaseSensitive);
 // Parameter: bool isCaseSensitive
 // Function:  根据给定的正则模式sRegex，在s中寻找能够匹配的字符串存储在sVex中并返回。
 //************************************
-int findByRegex(string s, string sRegex, vector<string>&sVex, bool isCaseSensitive);
+int findByRegex(string& s, const string& sRegex, vector<string>&sVex, bool isCaseSensitive);
 
 //const string linkRegex = "<\\s*a[^>]>";	//辅以findByName  name = href
 //const string baseRegex = "<\\s*base[^>]"; // name = href
@@ -112,3 +112,6 @@ string escapeURL(const string &URL);
 string CStrToStr(CString& cstr);
 CString StrToCStr(string &str);
 void split(std::string& s, std::string& delim, std::vector< std::string >* ret);
+
+string generateResult(int id, int type, string& url, int method,
+					  string& args, string& argstr, string& separator);

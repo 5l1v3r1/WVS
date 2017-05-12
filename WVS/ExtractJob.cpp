@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "ExtractJob.h"
-
+#include "resource.h"
 
 string vecFieldToString2(vector<Field> fieldVec)
 {
@@ -17,11 +17,12 @@ string vecFieldToString2(vector<Field> fieldVec)
 }
 
 
-CExtractJob::CExtractJob(Item*pItem, CData* pData, TestManager*pTestManager)
+CExtractJob::CExtractJob(Item*pItem, CData* pData, TestManager*pTestManager, HWND hwnd)
 {
 	m_pData = pData;
 	m_pItem = pItem;
 	m_pTestManager = pTestManager;
+	m_hwnd = hwnd;
 }
 
 CExtractJob::~CExtractJob()
@@ -43,7 +44,7 @@ void CExtractJob::Run(void *ptr)
 			  m_pItem->getUrl() + 
 			  string("\tMethod:") +   (char)(m_pItem->getMethod() + '0') + 
 			  string("\tlayer:") + to_string(m_pItem->getLayer()) + 
-			  ("\tAEGUMENT:") + vecFieldToString2(m_pItem->getArgs()) + 
+			  ("\tAEGUMENT:") + /*vecFieldToString2(m_pItem->getArgs())*/ m_pItem->getArgsStr() + 
 			  ("\tcookie:") + tempCookie.toString());
 	
 	//爬取网页部分；	  当当前速度小于指定层次时，才进行下一步爬取。
@@ -66,7 +67,7 @@ void CExtractJob::Run(void *ptr)
 					Item* tempItem = m_pData->analyseRedirectHeader(m_pItem, m_pWorkThread->m_strHeader);
 					if (tempItem != NULL)
 					{
-						pJob = new CExtractJob(tempItem, m_pData, m_pTestManager);
+						pJob = new CExtractJob(tempItem, m_pData, m_pTestManager, m_hwnd);
 						m_pWorkThread->m_pThreadPool->addJob(pJob, NULL);
 					}
 				}
@@ -77,7 +78,7 @@ void CExtractJob::Run(void *ptr)
 
 				for (unsigned int i = 0; i < pItemVec->size(); i++)
 				{
-					pJob = new CExtractJob((*pItemVec)[i], m_pData, m_pTestManager);
+					pJob = new CExtractJob((*pItemVec)[i], m_pData, m_pTestManager, m_hwnd);
 					_cprintf("addNewJob%s\n", (*pItemVec)[i]->getUrl().c_str());
 					m_pWorkThread->m_pThreadPool->addJob(pJob, NULL);
 				}
@@ -95,12 +96,16 @@ void CExtractJob::Run(void *ptr)
 				break;
 		}
 	}
-
+	m_pData->addExtractLinkNum();
 	//测试网址部分。
 	_cprintf("TestItem：%s\n", m_pItem->getUrl().c_str());
 	if (m_pItem->getArgs().size() > 0)
 	{
 		m_pTestManager->test(pHttpClient, m_pItem);
+		m_pData->addTestedArgNum(m_pItem->getArgs().size());
+		string * pStr = new string(m_pItem->getUrl());
+		SendMessage(m_hwnd, WM_MY_MONITOR, 2, (LPARAM)pStr);
 	}
-
+	
+	
 }

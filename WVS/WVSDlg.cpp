@@ -229,12 +229,14 @@ CWVSDlg::CWVSDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(CWVSDlg::IDD, pParent)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
+#ifdef DEBUG_MY
 	setConsole();
+#endif
 	m_pData = new CData();
-	m_pThreadPool = new	CMyThreadPool(2);
+	m_pThreadPool = new	CMyThreadPool(-1);	
 	m_pTestManager = new TestManager(m_pData);
 	m_config.setGlobalData(m_pData, m_pThreadPool, m_pTestManager);
-	m_mainPage.setGlobalData(m_pData, m_pThreadPool, m_pTestManager);
+	m_mainPage.setGlobalData(m_pData, m_pThreadPool, m_pTestManager, &m_config);
 }
 
 void CWVSDlg::DoDataExchange(CDataExchange* pDX)
@@ -257,7 +259,6 @@ END_MESSAGE_MAP()
 BOOL CWVSDlg::OnInitDialog()
 {
 	CDialogEx::OnInitDialog();
-
 	// 将“关于...”菜单项添加到系统菜单中。
 
 	// IDM_ABOUTBOX 必须在系统命令范围内。
@@ -285,7 +286,6 @@ BOOL CWVSDlg::OnInitDialog()
 
 	
 
-	// TODO:  在此添加额外的初始化代码
 	CRect tabRect;
 	
 	m_tab.InsertItem(0, _T("主页"));

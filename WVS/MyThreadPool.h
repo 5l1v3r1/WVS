@@ -75,8 +75,9 @@ class CMyThreadPool
 {
 public:
 
-	CMyThreadPool(int initWorkerNum = 4);
+	CMyThreadPool(int initWorkerNum = -1);
 	~CMyThreadPool();
+	void setThreadNum(int threadNum);
 	void addJob(CJob *pJob, void* jobData);
 	CJob* getJob(void* &pjobData);
 	int getBusyWorkerNum();

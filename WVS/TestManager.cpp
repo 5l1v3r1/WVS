@@ -6,8 +6,9 @@ TestManager::TestManager(CData *pData)
 {
 	
 	m_pData = pData;
-	m_pSQLiTest = new CSQLiTest(pData);
-	m_pXSSTest = new XSSTest(pData);
+	m_pSQLiTest = new CSQLiTest(pData, this);
+	m_pXSSTest = new XSSTest(pData, this);
+	InitializeSRWLock(&m_resultSRW);
 	loadConfiguration();
 }
 
@@ -45,9 +46,18 @@ TestManager::~TestManager()
 //	}
 //}
 
-void TestManager::test(CHttpClient *pHttpClient, Item*pItem)
+bool TestManager::test(CHttpClient *pHttpClient, Item*pItem)
 {
-	m_pSQLiTest->test(pHttpClient, pItem);
+	bool flag = false;
+	if (m_pSQLiTest->test(pHttpClient, pItem))
+	{
+		flag = true;
+	}
+	if (m_pXSSTest->test(pHttpClient, pItem))
+	{
+		flag = true;
+	}
+	return flag;
 }
 
 
@@ -100,12 +110,51 @@ bool TestManager::loadConfiguration(string fileName /*= "testConf.xml"*/)
 
 std::string TestManager::resultToString()
 {
-	return  m_pSQLiTest->resultToString() + m_pXSSTest->resultToString();
+	string args = "\r\nresultId\ttype\tresultState\tcaseId\tinjectPos\tmethod\targs\t\t\t\t\turl------------------------\r\n";
+	Item *pItem;
+	for (unsigned i = 0; i < m_vecpResult.size(); i++)
+	{
+		pItem = m_pData->getItemByIndex(m_vecpResult[i]->itemId);
+		args += to_string(m_vecpResult[i]->id) +
+			"\t\t" + to_string(m_vecpResult[i]->type) +
+			"\t" + to_string(m_vecpResult[i]->resultState) +
+			"\t\t" + to_string(m_vecpResult[i]->caseId) +
+			"\t" + to_string(m_vecpResult[i]->injectPos) +
+			"\t" + to_string(m_vecpResult[i]->method) +
+			"\t\t" + m_vecpResult[i]->args +
+			"\t\t\t\t\t" + m_vecpResult[i]->url +
+			"\r\n";
+	}
+	return args;
 }
 
 std::string TestManager::resultToStringForCSV()
 {
-	return  m_pSQLiTest->resultToStringForCSV() + m_pXSSTest->resultToStringForCSV();
+	string args = "resultId, type, resultState, caseId, injectPos, method, args,url, cookie, argStr\n";
+	string html = "";
+	unsigned i;
+	for ( i = 0; i < m_vecpResult.size(); i++)
+	{
+		args += to_string(m_vecpResult[i]->id) +
+			"," + to_string(m_vecpResult[i]->type) +
+			"," + to_string(m_vecpResult[i]->resultState) +
+			"," + to_string(m_vecpResult[i]->caseId) +
+			"," + to_string(m_vecpResult[i]->injectPos) +
+			"," + to_string(m_vecpResult[i]->method) +
+			"," + m_vecpResult[i]->args +
+			"," + m_vecpResult[i]->url +
+			"," + m_vecpResult[i]->cookie +
+			"," + m_vecpResult[i]->argStrs +
+			"\n";
+		html = "";
+		/*for (j = 0; j < m_vecpResult[i]->vecResponse.size(); j++)
+		{
+		html += m_vecpResult[i]->vecResponse[j];
+		html += "\n-----------------------------------NO."+to_string(j+1)+"----------------------------------------\n";
+		}
+		WriteFile("网址结果存档_" + to_string(m_vecpResult[i]->id), html);*/
+	}
+	return args;
 }
 
 bool TestManager::saveConfiguration(string fileName /*= "XSSConf.xml"*/)
@@ -117,11 +166,34 @@ bool TestManager::saveConfiguration(string fileName /*= "XSSConf.xml"*/)
 
 void TestManager::clearResult()
 {
-	m_pSQLiTest->clearResult();
-	m_pXSSTest->clearResult();
+	AcquireSRWLockExclusive(&m_resultSRW);
+	m_vecpResult.clear();
+	ReleaseSRWLockExclusive(&m_resultSRW);
 }
 
-void TestManager::setTestMode(bool errorBased, bool boolBased, bool timeBased)
+void TestManager::setTestMode(bool errorBased, bool boolBased, bool timeBased, bool xssTest)
 {
 	m_pSQLiTest->setTestMode(errorBased, boolBased, timeBased);
+	m_pXSSTest->setTestMode(xssTest);
+}
+
+void TestManager::putResultItem(TestResult* pResult)
+{
+	AcquireSRWLockExclusive(&m_resultSRW);
+	pResult->id = m_vecpResult.size();
+	m_vecpResult.push_back(pResult);
+	ReleaseSRWLockExclusive(&m_resultSRW);
+}
+
+std::string TestManager::resultToStringFormat()
+{
+	string str = "";
+	TestResult *pResult;
+	str = "共有" + to_string(m_vecpResult.size()) + "处可能存在漏洞";
+	for (unsigned i = 0; i < m_vecpResult.size(); i++)
+	{
+		pResult = m_vecpResult[i];
+		str += generateResult(pResult->id, pResult->resultState, pResult->url, pResult->method, pResult->args, pResult->argStrs, g_separator);
+	}
+	return str;
 }

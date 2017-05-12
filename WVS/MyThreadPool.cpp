@@ -2,20 +2,40 @@
 #include "MyThreadPool.h"
 
 
-CMyThreadPool::CMyThreadPool(int initWorkerNum /*= 4*/)
+CMyThreadPool::CMyThreadPool(int initWorkerNum /*= -1*/)
 {
 	InitializeCriticalSection(&m_jobQueueCS);
 	InitializeConditionVariable(&m_jobCond);
 	InitializeSRWLock(&m_statusSRW);
 	InitializeConditionVariable(&m_statusCond);
-	m_status = ThreadPoolStatus::work;
-	CMyWorkerThread *pWorkerThread;
-	for (int i = 0; i < initWorkerNum; i++)
+	if (initWorkerNum <= 0)
 	{
-		pWorkerThread = new CMyWorkerThread(this);
-		workerVec.push_back(pWorkerThread);
+		//lazy init thread 
+		m_status = ThreadPoolStatus::pause;
 	}
+	else{
+		m_status = ThreadPoolStatus::work;
+		CMyWorkerThread *pWorkerThread;
+		for (int i = 0; i < initWorkerNum; i++)
+		{
+			pWorkerThread = new CMyWorkerThread(this);
+			workerVec.push_back(pWorkerThread);
+		}
+	}
+}
 
+void CMyThreadPool::setThreadNum(int threadNum)
+{
+	if (workerVec.size() == 0)
+	{
+		m_status = ThreadPoolStatus::work;
+		CMyWorkerThread *pWorkerThread;
+		for (int i = 0; i < threadNum; i++)
+		{
+			pWorkerThread = new CMyWorkerThread(this);
+			workerVec.push_back(pWorkerThread);
+		}
+	}
 }
 
 CMyThreadPool::~CMyThreadPool()
@@ -89,11 +109,12 @@ void CMyThreadPool::resume()
 	WakeAllConditionVariable(&m_statusCond);
 }
 
-void CMyThreadPool::stop()
+void CMyThreadPool::stop()	//problem 线程对象没有被释放
 {
 	AcquireSRWLockExclusive(&m_statusSRW);
-	m_status = ThreadPoolStatus::stop;
+	m_status = ThreadPoolStatus::stop; 
 	ReleaseSRWLockExclusive(&m_statusSRW);
+	WakeAllConditionVariable(&m_jobCond);
 }
 
 unsigned int CMyWorkerThread::ThreadFunction(void*arg)
@@ -128,42 +149,45 @@ void CMyWorkerThread::Run(void)
 		threadPoolStatus = m_pThreadPool->getStatus();
 		switch (threadPoolStatus)
 		{
-			case ThreadPoolStatus::work:{
-											EnterCriticalSection(&(m_pThreadPool->m_jobQueueCS));
-											while ((m_Job = (m_pThreadPool->getJob(m_JobData))) == NULL)
-											{
-												m_status = TheadStatus::WAITTING;
-												SleepConditionVariableCS(&(m_pThreadPool->m_jobCond), &(m_pThreadPool->m_jobQueueCS), INFINITE);
-											}
-											m_status = TheadStatus::BUSY;
-											LeaveCriticalSection(&(m_pThreadPool->m_jobQueueCS));
-											//Sleep(5000);
-											m_Job->SetWorkThread(this);
-											m_Job->Run(m_JobData);
-											if (m_Job->m_isDeleteAfterDone)
-											{
-												delete m_Job;
-												if (m_JobData != NULL)
-													delete m_JobData;
-											}
-											m_Job = NULL;
-											m_JobData = NULL;
-											break;
-			}
-			case ThreadPoolStatus::pause:{
-											 m_status = TheadStatus::WAITTING;
-											 AcquireSRWLockShared(&(m_pThreadPool->m_statusSRW));
-											 SleepConditionVariableSRW(&(m_pThreadPool->m_statusCond), &(m_pThreadPool->m_statusSRW), INFINITE, CONDITION_VARIABLE_LOCKMODE_SHARED);
-											 ReleaseSRWLockShared(&(m_pThreadPool->m_statusSRW));
-											 break;
-			}
-			case ThreadPoolStatus::stop:{
-											flag = false;
-											break;
-			}
-			default:{
-						WriteLog("threadPoolStatus Exception:" + to_string(threadPoolStatus));
-			}
+			case ThreadPoolStatus::work:
+				EnterCriticalSection(&(m_pThreadPool->m_jobQueueCS));
+				while (((m_Job = (m_pThreadPool->getJob(m_JobData))) == NULL) &&
+					   (m_pThreadPool->getStatus() != ThreadPoolStatus::stop))
+				{
+					m_status = TheadStatus::WAITTING;
+					SleepConditionVariableCS(&(m_pThreadPool->m_jobCond), &(m_pThreadPool->m_jobQueueCS), INFINITE);
+				}
+				if (ThreadPoolStatus::stop == m_pThreadPool->getStatus())
+					break;
+
+				m_status = TheadStatus::BUSY;
+				LeaveCriticalSection(&(m_pThreadPool->m_jobQueueCS));
+				//Sleep(5000);
+				m_Job->SetWorkThread(this);
+				m_Job->Run(m_JobData);
+				if (m_Job->m_isDeleteAfterDone)
+				{
+					delete m_Job;
+					if (m_JobData != NULL)
+						delete m_JobData;
+				}
+				m_Job = NULL;
+				m_JobData = NULL;
+				break;
+
+			case ThreadPoolStatus::pause:
+				m_status = TheadStatus::WAITTING;
+				AcquireSRWLockShared(&(m_pThreadPool->m_statusSRW));
+				SleepConditionVariableSRW(&(m_pThreadPool->m_statusCond), &(m_pThreadPool->m_statusSRW), INFINITE, CONDITION_VARIABLE_LOCKMODE_SHARED);
+				ReleaseSRWLockShared(&(m_pThreadPool->m_statusSRW));
+				break;
+
+			case ThreadPoolStatus::stop:
+				flag = false;
+				break;
+
+			default:
+				WriteLog("threadPoolStatus Exception:" + to_string(threadPoolStatus));
 		}
 	}
 	WriteLog("thead_id" + to_string(m_ThreadID) + "  end");

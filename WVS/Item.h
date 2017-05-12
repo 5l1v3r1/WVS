@@ -12,7 +12,7 @@ public:
 	Item(const Item&a);
 	Item(HttpMethod method, string url);
 	Item(HttpMethod method, string url, vector<Field> args);
-	string getArgsStr(int pos = -1, string inject = "", bool needDefaultValue = true);
+	string getArgsStr(int pos = -1, string inject = "", bool needDefaultValue = true, bool urlEncoding = true);
 
 	Item operator=(Item&a);
 	bool equal(Item&a);

@@ -1,19 +1,16 @@
 #include "stdafx.h"
 #include "SQLiTest.h"
 #include "tinyxml2.h"
+#include "TestManager.h"
 
-
-CSQLiTest::CSQLiTest(CData* pData)
+CSQLiTest::CSQLiTest(CData* pData, TestManager* pTestManager)
 {
-	EBCvec = vector<ErrorBasedCase*>();
-	TBCvec = vector<TimeBasedCase*>();
-	BBCvec = vector<BoolBasedCase*>();
-	resultVec = vector<SQLiResult*>();
+	m_vecEBTestCase = vector<ErrorBasedCase*>();
+	m_veerTBTestCase = vector<TimeBasedCase*>();
+	m_vecBBTestCase = vector<BoolBasedCase*>();
 	m_pData = pData;
-	loadConfiguration();
-	InitializeSRWLock(&m_resultSRW);
+	m_pTestManager = pTestManager;
 }
-
 
 CSQLiTest::~CSQLiTest()
 {
@@ -52,6 +49,7 @@ bool CSQLiTest::loadConfiguration(string fileName /*= "SQLiTestCase.xml"*/)
 			tinyxml2::XMLElement *identiEle = injectElement->NextSiblingElement();
 			tinyxml2::XMLElement *checkElement = identiEle->NextSiblingElement();
 			if (injectElement->GetText() == 0){
+				//因tinyxml2 不能存储空格，所做的特殊处理
 				pEBC->inject = " ";
 			}
 			else{
@@ -61,7 +59,7 @@ bool CSQLiTest::loadConfiguration(string fileName /*= "SQLiTestCase.xml"*/)
 			pEBC->identify = identiEle->FirstChild()->Value();
 			pEBC->check = checkElement->FirstChild()->Value();
 			_cprintf("id:%d\tinject:%s\tidentify:%s\tcheck:%s\n", pEBC->id, pEBC->inject.c_str(), pEBC->identify.c_str(), pEBC->check.c_str());
-			EBCvec.push_back(pEBC);
+			m_vecEBTestCase.push_back(pEBC);
 			caseElement = caseElement->NextSiblingElement();
 		}
 
@@ -83,7 +81,7 @@ bool CSQLiTest::loadConfiguration(string fileName /*= "SQLiTestCase.xml"*/)
 			pBBC->identify = identiEle->FirstChild()->Value();
 			pBBC->check = checkElement->FirstChild()->Value();
 			_cprintf("id:%d\tinject:%s\tinject2:%s\tidentify:%s\tcheck:%s\n", pBBC->id, pBBC->inject.c_str(), pBBC->inject2.c_str(), pBBC->identify.c_str(), pBBC->check.c_str());
-			BBCvec.push_back(pBBC);
+			m_vecBBTestCase.push_back(pBBC);
 			caseElement = caseElement->NextSiblingElement();
 		}
 
@@ -93,7 +91,8 @@ bool CSQLiTest::loadConfiguration(string fileName /*= "SQLiTestCase.xml"*/)
 		TBCRoot->QueryIntAttribute("num", &num);
 		PTimeBasedCase pTBC;
 		caseElement = TBCRoot->FirstChildElement();
-		for (int i = 0; i < num; i++){
+		for (int i = 0; i < num; i++)
+		{
 			pTBC = new TimeBasedCase();
 			caseElement->QueryIntAttribute("id", &(pTBC->id));
 			tinyxml2::XMLElement *injectElement = caseElement->FirstChildElement();
@@ -106,7 +105,7 @@ bool CSQLiTest::loadConfiguration(string fileName /*= "SQLiTestCase.xml"*/)
 			pTBC->identifyPost = identiPostEle->FirstChild()->Value();
 			_cprintf("id:%d\tinject:%s\tinjectpost:%s\tidentify:%s\tidentifyPost:%s\n",
 					 pTBC->id, pTBC->inject.c_str(), pTBC->injectPost.c_str(), pTBC->identify.c_str(), pTBC->identifyPost.c_str());
-			TBCvec.push_back(pTBC);
+			m_veerTBTestCase.push_back(pTBC);
 			caseElement = caseElement->NextSiblingElement();
 		}
 
@@ -136,13 +135,13 @@ bool CSQLiTest::saveConfiguration(string fileName /*= "SQLiTestCase.xml"*/)
 		tinyxml2::XMLElement *EBCRoot = myDocument->NewElement("ErrorBasedTestCase");
 		RootElement->LinkEndChild(EBCRoot);
 		EBCRoot->SetAttribute("num", 0);
+		EBCRoot->SetAttribute("text", "i am text");
 		tinyxml2::XMLElement *BBCRoot = myDocument->NewElement("BoolBasedTestCase");
 		RootElement->LinkEndChild(BBCRoot);
 		BBCRoot->SetAttribute("num", 0);
 		tinyxml2::XMLElement *TBCRoot = myDocument->NewElement("TimeBasedTestCase");
 		RootElement->LinkEndChild(TBCRoot);
 		TBCRoot->SetAttribute("num", 0);
-
 
 		ErrorBasedCase EBCcase = { 0, "'", "NULL", "You have an error in your SQL syntax;" };
 		insertEBC(&EBCcase, EBCRoot, myDocument);
@@ -177,33 +176,31 @@ bool CSQLiTest::saveConfiguration(string fileName /*= "SQLiTestCase.xml"*/)
 		bbcCase = { 0, "1524024) or 1=1 #", "NULL", "1816807) or 'a' = 'a' #", "NULL" };
 		insertBBC(&bbcCase, BBCRoot, myDocument);
 
-		bbcCase = { 0, "' and 1=2 #", "NULL", "NULL", "NULL" };
+		bbcCase = { 0, "' and 1=2 #", "NULL", "' and 'a' = 'b' #", "NULL" };
 		insertBBC(&bbcCase, BBCRoot, myDocument);
-		bbcCase = { 0, "\" and 1=2 #", "NULL", "NULL", "NULL" };
+		bbcCase = { 0, "\" and 1=2 #", "NULL", "\" and 'a' = 'b' #", "NULL" };
 		insertBBC(&bbcCase, BBCRoot, myDocument);
-		bbcCase = { 0, "') and 1=2 #", "NULL", "NULL", "NULL" };
+		bbcCase = { 0, "') and 1=2 #", "NULL", "') and 'a' = 'b' #", "NULL" };
 		insertBBC(&bbcCase, BBCRoot, myDocument);
-		bbcCase = { 0, "\") and 1=2 #", "NULL", "NULL", "NULL" };
+		bbcCase = { 0, "\") and 1=2 #", "NULL", "\") and 'a' = 'b' #", "NULL" };
 		insertBBC(&bbcCase, BBCRoot, myDocument);
-		bbcCase = { 0, "2 and 1=2 #", "NULL", "NULL", "NULL" };
+		bbcCase = { 0, "1524024 and 1=2 #", "NULL", "1816807 and 'a' = 'b' #", "NULL" };
 		insertBBC(&bbcCase, BBCRoot, myDocument);
-		bbcCase = { 0, "2) and 1=2 #", "NULL", "NULL", "NULL" };
+		bbcCase = { 0, "1524024) and 1=2 #", "NULL", "1816807) and 'a' = 'b' #", "NULL" };
 		insertBBC(&bbcCase, BBCRoot, myDocument);
-
-
 
 		TimeBasedCase tbcCase = { 0, "' or if(1=1, sleep(", "), 0) #", "NULL", "NULL", 0 };
 		insertTBC(&tbcCase, TBCRoot, myDocument);
 		TimeBasedCase tbcCase2 = { 0, "\" or if(1=1, sleep(", "), 0) #", "NULL", "NULL", 0 };
 		insertTBC(&tbcCase2, TBCRoot, myDocument);
 		TimeBasedCase tbcCase3 = { 0, "') or if(1=1, sleep(", "), 0) #", "NULL", "NULL", 0 };
-		insertTBC(&tbcCase, TBCRoot, myDocument);
+		insertTBC(&tbcCase3, TBCRoot, myDocument);
 		TimeBasedCase tbcCase4 = { 0, "\") or if(1=1, sleep(", "), 0) #", "NULL", "NULL", 0 };
-		insertTBC(&tbcCase2, TBCRoot, myDocument);
+		insertTBC(&tbcCase4, TBCRoot, myDocument);
 		TimeBasedCase tbcCase5 = { 0, "23 or if(1=1, sleep(", "), 0) #", "NULL", "NULL", 0 };
-		insertTBC(&tbcCase, TBCRoot, myDocument);
-		TimeBasedCase tbcCase6 = { 0, "23) or if(1=1, sleep(", "), 0) #", "NULL", "NULL", 0 };
-		insertTBC(&tbcCase2, TBCRoot, myDocument);
+		insertTBC(&tbcCase5, TBCRoot, myDocument);
+		TimeBasedCase tbcCase6 = { 0, "12345) or if(1=1, sleep(", "), 0) #", "***\r\n***", "<script>alert~(Math.random~(~)~)</script>", 0 };
+		insertTBC(&tbcCase6, TBCRoot, myDocument);
 
 		myDocument->SaveFile(fileName.c_str());//保存到文件
 	}
@@ -327,7 +324,7 @@ void CSQLiTest::insertTBC(TimeBasedCase *pTBC, tinyxml2::XMLElement *TBCRoot, ti
 
 bool CSQLiTest::test(CHttpClient *pHttpClient, Item *pItem)
 {
-
+	bool flag = false;
 	long averageTime1 = 0;
 	long averageTime2 = 0;
 
@@ -339,6 +336,7 @@ bool CSQLiTest::test(CHttpClient *pHttpClient, Item *pItem)
 		{
 			if (errorBasedTest(pHttpClient, pItem, i, averageTime1))
 			{
+				flag = true;
 				continue;
 			}
 		}
@@ -346,6 +344,7 @@ bool CSQLiTest::test(CHttpClient *pHttpClient, Item *pItem)
 		{
 			if (boolBasedTest(pHttpClient, pItem, i, averageTime2))
 			{
+				flag = true;
 				continue;
 			}
 		}
@@ -353,11 +352,12 @@ bool CSQLiTest::test(CHttpClient *pHttpClient, Item *pItem)
 		{
 			if (timeBasedTest(pHttpClient, pItem, i, (averageTime1 + averageTime2) / 2))
 			{
+				flag = true;
 				continue;
 			}
 		}
 	}
-	return false;
+	return flag;
 }
 
 bool CSQLiTest::errorBasedTest(CHttpClient* pHttpClient, Item *pItem, unsigned pos, long &averageTime)
@@ -369,20 +369,20 @@ bool CSQLiTest::errorBasedTest(CHttpClient* pHttpClient, Item *pItem, unsigned p
 	Cookie cookie;
 	string cookieStr;
 	string args = "";
-	SQLiResult* pResult = NULL;
+	TestResult* pResult = NULL;
 	m_pData->getCookie(cookie);
 	cookieStr = cookie.toString();
 	HttpMethod method = pItem->getMethod();
 	string url = pItem->getUrl();
 
 	int resultState = 0;	//1 表示只有inject有，2表示两个都有。
-	for (unsigned i = 0; i < EBCvec.size(); i++)
+	for (unsigned i = 0; i < m_vecEBTestCase.size(); i++)
 	{
 		resultState = 0;
 		html = "";
 		//参数编制。
-		args = pItem->getArgsStr(pos, EBCvec[i]->inject);
-
+		args = pItem->getArgsStr(pos, m_vecEBTestCase[i]->inject);
+	
 		send(pHttpClient, method, cookieStr, url, args, html, sumTime, sendCount);
 
 		if (pHttpClient->getStatusCode() / 100 == 5)
@@ -395,7 +395,7 @@ bool CSQLiTest::errorBasedTest(CHttpClient* pHttpClient, Item *pItem, unsigned p
 		//	resultState = 1000 + pHttpClient->getStatusCode();
 			continue;
 		}
-		else if (html.find(EBCvec[i]->check) != -1)
+		else if (html.find(m_vecEBTestCase[i]->check) != -1)
 		{
 			resultState=101;
 		}
@@ -422,23 +422,29 @@ bool CSQLiTest::errorBasedTest(CHttpClient* pHttpClient, Item *pItem, unsigned p
 		if (resultState != 0)
 		{
 			//记录情况
-			pResult = new SQLiResult();
-			pResult->id = resultVec.size();
+			pResult = new TestResult();
 			pResult->itemId = pItem->getId();
 			pResult->url = pItem->getUrl();
-			pResult->caseId = EBCvec[i]->id;
+			pResult->caseId = m_vecEBTestCase[i]->id;
 			pResult->injectPos = pos;
 			pResult->cookie = cookie.toString();
 			pResult->args = pItem->getArgsStr();
 			pResult->resultState = resultState;
+			pResult->argStrs = pItem->getArgsStr(pos, m_vecEBTestCase[i]->inject, true, false);
 			pResult->type = 0;
+			pResult->method = method;
+			/*if (resultState == 101)
+			{
+				pResult->vecResponse.push_back(html);
+			}*/
+			m_pTestManager->putResultItem(pResult);
+			pItem->getArgs()[pos].setResultId(pResult->id);
 
-			putResultItem(pResult);
+			WriteFile("网址_结果格式化.txt", generateResult(pResult->id, pResult->resultState, pResult->url, pResult->method, pResult->args, pResult->argStrs, m_pTestManager->g_separator));
 			break;
 		}
 	}
 	averageTime = sumTime / (sendCount * 1000 / CLOCKS_PER_SEC);
-
 	return resultState > 0;
 }
 
@@ -448,71 +454,64 @@ bool CSQLiTest::boolBasedTest(CHttpClient* pHttpClient, Item *pItem, unsigned po
 
 	long sumTime = 0;
 	int sendCount = 0;
-
+	CURLcode code;
 	bool isInjectable = false;
 	string html = "";
 	Cookie cookie;
 	string cookieStr;
 	string args = "";
-	SQLiResult* pResult = NULL;
+	TestResult* pResult = NULL;
 	m_pData->getCookie(cookie);
 	int resultState = 0;
 	cookieStr = cookie.toString();
 	HttpMethod method = pItem->getMethod();
 	string url = pItem->getUrl();
-	unsigned int testCaseNum = BBCvec.size() / 3;
+	unsigned int testCaseNum = m_vecBBTestCase.size() / 3;
 	// and 1=1, or 1=1, and 1=2; 三种类型，每种类型数量都相同。
-
-	//if (url.find("blind") != -1)
-	//{
-	//	//int x = 1;
-	//}
 
 	string oriHtml;
 	string errorHtml;
 	string rightHtml;
-	string identiHtml;
+	string rightIdentiHtml;
+	string errorIdentiHtml;
 	unsigned i;
 
 	if ((pItem->getArgs())[pos].getValue() != "")	//是否有默认值
 	{
 		//该位置有默认值
-		args = pItem->getArgsStr();
-		send(pHttpClient, method, cookieStr, url, args, oriHtml, sumTime, sendCount);	//获取样本0
-		for (i = 0; i < testCaseNum; i++)
+		args = pItem->getArgsStr(-1,"",true, false);
+		code = send(pHttpClient, method, cookieStr, url, args, oriHtml, sumTime, sendCount);	//获取样本0
+		if (code == CURLE_OK)
 		{
-			rightHtml = "";
-			errorHtml = "";
-
-			args = pItem->getArgsStr(pos, BBCvec[i]->inject) + getComment(method);
-			send(pHttpClient, method, cookieStr, url, args, rightHtml, sumTime, sendCount);	//获取样本1
-			if (htmlEqual(oriHtml, rightHtml))
+			switch (pHttpClient->getStatusCode() / 100 )
 			{
-				args = pItem->getArgsStr(pos, BBCvec[testCaseNum * 2 + i]->inject) + getComment(method);
-				send(pHttpClient, method, cookieStr, url, args, errorHtml, sumTime, sendCount);	//获取样本2
-				if (!htmlEqual(rightHtml, errorHtml))
-				{
-					resultState = 201;
-					break;
-				}
+				case 2:
+					for (i = 0; i < testCaseNum; i++)
+					{
+						rightHtml = "";
+						errorHtml = "";
+
+						args = pItem->getArgsStr(pos, m_vecBBTestCase[i]->inject) + getComment(method);
+						code = send(pHttpClient, method, cookieStr, url, args, rightHtml, sumTime, sendCount);	//获取样本1
+						if (code != CURLE_OK || pHttpClient->getStatusCode()/100 != 2)
+							continue;
+						if (htmlEqual(oriHtml, rightHtml))
+						{
+							args = pItem->getArgsStr(pos, m_vecBBTestCase[testCaseNum * 2 + i]->inject) + getComment(method);
+							code = send(pHttpClient, method, cookieStr, url, args, errorHtml, sumTime, sendCount);	//获取样本2
+							if (code != CURLE_OK || pHttpClient->getStatusCode() / 100 != 2)
+								continue;
+							if (!htmlEqual(rightHtml, errorHtml))
+							{
+								resultState = 201;
+								break;
+							}
+						}
+					}
+					default:// 未正常返回网页，表示参数有问题直接当做无参数处理
+						break;
 			}
 		}
-		//if (i == testCaseNum)
-		//{
-		//	//有默认值，但是是错误的。从 or 1=1类型开始测试
-		//	for (; i < testCaseNum * 2; i++)
-		//	{
-		//		rightHtml = "";
-
-		//		args = pItem->getArgsStr(pos, BBCvec[i]->inject) + getComment(method);
-		//		send(pHttpClient, method, cookieStr, url, args, rightHtml, sumTime, sendCount);	//获取样本1
-		//		if (!htmlEqual(oriHtml, rightHtml))
-		//		{
-		//			resultState = 102;
-		//			break;
-		//		}
-		//	}
-		//}
 	}
 	if (resultState == 0)
 	{
@@ -521,24 +520,27 @@ bool CSQLiTest::boolBasedTest(CHttpClient* pHttpClient, Item *pItem, unsigned po
 		{
 			rightHtml = "";
 			errorHtml = "";
-			identiHtml = "";
-			args = pItem->getArgsStr(pos, BBCvec[i]->inject, false) + getComment(method);
-			send(pHttpClient, method, cookieStr, url, args, rightHtml, sumTime, sendCount);	//获取样本1
-
-			args = pItem->getArgsStr(pos, BBCvec[testCaseNum + i]->inject, false) + getComment(method);
-			send(pHttpClient, method, cookieStr, url, args, errorHtml, sumTime, sendCount);	//获取样本2
+			rightIdentiHtml = "";
+			errorIdentiHtml = "";
+			args = pItem->getArgsStr(pos, m_vecBBTestCase[i]->inject, false) + getComment(method);
+			code = send(pHttpClient, method, cookieStr, url, args, rightHtml, sumTime, sendCount);	//获取样本1
+			if (code != CURLE_OK || pHttpClient->getStatusCode() / 100 != 2)
+				continue;
+			args = pItem->getArgsStr(pos, m_vecBBTestCase[testCaseNum + i]->inject, false) + getComment(method);
+			code = send(pHttpClient, method, cookieStr, url, args, errorHtml, sumTime, sendCount);	//获取样本2
 			if (!htmlEqual(rightHtml, errorHtml))
 			{
-			
 				//进一步验证		//可以避免因为反射型网页误导。
-				args = pItem->getArgsStr(pos, BBCvec[i]->identify, false);
-				send(pHttpClient, method, cookieStr, url, args, identiHtml, sumTime, sendCount);	//获取验证样本1
-				if (htmlEqual(rightHtml, identiHtml))
+				args = pItem->getArgsStr(pos, m_vecBBTestCase[i]->identify, false);
+				code = send(pHttpClient, method, cookieStr, url, args, rightIdentiHtml, sumTime, sendCount);	//获取验证样本1
+				if (code != CURLE_OK || pHttpClient->getStatusCode() / 100 != 2)
+					continue;
+				if (htmlEqual(rightHtml, rightIdentiHtml))
 				{
 					resultState = 203;
-					args = pItem->getArgsStr(pos, BBCvec[testCaseNum + i]->identify, false);
-					send(pHttpClient, method, cookieStr, url, args, identiHtml, sumTime, sendCount);	//获取验证样本2
-					if (htmlEqual(errorHtml, identiHtml))
+					args = pItem->getArgsStr(pos, m_vecBBTestCase[testCaseNum + i]->identify, false);
+					send(pHttpClient, method, cookieStr, url, args, errorIdentiHtml, sumTime, sendCount);	//获取验证样本2
+					if (htmlEqual(errorHtml, errorIdentiHtml))
 					{
 						resultState = 2031;
 					}
@@ -551,18 +553,39 @@ bool CSQLiTest::boolBasedTest(CHttpClient* pHttpClient, Item *pItem, unsigned po
 
 	if (resultState > 0)
 	{
-		pResult = new SQLiResult();
-		pResult->id = resultVec.size();
+		pResult = new TestResult();
 		pResult->itemId = pItem->getId();
 		pResult->url = pItem->getUrl();
-		pResult->caseId = BBCvec[i]->id;
+		pResult->caseId = m_vecBBTestCase[i]->id;
 		pResult->injectPos = pos;
 		pResult->cookie = cookie.toString();
 		pResult->args = pItem->getArgsStr();
 		pResult->resultState = resultState;
 		pResult->type = 1;
-
-		putResultItem(pResult);
+		pResult->method = method;
+		if (resultState == 201)
+		{
+			/*pResult->vecResponse.push_back(oriHtml);
+			pResult->vecResponse.push_back(rightHtml);
+			pResult->vecResponse.push_back(errorHtml);*/
+			pResult->argStrs = pItem->getArgsStr(-1, "", true, false) + m_pTestManager->g_separator +
+				pItem->getArgsStr(pos, m_vecBBTestCase[i]->inject, true, false) + m_pTestManager->g_separator +
+				pItem->getArgsStr(pos, m_vecBBTestCase[testCaseNum * 2 + i]->inject, true, false);
+		}
+		else 
+		{
+			/*pResult->vecResponse.push_back(rightHtml);
+			pResult->vecResponse.push_back(rightIdentiHtml);
+			pResult->vecResponse.push_back(errorHtml);
+			pResult->vecResponse.push_back(errorIdentiHtml);*/
+			pResult->argStrs = pItem->getArgsStr(pos, m_vecBBTestCase[i]->inject, false, false) + m_pTestManager->g_separator +
+				pItem->getArgsStr(pos, m_vecBBTestCase[testCaseNum + i]->inject, false, false) + m_pTestManager->g_separator +
+				pItem->getArgsStr(pos, m_vecBBTestCase[i]->identify, false, false) + m_pTestManager->g_separator +
+				pItem->getArgsStr(pos, m_vecBBTestCase[testCaseNum + i]->identify, false,false);
+		}
+		m_pTestManager->putResultItem(pResult);
+		pItem->getArgs()[pos].setResultId(pResult->id);
+		WriteFile("网址_结果格式化.txt", generateResult(pResult->id, pResult->resultState, pResult->url, pResult->method, pResult->args, pResult->argStrs, m_pTestManager->g_separator));
 	}
 
 	averageTime = sumTime / (sendCount * 1000 / CLOCKS_PER_SEC);
@@ -575,17 +598,16 @@ bool CSQLiTest::timeBasedTest(CHttpClient* pHttpClient, Item *pItem, unsigned po
 	string html = "";
 	Cookie cookie;
 	string args = "";
-	SQLiResult* pResult = NULL;
+	TestResult* pResult = NULL;
 	m_pData->getCookie(cookie);
 	int resultState = 0;	//1 
 
 	CURLcode code;
 	pHttpClient->setTimeOut(averageTime + m_lateTime);
-	for (unsigned i = 0; i < TBCvec.size(); i++)
+	for (unsigned i = 0; i < m_veerTBTestCase.size(); i++)
 	{
 		resultState = 0;
-		args = pItem->getArgsStr(pos, TBCvec[i]->inject + to_string(averageTime / 1000 + 1) + TBCvec[i]->injectPost + getComment(pItem->getMethod()));
-
+		args = pItem->getArgsStr(pos, m_veerTBTestCase[i]->inject + to_string(averageTime / 1000 + 1) + m_veerTBTestCase[i]->injectPost + getComment(pItem->getMethod()));
 
 		start = clock();
 		code = pHttpClient->send(pItem->getMethod(), cookie.toString(), pItem->getUrl(), args, html);
@@ -613,60 +635,25 @@ bool CSQLiTest::timeBasedTest(CHttpClient* pHttpClient, Item *pItem, unsigned po
 		}
 		if (resultState > 0)
 		{
-			pResult = new SQLiResult();
-			pResult->id = resultVec.size();
+			pResult = new TestResult();
 			pResult->itemId = pItem->getId();
 			pResult->url = pItem->getUrl();
-			pResult->caseId = BBCvec[i]->id;
+			pResult->caseId = m_vecBBTestCase[i]->id;
 			pResult->injectPos = pos;
 			pResult->cookie = cookie.toString();
 			pResult->args = pItem->getArgsStr();
 			pResult->resultState = resultState;
 			pResult->type = 2;
-			putResultItem(pResult);
+			pResult->method = pItem->getMethod();
+			pResult->argStrs = pItem->getArgsStr(pos, m_veerTBTestCase[i]->inject + to_string(averageTime / 1000 + 1) + m_veerTBTestCase[i]->injectPost + getComment(pItem->getMethod()), true, false);
+			m_pTestManager->putResultItem(pResult);
+			pItem->getArgs()[pos].setResultId(pResult->id);
+			WriteFile("网址_结果格式化.txt", generateResult(pResult->id, pResult->resultState, pResult->url, pResult->method, pResult->args, pResult->argStrs, m_pTestManager->g_separator));
 			break;
 		}
 	}
-	pHttpClient->setTimeOut(0);
+	pHttpClient->setTimeOut(-1);		//恢复默认的超时时间
 	return resultState > 0;
-}
-
-
-
-
-std::string CSQLiTest::resultToString()
-{
-	string args = "\n\n----------------showResult(resultId, type, resultState, caseId, url, args,injectPos)-------------------------------\n";
-	for (unsigned i = 0; i < resultVec.size(); i++)
-	{
-		args += to_string(resultVec[i]->id) +
-			"\t" + to_string(resultVec[i]->type) +
-			"\t" + to_string(resultVec[i]->resultState) +
-			"\t" + to_string(resultVec[i]->caseId) +
-			"\t" + resultVec[i]->url +
-			"\t" + resultVec[i]->args +
-			"\t" + to_string(resultVec[i]->injectPos) +
-			"\n-----------------------------------------------------------\n\n";
-	}
-	return args;
-}
-std::string CSQLiTest::resultToStringForCSV()
-{
-	string args = "SQLi\nresultId, type, resultState, caseId, url,injectPos, args,cookie\n";
-	for (unsigned i = 0; i < resultVec.size(); i++)
-	{
-		args += to_string(resultVec[i]->id) +
-			"," + to_string(resultVec[i]->type) +
-			"," + to_string(resultVec[i]->resultState) +
-			"," + to_string(resultVec[i]->caseId) +
-			"," + resultVec[i]->url +
-			"," + to_string(resultVec[i]->injectPos)+
-			"," + resultVec[i]->args +
-			"," + resultVec[i]->cookie +
-			
-			"\n";
-	}
-	return args;
 }
 
 BOOL CSQLiTest::htmlEqual(string html, string html2)
@@ -713,17 +700,6 @@ void CSQLiTest::setTestMode(bool errorBased, bool boolBased, bool timeBased)
 	m_timeBased = timeBased;
 }
 
-void CSQLiTest::clearResult()
-{
-	resultVec.clear();
-}
-
-void CSQLiTest::putResultItem(void* pResult)
-{
-	AcquireSRWLockExclusive(&m_resultSRW);
-	resultVec.push_back((SQLiResult*)pResult);
-	ReleaseSRWLockExclusive(&m_resultSRW);
-}
 
 
 

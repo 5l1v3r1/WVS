@@ -36,6 +36,33 @@ HtmlForm::HtmlForm(string s)
 		}
 		this->m_fields.push_back(*temp);
 	}
+	vector<string> vecTextArea;
+	findByRegex(s, TEXTAREA_REGEX, vecTextArea, false);
+	for (unsigned int i = 0; i < vecTextArea.size(); i++)
+	{
+		temp = new Field();
+		if (findByName(vecTextArea[i], string("type"), value, false))
+		{
+			temp->m_type = value;
+		}
+		if (findByName(vecTextArea[i], string("name"), value, false))		//problem 2:这里有意外情况：	<input id="userName" name="userName" placeholder="用户名" type="text" style="height:30px;"/>     Name" name="
+		{
+			if (value.find("mtxMessage") != -1)
+			{
+				int x = 1;
+
+			}
+			temp->m_name = value;
+		}
+		if (vecTextArea.size()>i)
+		{
+			temp->m_value = vecTextArea[i+1];
+			i++;
+		}
+		this->m_fields.push_back(*temp);
+	}
+
+
 	if (findByName(s, string("action"), value, false))
 	{
 		m_action = value;
@@ -50,6 +77,8 @@ HtmlForm::HtmlForm(string s)
 		else
 			this->setMethod(HttpMethod::other);	//暂且无法处理这种情况。
 	}
+	
+
 }
 
 
@@ -81,7 +110,7 @@ HtmlForm HtmlForm::operator=(HtmlForm&a)
 }
 
 const std::string HtmlForm::INPUT_REGEX = "<\\s*input[^>]*?>";
-
+const std::string HtmlForm::TEXTAREA_REGEX = "<\\s*textarea[^>]*?>([^<]*)<\\s*/\\s*textarea\\s*>";
 const std::string HtmlForm::FORM_REGEX = "<\\s*form[^]*?/\\s*form\\s*>";
 
 HttpMethod HtmlForm::getMethod()

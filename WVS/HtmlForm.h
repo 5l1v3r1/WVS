@@ -23,6 +23,7 @@ public:
 	void setFields(std::vector<Field> val) { m_fields = val; }
 
 	static const  string INPUT_REGEX;
+	static const  string TEXTAREA_REGEX;
 	static const  string FORM_REGEX;
 private:
 	string m_action;
