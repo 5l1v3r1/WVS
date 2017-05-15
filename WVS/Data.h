@@ -16,7 +16,7 @@ public:
 	~CData();
 	bool checkInLinks(Item &des, vector<Item*>&crawlerLinksVec);
 	string vecFieldToString(vector<Field> fieldVec);
-	void showCrawler();
+	//void showCrawler();
 
 
 	void analyseHeader(string& strHeader);

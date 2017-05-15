@@ -17,6 +17,7 @@ public:
 	Item operator=(Item&a);
 	bool equal(Item&a);
 	bool hasExistArgByName(string name);
+	void hash();
 
 	void setResultId(int argIndex, int resultId);
 
@@ -32,7 +33,8 @@ public:
 	void setId(unsigned val) { id = val; }
 	unsigned getOriId() const { return oriId; }
 	void setOriId(unsigned val) { oriId = val; }
-
+	int getHash(){ return m_hash; }
+	void setHash(int h){ m_hash = h; }
 private:
 	HttpMethod m_method;
 	string m_url;
@@ -40,5 +42,6 @@ private:
 	unsigned m_layer;
 	unsigned id;
 	unsigned oriId;
-
+	int m_hash = 0;	//保留url+args的hash值作为比较格式为 method:url?name&...;
+	
 };

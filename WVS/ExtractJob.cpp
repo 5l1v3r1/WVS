@@ -43,6 +43,7 @@ void CExtractJob::Run(void *ptr)
 			  to_string(m_pItem->getOriId()) + " "+
 			  m_pItem->getUrl() + 
 			  string("\tMethod:") +   (char)(m_pItem->getMethod() + '0') + 
+			  string("\tHash:") + to_string(m_pItem->getHash()) + 
 			  string("\tlayer:") + to_string(m_pItem->getLayer()) + 
 			  ("\tAEGUMENT:") + /*vecFieldToString2(m_pItem->getArgs())*/ m_pItem->getArgsStr() + 
 			  ("\tcookie:") + tempCookie.toString());
@@ -50,6 +51,10 @@ void CExtractJob::Run(void *ptr)
 	//爬取网页部分；	  当当前速度小于指定层次时，才进行下一步爬取。
 	if (m_pItem->getLayer() < m_pData->crawlerLayer)
 	{
+		if (m_pItem->getUrl().find("index") != -1)
+		{
+			int xxxx = 1;
+		}
 		vector<Item*> *pItemVec = NULL;
 		m_pWorkThread->m_curlCode = pHttpClient->send(m_pItem->getMethod(), tempCookie.toString(), m_pItem->getUrl(), m_pItem->getArgs(), strHtml);
 		//	WriteFile("网址树内容" + to_string(m_pWorkThread->getThreadID())+".html", strHtml);

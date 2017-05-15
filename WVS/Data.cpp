@@ -114,19 +114,19 @@ string CData::vecFieldToString(vector<Field> fieldVec)
 }
 
 
-void CData::showCrawler()
-{
-	AcquireSRWLockShared(&m_linksVecSRW);
-	cout << "-------------------------------------------------------------------" << endl;
-	cout << "url:" << crawlerLinksItemVec[crawledNum]->getUrl().c_str() << endl;
-	cout << "cookie:" << cookie.toString() << endl;
-	cout << "method:" << crawlerLinksItemVec[crawledNum]->getMethod() << endl;
-	cout << "args:" << vecFieldToString(crawlerLinksItemVec[crawledNum]->getArgs()) << endl;
-	cout << crawledNum << endl;
-	cout << "-------------------------------------------------------------------" << endl << endl;
-	WriteFile("ÍøÖ·Ê÷.txt", crawlerLinksItemVec[crawledNum]->getUrl() + string("\tMethod:") + (char)(crawlerLinksItemVec[crawledNum]->getMethod() + '0') + string("\tAEGUMENT:") + vecFieldToString(crawlerLinksItemVec[crawledNum]->getArgs()));
-	ReleaseSRWLockShared(&m_linksVecSRW);
-}
+//void CData::showCrawler()
+//{
+//	AcquireSRWLockShared(&m_linksVecSRW);
+//	cout << "-------------------------------------------------------------------" << endl;
+//	cout << "url:" << crawlerLinksItemVec[crawledNum]->getUrl().c_str() << endl;
+//	cout << "cookie:" << cookie.toString() << endl;
+//	cout << "method:" << crawlerLinksItemVec[crawledNum]->getMethod() << endl;
+//	cout << "args:" << vecFieldToString(crawlerLinksItemVec[crawledNum]->getArgs()) << endl;
+//	cout << crawledNum << endl;
+//	cout << "-------------------------------------------------------------------" << endl << endl;
+//	WriteFile("ÍøÖ·Ê÷.txt", crawlerLinksItemVec[crawledNum]->getUrl() + string("\tMethod:") + (char)(crawlerLinksItemVec[crawledNum]->getMethod() + '0') + string("\tAEGUMENT:") + vecFieldToString(crawlerLinksItemVec[crawledNum]->getArgs()));
+//	ReleaseSRWLockShared(&m_linksVecSRW);
+//}
 
 
 void CData::analyseHeader(string& strHeader)
@@ -172,6 +172,7 @@ vector<Item*>* CData::analyseHtml(Item*pItem, string& strHtml)
 		findByName(linksVec[i], "href", tempLink, false);
 		formatLink(baseUrl, tempLink, argStr);
 		pTempNewItem->setUrl(tempLink);
+		pTempNewItem->setHash(0);
 		if ((pArgs = getAgrs(argStr)) != NULL)
 		{
 			pTempNewItem->setArgs(*pArgs);

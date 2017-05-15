@@ -50,7 +50,7 @@ void CConfigDlg::DoDataExchange(CDataExchange* pDX)
 	CDialogEx::DoDataExchange(pDX);
 	DDX_Text(pDX, IDC_LAYER_EDIT, m_crawlerLayer);
 	DDX_Text(pDX, IDC_NUM_OF_THREAD_EDIT, m_numOfThread);
-	DDV_MinMaxUInt(pDX, m_numOfThread, 2, 20);
+	DDV_MinMaxUInt(pDX, m_numOfThread, 1, 30);
 	DDX_Check(pDX, IDC_USE_PROXY_CHECK, m_isUseProxy);
 	DDX_Text(pDX, IDC_PROXY_EDIT, m_proxy);
 	DDX_Check(pDX, IDC_ERROR_BASED_CHECK, m_useErrorBased);

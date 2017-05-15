@@ -115,3 +115,5 @@ void split(std::string& s, std::string& delim, std::vector< std::string >* ret);
 
 string generateResult(int id, int type, string& url, int method,
 					  string& args, string& argstr, string& separator);
+
+size_t BKDRHash(const char *str);

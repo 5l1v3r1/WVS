@@ -65,24 +65,6 @@ LRESULT CMainPageDlg::OnMONITOR(WPARAM wParam, LPARAM lParam)
 				   WriteFile("网址树——测试结果.csv", m_pTestManager->resultToStringForCSV());
 				   m_cstrResult = StrToCStr(m_pTestManager->resultToStringFormat());
 				   OnBnClickedShowResultButton();
-				   //Item* pItem;
-				   //for (unsigned i = 0; i < m_pData->crawlerLinksItemVec.size(); i++)
-				   //{
-					  // pItem = m_pData->getItemByIndex(i);		//实际上这里应该是byId。但是此时，index和id相同，故不再写一个函数
-					  // vector<Field> vecArg = pItem->getArgs();
-					  // for (unsigned j = 0; j < vecArg.size(); j++)
-					  // {
-						 //  Field temp = vecArg[i];
-						 //  if (temp.getResultId() > 0)
-						 //  {
-							//  _cprintf("%s\n", m_pTestManager->resultToStringFormatById(vecArg[i].getResultId()).c_str());
-						 //  }
-						 //  _cprintf("%d\n", vecArg[j].getResultId());
-					  // }
-					  // //text.Append(StrToCStr(pItem->getArgsStr()));
-					  // //text.Append(L"\r\n");
-				   //}
-					
 				break;
 		}
 		case 1:{
@@ -130,6 +112,7 @@ void CMainPageDlg::OnBnClickedBegin()
 			//第一次，初始化
 			Item *pItem = new Item(HttpMethod::get, m_pData->originUrl);
 			pItem->setLayer(0);
+			pItem->hash();
 			m_pData->putItem(pItem);
 
 			MonitorJob *pMJob = new MonitorJob(this->m_hWnd, start, m_pThreadPool);
@@ -333,24 +316,27 @@ void CMainPageDlg::OnNMDblclkTree1(NMHDR *pNMHDR, LRESULT *pResult)
 		CString text = m_urlTree.GetItemText(hItem);
 		
 		vector<int>* pvecId = (vector<int>*)m_urlTree.GetItemData(hItem);
-		Item* pItem;
-		for (unsigned i = 0; i < pvecId->size(); i++)
+		if (pvecId != NULL)
 		{
-			pItem = m_pData->getItemByIndex((*pvecId)[i]);		//实际上这里应该是byId。但是此时，index和id相同，故不再写一个函数
-			//text.Append(StrToCStr(to_string((*pvecId)[i]) + pItem->getArgsStr(-1, "", true, false) + "\r\n"));
-			//_cprintf("%d\n", (*pvecId)[i]);
-			vector<Field> vecArg = pItem->getArgs();
-			for (unsigned j = 0; j < vecArg.size(); j++)
+			Item* pItem;
+			for (unsigned i = 0; i < pvecId->size(); i++)
 			{
-				//text.Append(StrToCStr(vecArg[j].toString2() +"\r\n"));
-				if (vecArg[j].getResultId() >= 0)
+				pItem = m_pData->getItemByIndex((*pvecId)[i]);		//实际上这里应该是byId。但是此时，index和id相同，故不再写一个函数
+				//text.Append(StrToCStr(to_string((*pvecId)[i]) + pItem->getArgsStr(-1, "", true, false) + "\r\n"));
+				//_cprintf("%d\n", (*pvecId)[i]);
+				vector<Field> vecArg = pItem->getArgs();
+				for (unsigned j = 0; j < vecArg.size(); j++)
 				{
-					text.Append(StrToCStr("\r\n" + m_pTestManager->resultToStringFormatById(vecArg[j].getResultId())));
+					//text.Append(StrToCStr(vecArg[j].toString2() +"\r\n"));
+					if (vecArg[j].getResultId() >= 0)
+					{
+						text.Append(StrToCStr("\r\n" + m_pTestManager->resultToStringFormatById(vecArg[j].getResultId())));
+					}
+					//_cprintf("%d\n", vecArg[j].getResultId());
 				}
-				//_cprintf("%d\n", vecArg[j].getResultId());
+				//text.Append(StrToCStr(pItem->getArgsStr()));
+				//text.Append(L"\r\n");
 			}
-			//text.Append(StrToCStr(pItem->getArgsStr()));
-			//text.Append(L"\r\n");
 		}
 		AfxMessageBox(text);
 	}
