@@ -197,7 +197,7 @@ bool XSSTest::test(CHttpClient *pHttpClient, Item *pItem)
 					pResult->vecResponse.push_back(html);
 					}*/
 					m_pTestManager->putResultItem(pResult);
-					pItem->getArgs()[pos].setResultId(pResult->id);
+					pItem->setResultId(pos, pResult->id);
 					WriteFile("网址_结果格式化.txt", generateResult(pResult->id, pResult->resultState, pResult->url, pResult->method, pResult->args, pResult->argStrs, m_pTestManager->g_separator));
 					break;
 				}

@@ -171,6 +171,9 @@
     <None Include="res\WVS.rc2" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="res\button_cancel.ico" />
+    <Image Include="res\button_ok.ico" />
+    <Image Include="res\icon1.ico" />
     <Image Include="res\WVS.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

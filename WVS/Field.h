@@ -15,7 +15,6 @@ public:
 	string toString();
 
 
-
 	std::string getValue() const { return m_value; }
 	void setValue(std::string val) { m_value = val; }
 	std::string getName() const { return m_name; }
@@ -28,6 +27,9 @@ public:
 	void setSecurityFlag(unsigned val) { securityFlag  = securityFlag|val; }
 	int getResultId() const { return m_resultId; }
 	void setResultId(int val) { m_resultId = val; }
+
+	
+
 private:
 	string m_name;
 	string m_value;
@@ -36,7 +38,7 @@ private:
 	unsigned securityFlag = 0;	//作为肯定安全的标记，这个参数不用测试
 	int m_resultId = -1;		//漏洞具体情况ID， -1代表没有漏洞；
 	
-
-	static const string DEFAULT_NAME_VALUE;
-	static const string DEFAULT_PASSWORD;
+	static  const string DEFAULT_NAME_VALUE;
+	static  const string DEFAULT_PASSWORD;
+	
 };

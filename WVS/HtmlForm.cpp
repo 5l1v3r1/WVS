@@ -28,7 +28,7 @@ HtmlForm::HtmlForm(string s)
 		}
 		else if (temp->getType() == "password" && temp->getValue() == "")
 		{
-			temp->m_defaultValue = temp->DEFAULT_PASSWORD;
+			temp->m_defaultValue = temp->DEFAULT_PASSWORD; temp->DEFAULT_PASSWORD;
 		}
 		else if (_stricmp(temp->getType().c_str(), string("Submit").c_str()) == 0)
 		{
@@ -80,7 +80,6 @@ HtmlForm::HtmlForm(string s)
 	
 
 }
-
 
 std::string HtmlForm::toString()
 {

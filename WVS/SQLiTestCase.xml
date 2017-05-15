@@ -56,73 +56,73 @@
         <case id="7">
             <inject>' or 1=1 #</inject>
             <inject2>NULL</inject2>
-            <identify>' or 'a' = 'a' #</identify>
+            <identify>' Or 'a' = 'a' #</identify>
             <check>NULL</check>
         </case>
         <case id="8">
             <inject>" or 1=1 #</inject>
             <inject2>NULL</inject2>
-            <identify>" or 'a' = 'a' #</identify>
+            <identify>" Or 'a' = 'a' #</identify>
             <check>NULL</check>
         </case>
         <case id="9">
             <inject>') or 1=1 #</inject>
             <inject2>NULL</inject2>
-            <identify>') or 'a' = 'a' #</identify>
+            <identify>') Or 'a' = 'a' #</identify>
             <check>NULL</check>
         </case>
         <case id="10">
             <inject>") or 1=1 #</inject>
             <inject2>NULL</inject2>
-            <identify>") or 'a' = 'a' #</identify>
+            <identify>") Or 'a' = 'a' #</identify>
             <check>NULL</check>
         </case>
         <case id="11">
             <inject>1524024 or 1=1 #</inject>
             <inject2>NULL</inject2>
-            <identify>1816807 or 'a' = 'a' #</identify>
+            <identify>1816807 Or 'a' = 'a' #</identify>
             <check>NULL</check>
         </case>
         <case id="12">
             <inject>1524024) or 1=1 #</inject>
             <inject2>NULL</inject2>
-            <identify>1816807) or 'a' = 'a' #</identify>
+            <identify>1816807) Or 'a' = 'a' #</identify>
             <check>NULL</check>
         </case>
         <case id="13">
             <inject>' and 1=2 #</inject>
             <inject2>NULL</inject2>
-            <identify>' and 'a' = 'b' #</identify>
+            <identify>' AND 'a' = 'b' #</identify>
             <check>NULL</check>
         </case>
         <case id="14">
             <inject>" and 1=2 #</inject>
             <inject2>NULL</inject2>
-            <identify>" and 'a' = 'b' #</identify>
+            <identify>" aND 'a' = 'b' #</identify>
             <check>NULL</check>
         </case>
         <case id="15">
             <inject>') and 1=2 #</inject>
             <inject2>NULL</inject2>
-            <identify>') and 'a' = 'b' #</identify>
+            <identify>') aND 'a' = 'b' #</identify>
             <check>NULL</check>
         </case>
         <case id="16">
             <inject>") and 1=2 #</inject>
             <inject2>NULL</inject2>
-            <identify>") and 'a' = 'b' #</identify>
+            <identify>") And 'a' = 'b' #</identify>
             <check>NULL</check>
         </case>
         <case id="17">
             <inject>1524024 and 1=2 #</inject>
             <inject2>NULL</inject2>
-            <identify>1816807 and 'a' = 'b' #</identify>
+            <identify>1816807 anD 'a' = 'b' #</identify>
             <check>NULL</check>
         </case>
         <case id="18">
             <inject>1524024) and 1=2 #</inject>
             <inject2>NULL</inject2>
-            <identify>1816807) and 'a' = 'b' #</identify>
+            <identify>1816807) ANd 'a' = 'b' #</identify>
             <check>NULL</check>
         </case>
     </BoolBasedTestCase>

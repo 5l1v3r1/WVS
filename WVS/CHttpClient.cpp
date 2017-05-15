@@ -106,8 +106,8 @@ void CHttpClient::setTimeOut(long millsec = -1)
 CURLcode CHttpClient::send(HttpMethod method, const std::string &strCookie, const std::string & strUrl,
 						   const std::string & strParam, std::string & strResponse)
 {
+
 	m_curCode = CURLE_FTP_WEIRD_SERVER_REPLY; //8
-	
 	curl_easy_setopt(this->m_pCurl, CURLOPT_WRITEDATA, &strResponse);
 	if (strCookie != "")
 	{

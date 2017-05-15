@@ -189,7 +189,7 @@ std::string TestManager::resultToStringFormat()
 {
 	string str = "";
 	TestResult *pResult;
-	str = "共有" + to_string(m_vecpResult.size()) + "处可能存在漏洞";
+	str = "共有" + to_string(m_vecpResult.size()) + "处可能存在漏洞\r\n";
 	for (unsigned i = 0; i < m_vecpResult.size(); i++)
 	{
 		pResult = m_vecpResult[i];
@@ -197,3 +197,12 @@ std::string TestManager::resultToStringFormat()
 	}
 	return str;
 }
+
+std::string TestManager::resultToStringFormatById(int resultId)
+{
+	TestResult *pResult;
+	pResult = m_vecpResult[resultId];
+	return generateResult(pResult->id, pResult->resultState, pResult->url, pResult->method, pResult->args, pResult->argStrs, g_separator);
+}
+
+

@@ -179,5 +179,14 @@
     <Image Include="res\WVS.ico">
       <Filter>资源文件</Filter>
     </Image>
+    <Image Include="res\icon1.ico">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="res\button_cancel.ico">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="res\button_ok.ico">
+      <Filter>资源文件</Filter>
+    </Image>
   </ItemGroup>
 </Project>

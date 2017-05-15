@@ -68,4 +68,6 @@ private:
 public:
 	afx_msg void OnBnClickedButton6();
 	CButton m_butStart;
+	CString m_cstrUserName;
+	CString m_cstrPassword;
 };

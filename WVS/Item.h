@@ -18,6 +18,8 @@ public:
 	bool equal(Item&a);
 	bool hasExistArgByName(string name);
 
+	void setResultId(int argIndex, int resultId);
+
 	HttpMethod getMethod() const { return m_method; }
 	void setMethod(HttpMethod val) { m_method = val; }
 	std::string getUrl()const  { return m_url; }

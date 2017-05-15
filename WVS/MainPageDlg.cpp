@@ -21,7 +21,9 @@ CMainPageDlg::CMainPageDlg(CWnd* pParent /*=NULL*/)
 	, m_testItemNum(0)
 	, m_extractedLinkNum(0)
 {
-	
+
+
+
 }
 
 CMainPageDlg::~CMainPageDlg()
@@ -63,6 +65,24 @@ LRESULT CMainPageDlg::OnMONITOR(WPARAM wParam, LPARAM lParam)
 				   WriteFile("网址树——测试结果.csv", m_pTestManager->resultToStringForCSV());
 				   m_cstrResult = StrToCStr(m_pTestManager->resultToStringFormat());
 				   OnBnClickedShowResultButton();
+				   //Item* pItem;
+				   //for (unsigned i = 0; i < m_pData->crawlerLinksItemVec.size(); i++)
+				   //{
+					  // pItem = m_pData->getItemByIndex(i);		//实际上这里应该是byId。但是此时，index和id相同，故不再写一个函数
+					  // vector<Field> vecArg = pItem->getArgs();
+					  // for (unsigned j = 0; j < vecArg.size(); j++)
+					  // {
+						 //  Field temp = vecArg[i];
+						 //  if (temp.getResultId() > 0)
+						 //  {
+							//  _cprintf("%s\n", m_pTestManager->resultToStringFormatById(vecArg[i].getResultId()).c_str());
+						 //  }
+						 //  _cprintf("%d\n", vecArg[j].getResultId());
+					  // }
+					  // //text.Append(StrToCStr(pItem->getArgsStr()));
+					  // //text.Append(L"\r\n");
+				   //}
+					
 				break;
 		}
 		case 1:{
@@ -71,7 +91,8 @@ LRESULT CMainPageDlg::OnMONITOR(WPARAM wParam, LPARAM lParam)
 		}
 		case 2:{
 				   //发现一个新的漏洞，更新树图标
-				   _cprintf("url:  %s\n", ((string*)lParam)->c_str());
+				  // _cprintf("url:  %s\n", ((string*)lParam)->c_str());
+				   updateTreeNodeImagae(*((string*)lParam));
 				   break;
 		}
 		default:{
@@ -92,12 +113,18 @@ LRESULT CMainPageDlg::OnMONITOR(WPARAM wParam, LPARAM lParam)
 
 void CMainPageDlg::OnBnClickedBegin()
 {
-
 	//testState: -2,   normalState =1;
 	if (m_workState > 0)	//恢复或者开始
 	{	
 		if (m_workState == 1)	//开始
 		{
+			m_imageList.Create(16, 16, ILC_COLOR32, 2, 2);
+			HICON hicon = theApp.LoadIcon(IDI_Y);
+			HICON hicon2 = theApp.LoadIcon(IDI_X);
+			m_imageList.Add(hicon);
+			m_imageList.Add(hicon2);
+			m_urlTree.SetImageList(&m_imageList, TVSIL_NORMAL);
+
 			initBeforeCheck();
 			start = clock();
 			//第一次，初始化
@@ -146,7 +173,8 @@ void CMainPageDlg::updateTree()
 {
 	if (m_hRoot == NULL)
 	{
-		m_hRoot = m_urlTree.InsertItem(StrToCStr(m_pData->domain), 0, 0);
+		m_hRoot = m_urlTree.InsertItem(StrToCStr(m_pData->domain), -1, -1);
+		m_urlTree.Expand(m_hRoot, TVE_EXPAND);
 	}
 	static string delim = "/";
 	static unsigned currentNum = 0;
@@ -197,12 +225,20 @@ void CMainPageDlg::updateTree()
 				}
 				if (!isSameNodeExisted)
 				{
-					hTemp = m_urlTree.InsertItem(tempCstr, 0, 0, hTemp, TVI_SORT);
+					hTemp = m_urlTree.InsertItem(tempCstr, 0,0, hTemp, TVI_SORT);
+					m_urlTree.Expand(hTemp, TVE_EXPAND);
 				}
 				if (i == vecStr.size() - 1)
 				{
 					//最后一段，需要将参数设置进去。
-					m_urlTree.SetItemData(hTemp, pItem->getId());
+					vector<int>* pvecId = (vector<int>*)m_urlTree.GetItemData(hTemp);
+					if (pvecId == NULL)
+					{
+						pvecId = new vector<int>();
+					}
+					pvecId->push_back(pItem->getId());
+					m_urlTree.SetItemData(hTemp, (DWORD_PTR)pvecId);
+					m_urlTree.SetItemImage(hTemp, 0, 0);
 				}
 			}
 		}
@@ -215,23 +251,108 @@ void CMainPageDlg::updateTree()
 	}
 }
 
+void CMainPageDlg::updateTreeNodeImagae(string&url)
+{
 
+	static string delim = "/";
+	bool  isEndWithDelim = FALSE;
+	HTREEITEM hTemp = m_hRoot;
+	CString tempCstr;
+	bool isSameNodeExisted = false;
+	vector<string> vecStr;
+	string path;
+	int posOfBegin = 0;
 
+	m_urlTree.SetItemImage(m_hRoot, 1, 1);
+	if (url != "" )
+	{
+		posOfBegin = url.find("/", 8);
+		if (posOfBegin != -1)
+		{
+			path = url.substr(posOfBegin);
+			if (path[path.size() - 1] == '/')
+			{
+				isEndWithDelim = true;
+				path = path.substr(0, path.size() - 1);
+			}
+			split(path, delim, &vecStr);					//以/开始的字符串返回的内容第一个为空串
+			if (isEndWithDelim)
+			{
+				vecStr.push_back("/");
+			}
+			for (unsigned i = 1; i < vecStr.size(); i++)	//去除以/开始的path的第一个为空串的影响
+			{
+				isSameNodeExisted = false;
+				tempCstr = StrToCStr(vecStr[i]);
+				HTREEITEM hSub = m_urlTree.GetChildItem(hTemp);
+				while (hSub)
+				{
+					// check the children of the current item  
+					CString text = m_urlTree.GetItemText(hSub);
+					if (text.Compare(tempCstr) == 0)
+					{
+						hTemp = hSub;
+						isSameNodeExisted = true;
+						break;
+					}
+					else //因为有序，这里可以直接比较大小，如果已经大于树上的，则直接返回未找到。
+					{
+						hSub = m_urlTree.GetNextSiblingItem(hSub);
+					}
+				}
+				if (!isSameNodeExisted)
+				{
+					hTemp = m_urlTree.InsertItem(tempCstr, 1, 1, hTemp, TVI_SORT);
+				}
+				if (i == vecStr.size() - 1)
+				{
+					//最后一段，需要将参数设置进去。
+					/*vector<int>* pvecId = (vector<int>*)m_urlTree.GetItemData(hTemp);
+					if (pvecId == NULL)
+					{
+					pvecId = new vector<int>();
+					}*/
+					//pvecId->push_back(pItem->getId());
+					/*m_urlTree.SetItemData(hTemp, (DWORD_PTR)pvecId);
+					m_urlTree.SetItemImage(hTemp, 1, 1);*/
+				}
+				m_urlTree.SetItemImage(hTemp, 1, 1);
+			}
+		}
+		delete &url;
+	}
+}
 
 void CMainPageDlg::OnNMDblclkTree1(NMHDR *pNMHDR, LRESULT *pResult)
 {
 	*pResult = 0;
 	HTREEITEM hItem = m_urlTree.GetSelectedItem();
 	
-	
 	if (!m_urlTree.ItemHasChildren(hItem))
 	{
 		CString text = m_urlTree.GetItemText(hItem);
-		//str.Format(L"%lu", pNMTreeView->itemNew.lParam);
-		//AfxMessageBox(pNMTreeView->itemNew.pszText + str);
-		unsigned id = m_urlTree.GetItemData(hItem);
-		Item*pItem = m_pData->getItemByIndex(id);	//实际上这里应该是byId。但是此时，index和id相同，故不再写一个函数
-	//	_cprintf("Double Click to show info %s, id:%lu, %s\n", CStrToStr(text).c_str(), id, pItem->getArgsStr().c_str());
+		
+		vector<int>* pvecId = (vector<int>*)m_urlTree.GetItemData(hItem);
+		Item* pItem;
+		for (unsigned i = 0; i < pvecId->size(); i++)
+		{
+			pItem = m_pData->getItemByIndex((*pvecId)[i]);		//实际上这里应该是byId。但是此时，index和id相同，故不再写一个函数
+			//text.Append(StrToCStr(to_string((*pvecId)[i]) + pItem->getArgsStr(-1, "", true, false) + "\r\n"));
+			//_cprintf("%d\n", (*pvecId)[i]);
+			vector<Field> vecArg = pItem->getArgs();
+			for (unsigned j = 0; j < vecArg.size(); j++)
+			{
+				//text.Append(StrToCStr(vecArg[j].toString2() +"\r\n"));
+				if (vecArg[j].getResultId() >= 0)
+				{
+					text.Append(StrToCStr("\r\n" + m_pTestManager->resultToStringFormatById(vecArg[j].getResultId())));
+				}
+				//_cprintf("%d\n", vecArg[j].getResultId());
+			}
+			//text.Append(StrToCStr(pItem->getArgsStr()));
+			//text.Append(L"\r\n");
+		}
+		AfxMessageBox(text);
 	}
 	else{
 		_cprintf("not the leaf node!");

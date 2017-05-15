@@ -163,30 +163,30 @@ bool CSQLiTest::saveConfiguration(string fileName /*= "SQLiTestCase.xml"*/)
 		bbcCase = { 0, "1524024) and 1=1 #", "NULL", "NULL", "NULL" };
 		insertBBC(&bbcCase, BBCRoot, myDocument);
 
-		bbcCase = { 0, "' or 1=1 #", "NULL", "' or 'a' = 'a' #", "NULL" };
+		bbcCase = { 0, "' or 1=1 #", "NULL", "' Or 'a' = 'a' #", "NULL" };
 		insertBBC(&bbcCase, BBCRoot, myDocument);
-		bbcCase = { 0, "\" or 1=1 #", "NULL", "\" or 'a' = 'a' #", "NULL" };
+		bbcCase = { 0, "\" or 1=1 #", "NULL", "\" Or 'a' = 'a' #", "NULL" };
 		insertBBC(&bbcCase, BBCRoot, myDocument);
-		bbcCase = { 0, "') or 1=1 #", "NULL", "') or 'a' = 'a' #", "NULL" };
+		bbcCase = { 0, "') or 1=1 #", "NULL", "') Or 'a' = 'a' #", "NULL" };
 		insertBBC(&bbcCase, BBCRoot, myDocument);
-		bbcCase = { 0, "\") or 1=1 #", "NULL", "\") or 'a' = 'a' #", "NULL" };
+		bbcCase = { 0, "\") or 1=1 #", "NULL", "\") Or 'a' = 'a' #", "NULL" };
 		insertBBC(&bbcCase, BBCRoot, myDocument);
-		bbcCase = { 0, "1524024 or 1=1 #", "NULL", "1816807 or 'a' = 'a' #", "NULL" };
+		bbcCase = { 0, "1524024 or 1=1 #", "NULL", "1816807 Or 'a' = 'a' #", "NULL" };
 		insertBBC(&bbcCase, BBCRoot, myDocument);
-		bbcCase = { 0, "1524024) or 1=1 #", "NULL", "1816807) or 'a' = 'a' #", "NULL" };
+		bbcCase = { 0, "1524024) or 1=1 #", "NULL", "1816807) Or 'a' = 'a' #", "NULL" };
 		insertBBC(&bbcCase, BBCRoot, myDocument);
 
-		bbcCase = { 0, "' and 1=2 #", "NULL", "' and 'a' = 'b' #", "NULL" };
+		bbcCase = { 0, "' and 1=2 #", "NULL", "' AND 'a' = 'b' #", "NULL" };
 		insertBBC(&bbcCase, BBCRoot, myDocument);
-		bbcCase = { 0, "\" and 1=2 #", "NULL", "\" and 'a' = 'b' #", "NULL" };
+		bbcCase = { 0, "\" and 1=2 #", "NULL", "\" aND 'a' = 'b' #", "NULL" };
 		insertBBC(&bbcCase, BBCRoot, myDocument);
-		bbcCase = { 0, "') and 1=2 #", "NULL", "') and 'a' = 'b' #", "NULL" };
+		bbcCase = { 0, "') and 1=2 #", "NULL", "') aND 'a' = 'b' #", "NULL" };
 		insertBBC(&bbcCase, BBCRoot, myDocument);
-		bbcCase = { 0, "\") and 1=2 #", "NULL", "\") and 'a' = 'b' #", "NULL" };
+		bbcCase = { 0, "\") and 1=2 #", "NULL", "\") And 'a' = 'b' #", "NULL" };
 		insertBBC(&bbcCase, BBCRoot, myDocument);
-		bbcCase = { 0, "1524024 and 1=2 #", "NULL", "1816807 and 'a' = 'b' #", "NULL" };
+		bbcCase = { 0, "1524024 and 1=2 #", "NULL", "1816807 anD 'a' = 'b' #", "NULL" };
 		insertBBC(&bbcCase, BBCRoot, myDocument);
-		bbcCase = { 0, "1524024) and 1=2 #", "NULL", "1816807) and 'a' = 'b' #", "NULL" };
+		bbcCase = { 0, "1524024) and 1=2 #", "NULL", "1816807) ANd 'a' = 'b' #", "NULL" };
 		insertBBC(&bbcCase, BBCRoot, myDocument);
 
 		TimeBasedCase tbcCase = { 0, "' or if(1=1, sleep(", "), 0) #", "NULL", "NULL", 0 };
@@ -428,7 +428,7 @@ bool CSQLiTest::errorBasedTest(CHttpClient* pHttpClient, Item *pItem, unsigned p
 			pResult->caseId = m_vecEBTestCase[i]->id;
 			pResult->injectPos = pos;
 			pResult->cookie = cookie.toString();
-			pResult->args = pItem->getArgsStr();
+			pResult->args = pItem->getArgsStr(-1, "", true, false);	//原始参数
 			pResult->resultState = resultState;
 			pResult->argStrs = pItem->getArgsStr(pos, m_vecEBTestCase[i]->inject, true, false);
 			pResult->type = 0;
@@ -438,13 +438,15 @@ bool CSQLiTest::errorBasedTest(CHttpClient* pHttpClient, Item *pItem, unsigned p
 				pResult->vecResponse.push_back(html);
 			}*/
 			m_pTestManager->putResultItem(pResult);
-			pItem->getArgs()[pos].setResultId(pResult->id);
+			//pItem->getArgs()[pos].setResultId(pResult->id);
+			pItem->setResultId(pos, pResult->id);
 
 			WriteFile("网址_结果格式化.txt", generateResult(pResult->id, pResult->resultState, pResult->url, pResult->method, pResult->args, pResult->argStrs, m_pTestManager->g_separator));
 			break;
 		}
 	}
-	averageTime = sumTime / (sendCount * 1000 / CLOCKS_PER_SEC);
+	//这里有一个小问题，如果sendCount=0，那么平均时间将无法计算。 可以使用两个参数，总时间与次数。当前仅使用平均时间。
+	averageTime = sendCount == 0? 0:sumTime*1000/CLOCKS_PER_SEC / sendCount;
 	return resultState > 0;
 }
 
@@ -559,7 +561,7 @@ bool CSQLiTest::boolBasedTest(CHttpClient* pHttpClient, Item *pItem, unsigned po
 		pResult->caseId = m_vecBBTestCase[i]->id;
 		pResult->injectPos = pos;
 		pResult->cookie = cookie.toString();
-		pResult->args = pItem->getArgsStr();
+		pResult->args = pItem->getArgsStr(-1, "", true, false);
 		pResult->resultState = resultState;
 		pResult->type = 1;
 		pResult->method = method;
@@ -584,11 +586,11 @@ bool CSQLiTest::boolBasedTest(CHttpClient* pHttpClient, Item *pItem, unsigned po
 				pItem->getArgsStr(pos, m_vecBBTestCase[testCaseNum + i]->identify, false,false);
 		}
 		m_pTestManager->putResultItem(pResult);
-		pItem->getArgs()[pos].setResultId(pResult->id);
+		pItem->setResultId(pos, pResult->id);
 		WriteFile("网址_结果格式化.txt", generateResult(pResult->id, pResult->resultState, pResult->url, pResult->method, pResult->args, pResult->argStrs, m_pTestManager->g_separator));
 	}
 
-	averageTime = sumTime / (sendCount * 1000 / CLOCKS_PER_SEC);
+	averageTime = sendCount == 0 ? 0 : sumTime * 1000 / CLOCKS_PER_SEC / sendCount;
 	return resultState > 0;
 }
 
@@ -641,13 +643,13 @@ bool CSQLiTest::timeBasedTest(CHttpClient* pHttpClient, Item *pItem, unsigned po
 			pResult->caseId = m_vecBBTestCase[i]->id;
 			pResult->injectPos = pos;
 			pResult->cookie = cookie.toString();
-			pResult->args = pItem->getArgsStr();
+			pResult->args = pItem->getArgsStr(-1, "", true, false);
 			pResult->resultState = resultState;
 			pResult->type = 2;
 			pResult->method = pItem->getMethod();
 			pResult->argStrs = pItem->getArgsStr(pos, m_veerTBTestCase[i]->inject + to_string(averageTime / 1000 + 1) + m_veerTBTestCase[i]->injectPost + getComment(pItem->getMethod()), true, false);
 			m_pTestManager->putResultItem(pResult);
-			pItem->getArgs()[pos].setResultId(pResult->id);
+			pItem->setResultId(pos, pResult->id);
 			WriteFile("网址_结果格式化.txt", generateResult(pResult->id, pResult->resultState, pResult->url, pResult->method, pResult->args, pResult->argStrs, m_pTestManager->g_separator));
 			break;
 		}
@@ -658,7 +660,7 @@ bool CSQLiTest::timeBasedTest(CHttpClient* pHttpClient, Item *pItem, unsigned po
 
 BOOL CSQLiTest::htmlEqual(string html, string html2)
 {
-	if (html == html2)
+	if (html.length() == html2.length())
 		return true;
 	return false;
 }

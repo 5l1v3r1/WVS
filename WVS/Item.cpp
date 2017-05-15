@@ -130,3 +130,8 @@ bool Item::equal(Item& a)
 	}
 	return false;
 }
+
+void Item::setResultId(int argIndex, int resultId)
+{
+	m_args[argIndex].setResultId(resultId);
+}

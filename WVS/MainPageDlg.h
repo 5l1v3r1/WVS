@@ -22,6 +22,7 @@ public:
 	virtual ~CMainPageDlg();
 
 	void updateTree();
+	void updateTreeNodeImagae(string &url);
 	HTREEITEM FindItem(const CString& name, CTreeCtrl& tree, HTREEITEM hRoot);
 	void setGlobalData(CData *pData, CMyThreadPool *pThreadPool, TestManager* pTestManager, CConfigDlg *pConfigDlg);
 	void initBeforeCheck();
@@ -38,6 +39,7 @@ protected:
 	DECLARE_MESSAGE_MAP()
 
 private:
+	CImageList m_imageList;
 	CTreeCtrl m_urlTree;
 	UINT m_totalNum; 	// 网址总数
 	UINT m_totalTestNum; // 总的测试项，每一个参数为单位1。

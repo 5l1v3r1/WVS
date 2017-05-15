@@ -7,6 +7,8 @@ Field Field::operator=(Field &a)
 	m_name = a.getName();
 	m_type = a.getType();
 	m_value = a.getValue();
+	securityFlag = a.securityFlag;
+	m_resultId = a.m_resultId;
 	return *this;
 }
 

@@ -27,6 +27,7 @@ public:
 	string resultToString();
 	string resultToStringForCSV();
 	string resultToStringFormat();
+	string resultToStringFormatById(int resultId);
 	void clearResult();
 	string g_separator = "^";	//目前只支持一个字符
 private:

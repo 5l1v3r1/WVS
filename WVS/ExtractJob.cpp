@@ -101,10 +101,14 @@ void CExtractJob::Run(void *ptr)
 	_cprintf("TestItem£º%s\n", m_pItem->getUrl().c_str());
 	if (m_pItem->getArgs().size() > 0)
 	{
-		m_pTestManager->test(pHttpClient, m_pItem);
+		bool flag = false;
+		flag = m_pTestManager->test(pHttpClient, m_pItem);
 		m_pData->addTestedArgNum(m_pItem->getArgs().size());
-		string * pStr = new string(m_pItem->getUrl());
-		SendMessage(m_hwnd, WM_MY_MONITOR, 2, (LPARAM)pStr);
+		if (flag)
+		{
+			string * pStr = new string(m_pItem->getUrl());
+			SendMessage(m_hwnd, WM_MY_MONITOR, 2, (LPARAM)pStr);
+		}
 	}
 	
 	
