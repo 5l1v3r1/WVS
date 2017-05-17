@@ -50,6 +50,7 @@ public:
 	bool boolBasedTest(CHttpClient* pHttpClient, Item *pItem, unsigned pos, long &averageTime);
 	bool timeBasedTest(CHttpClient* pHttpClient, Item *pItem, unsigned pos, long averageTime);
 	void setTestMode(bool errorBased, bool boolBased, bool timeBased);
+
 private:
 	BOOL m_errorBased = TRUE;
 	BOOL m_boolBased = TRUE;
@@ -57,8 +58,7 @@ private:
 	vector<ErrorBasedCase*> m_vecEBTestCase;
 	vector<TimeBasedCase*> m_veerTBTestCase;
 	vector<BoolBasedCase*> m_vecBBTestCase;
-	long m_lateTime = 1000;	//允许意外的网络延迟时间（ms）
-
+	long m_lateTime = 10000;	//允许意外的网络延迟时间（ms）
 
 	BOOL htmlEqual(string html, string html2);
 	string getComment(HttpMethod method);

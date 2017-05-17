@@ -30,6 +30,7 @@ CConfigDlg::CConfigDlg(CWnd* pParent /*=NULL*/)
 	, m_useXSSTest(TRUE)
 	, m_cstrUserName(_T(""))
 	, m_cstrPassword(_T(""))
+	, m_cstrExclude(_T(""))
 {
 	pTestItem = new Item();
 	pTestArgs = new vector<Field>();
@@ -66,8 +67,8 @@ void CConfigDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_CHECK3, m_testXSS);
 	DDX_Check(pDX, IDC_XSS_CHECK, m_useXSSTest);
 	DDX_Control(pDX, IDC_BUTTON2, m_butStart);
-	DDX_Text(pDX, IDC_NUM_OF_THREAD_EDIT2, m_cstrUserName);
-	DDX_Text(pDX, IDC_NUM_OF_THREAD_EDIT3, m_cstrPassword);
+
+	DDX_Text(pDX, IDC_EDIT7, m_cstrExclude);
 }
 
 BEGIN_MESSAGE_MAP(CConfigDlg, CDialogEx)
@@ -124,10 +125,15 @@ void CConfigDlg::OnBnClickedButton3()
 	Field::DEFAULT_PASSWORD = CStrToStr(m_cstrPassword);*/
 	m_pTestManager->setTestMode(m_useErrorBased, m_useBoolBased, m_useTimeBased, m_useXSSTest);
 	m_pThreadPool->setThreadNum(m_numOfThread + 1);	//有一个线程作为监视线程
-	if (m_testCookie != "")
+	if (m_testCookie.Trim() != "")
 	{
 		string str = "Set-Cookie: " + CStrToStr(m_testCookie);
 		m_pData->analyseHeader(str);
+	}
+	if (m_cstrExclude.Trim() != "")
+	{
+		m_pData->excludeUrl.clear();
+		split(CStrToStr(m_cstrExclude), string("&"), &(m_pData->excludeUrl));
 	}
 
 	string fileName = "网址\\" + to_string(time(NULL));

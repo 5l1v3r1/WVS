@@ -4,7 +4,7 @@
 
 Item::Item()
 {
-	m_hash = 0;
+	reset();
 }
 
 
@@ -155,4 +155,15 @@ void Item::hash()
 			arg += "&";
 	}
 	m_hash = BKDRHash((to_string(m_method) + m_url + "?" + arg).c_str());
+}
+
+void Item::reset()
+{
+	m_method = HttpMethod::other;
+	m_url = "";
+	m_args.clear();
+	m_layer = -1;
+	id = -1;
+	oriId = -1;
+	m_hash = 0;
 }

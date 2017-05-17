@@ -47,6 +47,8 @@ public:
 		const std::string & strParam,
 		bool onlyHeader);
 
+	clock_t getTotalTime(){ return totalTime; }
+	void setTotalTime(clock_t val) { totalTime = val; }
 	int getStatusCode() const { return m_statusCode; }
 	void setStatusCode(int val) { m_statusCode = val; }
 
@@ -59,6 +61,8 @@ private:
 	static int g_INSTANCE_NUM;
 	CURL *m_pCurl = NULL;
 	CURLcode m_curCode;		
-	int m_statusCode = 0;	//当一次调用成功后，返回的状态码。
+	int m_statusCode = 0;			//当一次调用成功后，返回的状态码。
 	long m_defaultTimeOut = 10000;
+
+	clock_t totalTime = 0;			//使用单线程时，传输数据所花的时间。测试用。
 };

@@ -541,10 +541,13 @@ std::string generateResult(int id, int type, string& url, int method, string& ar
 	str += "(" + to_string(type) + ")\r\n";
 	if (method == 1)
 	{
+		str += "Post ";
+	}
+	else if(method == 2){
 		str += "Get ";
 	}
 	else{
-		str += "Post ";
+		str += "other:" + to_string(method) + " ";
 	}
 	str += url +
 		"\r\nOriginal Parameters:  " + args +

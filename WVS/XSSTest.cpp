@@ -115,8 +115,13 @@ void XSSTest::insertTestCase(XSSTestCase *pTestCase, tinyxml2::XMLElement *RootE
 
 bool XSSTest::test(CHttpClient *pHttpClient, Item *pItem)
 {
+	
 	if (m_useXSS)
 	{
+		
+		static clock_t xssDownloadTime = 0;
+		pHttpClient->setTotalTime(0);
+
 		//开始测试过程
 		string html = "";
 		Cookie cookie;
@@ -205,8 +210,12 @@ bool XSSTest::test(CHttpClient *pHttpClient, Item *pItem)
 			if (resultState > 0)
 				flag = true;
 		}
+		
+		xssDownloadTime += pHttpClient->getTotalTime();
+		_cprintf("xss download time:%d \n", xssDownloadTime);
 		return flag;
 	}
+
 	return false;
 }
 

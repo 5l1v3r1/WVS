@@ -48,15 +48,23 @@ TestManager::~TestManager()
 
 bool TestManager::test(CHttpClient *pHttpClient, Item*pItem)
 {
+	static clock_t sqlTotalTime = 0;
+	static clock_t xssTotalTime = 0;
 	bool flag = false;
+	clock_t start = clock();
 	if (m_pSQLiTest->test(pHttpClient, pItem))
 	{
 		flag = true;
 	}
+	clock_t sqltime = clock();
 	if (m_pXSSTest->test(pHttpClient, pItem))
 	{
 		flag = true;
 	}
+	clock_t xsstime = clock();
+	sqlTotalTime += (sqltime - start);
+	xssTotalTime += (xsstime - sqltime);
+	_cprintf("sqlTime:%d\t     xssTime:%d\n", sqlTotalTime, xssTotalTime);
 	return flag;
 }
 

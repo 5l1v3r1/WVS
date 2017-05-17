@@ -376,6 +376,7 @@ void CMainPageDlg::initBeforeCheck()
 	m_totalTestNum = 0;
 	m_testItemNum = 0;
 	m_pData->setUrl(CStrToStr(m_strOriUrl));
+	
 	m_pConfigDialog->OnBnClickedButton3();	//将全局数据写入。
 }
 

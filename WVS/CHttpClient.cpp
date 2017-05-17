@@ -230,7 +230,12 @@ CURLcode CHttpClient::send(HttpMethod method, const std::string &strCookie, cons
 
 CURLcode CHttpClient::performRequest(string strUrl)
 {
+	clock_t start = clock();
 	m_curCode = curl_easy_perform(this->m_pCurl);
+	clock_t end = clock();
+	totalTime += (end - start);
+//	_cprintf("usedTime is: %d \n", totalTime);
+
 	if (m_curCode == CURLE_OK){
 		curl_easy_getinfo(m_pCurl, CURLINFO_RESPONSE_CODE, &m_statusCode);
 		WriteFile("ÍøÖ·Ê÷_3.txt", to_string(m_statusCode) + "\t" + strUrl);

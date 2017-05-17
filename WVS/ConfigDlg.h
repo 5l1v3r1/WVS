@@ -70,4 +70,6 @@ public:
 	CButton m_butStart;
 	CString m_cstrUserName;
 	CString m_cstrPassword;
+	// 爬行过程中，不包括这些网址。
+	CString m_cstrExclude;
 };

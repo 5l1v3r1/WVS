@@ -163,43 +163,43 @@ bool CSQLiTest::saveConfiguration(string fileName /*= "SQLiTestCase.xml"*/)
 		bbcCase = { 0, "1524024) and 1=1 #", "NULL", "NULL", "NULL" };
 		insertBBC(&bbcCase, BBCRoot, myDocument);
 
-		bbcCase = { 0, "' or 1=1 #", "NULL", "' Or 'a' = 'a' #", "NULL" };
+		bbcCase = { 0, "' or 1=1 #", "NULL", "' Or 'ab' = 'ab' #", "NULL" };
 		insertBBC(&bbcCase, BBCRoot, myDocument);
-		bbcCase = { 0, "\" or 1=1 #", "NULL", "\" Or 'a' = 'a' #", "NULL" };
+		bbcCase = { 0, "\" or 1=1 #", "NULL", "\" Or 'ab' = 'ab' #", "NULL" };
 		insertBBC(&bbcCase, BBCRoot, myDocument);
-		bbcCase = { 0, "') or 1=1 #", "NULL", "') Or 'a' = 'a' #", "NULL" };
+		bbcCase = { 0, "') or 1=1 #", "NULL", "') Or 'ab' = 'ab' #", "NULL" };
 		insertBBC(&bbcCase, BBCRoot, myDocument);
-		bbcCase = { 0, "\") or 1=1 #", "NULL", "\") Or 'a' = 'a' #", "NULL" };
+		bbcCase = { 0, "\") or 1=1 #", "NULL", "\") Or 'ab' = 'ab' #", "NULL" };
 		insertBBC(&bbcCase, BBCRoot, myDocument);
-		bbcCase = { 0, "1524024 or 1=1 #", "NULL", "1816807 Or 'a' = 'a' #", "NULL" };
+		bbcCase = { 0, "1524024 or 1=1 #", "NULL", "1816807 Or 'ab' = 'ab' #", "NULL" };
 		insertBBC(&bbcCase, BBCRoot, myDocument);
-		bbcCase = { 0, "1524024) or 1=1 #", "NULL", "1816807) Or 'a' = 'a' #", "NULL" };
-		insertBBC(&bbcCase, BBCRoot, myDocument);
-
-		bbcCase = { 0, "' and 1=2 #", "NULL", "' AND 'a' = 'b' #", "NULL" };
-		insertBBC(&bbcCase, BBCRoot, myDocument);
-		bbcCase = { 0, "\" and 1=2 #", "NULL", "\" aND 'a' = 'b' #", "NULL" };
-		insertBBC(&bbcCase, BBCRoot, myDocument);
-		bbcCase = { 0, "') and 1=2 #", "NULL", "') aND 'a' = 'b' #", "NULL" };
-		insertBBC(&bbcCase, BBCRoot, myDocument);
-		bbcCase = { 0, "\") and 1=2 #", "NULL", "\") And 'a' = 'b' #", "NULL" };
-		insertBBC(&bbcCase, BBCRoot, myDocument);
-		bbcCase = { 0, "1524024 and 1=2 #", "NULL", "1816807 anD 'a' = 'b' #", "NULL" };
-		insertBBC(&bbcCase, BBCRoot, myDocument);
-		bbcCase = { 0, "1524024) and 1=2 #", "NULL", "1816807) ANd 'a' = 'b' #", "NULL" };
+		bbcCase = { 0, "1524024) or 1=1 #", "NULL", "1816807) Or 'ab' = 'ab' #", "NULL" };
 		insertBBC(&bbcCase, BBCRoot, myDocument);
 
-		TimeBasedCase tbcCase = { 0, "' or if(1=1, sleep(", "), 0) #", "NULL", "NULL", 0 };
+		bbcCase = { 0, "' and 1=2 #", "NULL", "' AND 'abc' = 'bbc' #", "NULL" };
+		insertBBC(&bbcCase, BBCRoot, myDocument);
+		bbcCase = { 0, "\" and 1=2 #", "NULL", "\" aND 'abc' = 'bbc' #", "NULL" };
+		insertBBC(&bbcCase, BBCRoot, myDocument);
+		bbcCase = { 0, "') and 1=2 #", "NULL", "') aND 'abc' = 'bbc' #", "NULL" };
+		insertBBC(&bbcCase, BBCRoot, myDocument);
+		bbcCase = { 0, "\") and 1=2 #", "NULL", "\") And 'abc' = 'bbc' #", "NULL" };
+		insertBBC(&bbcCase, BBCRoot, myDocument);
+		bbcCase = { 0, "1524024 and 1=2 #", "NULL", "1816807 anD 'abc' = 'bbc' #", "NULL" };
+		insertBBC(&bbcCase, BBCRoot, myDocument);
+		bbcCase = { 0, "1524024) and 1=2 #", "NULL", "1816807) ANd 'abc' = 'bbc' #", "NULL" };
+		insertBBC(&bbcCase, BBCRoot, myDocument);
+
+		TimeBasedCase tbcCase = { 0, "' or if(1=1, sleep(", "), 0) #", "' and if(1=2, sleep(0), 0) #", "NULL",0 };
 		insertTBC(&tbcCase, TBCRoot, myDocument);
-		TimeBasedCase tbcCase2 = { 0, "\" or if(1=1, sleep(", "), 0) #", "NULL", "NULL", 0 };
+		TimeBasedCase tbcCase2 = { 0, "\" or if(1=1, sleep(", "), 0) #", "\" and if(1=2, sleep(0), 0) #", "NULL", 0 };
 		insertTBC(&tbcCase2, TBCRoot, myDocument);
-		TimeBasedCase tbcCase3 = { 0, "') or if(1=1, sleep(", "), 0) #", "NULL", "NULL", 0 };
+		TimeBasedCase tbcCase3 = { 0, "') or if(1=1, sleep(", "), 0) #", "') and if(1=2, sleep(0), 0) #", "NULL", 0 };
 		insertTBC(&tbcCase3, TBCRoot, myDocument);
-		TimeBasedCase tbcCase4 = { 0, "\") or if(1=1, sleep(", "), 0) #", "NULL", "NULL", 0 };
+		TimeBasedCase tbcCase4 = { 0, "\") or if(1=1, sleep(", "), 0) #", "\") and if(1=2, sleep(0), 0) #", "NULL", 0 };
 		insertTBC(&tbcCase4, TBCRoot, myDocument);
-		TimeBasedCase tbcCase5 = { 0, "23 or if(1=1, sleep(", "), 0) #", "NULL", "NULL", 0 };
+		TimeBasedCase tbcCase5 = { 0, "23 or if(1=1, sleep(", "), 0) #", "23 or and(1=2, sleep(0), 0) #", "NULL", 0 };
 		insertTBC(&tbcCase5, TBCRoot, myDocument);
-		TimeBasedCase tbcCase6 = { 0, "12345) or if(1=1, sleep(", "), 0) #", "***\r\n***", "<script>alert~(Math.random~(~)~)</script>", 0 };
+		TimeBasedCase tbcCase6 = { 0, "12345) or if(1=1, sleep(", "), 0) #", "12345) and if(1=2, sleep(0), 0) #", "NULL", 0 };
 		insertTBC(&tbcCase6, TBCRoot, myDocument);
 
 		myDocument->SaveFile(fileName.c_str());//保存到文件
@@ -328,6 +328,9 @@ bool CSQLiTest::test(CHttpClient *pHttpClient, Item *pItem)
 	long averageTime1 = 0;
 	long averageTime2 = 0;
 
+	static clock_t sqlTotalTime = 0;
+	pHttpClient->setTotalTime(0);
+
 	for (unsigned i = 0; i < pItem->getArgs().size(); i++)
 	{
 		if (((pItem->getArgs())[i].getSecurityFlag()&1) !=0)	//这个参数肯定不用测试，如submit。
@@ -357,6 +360,8 @@ bool CSQLiTest::test(CHttpClient *pHttpClient, Item *pItem)
 			}
 		}
 	}
+	sqlTotalTime += pHttpClient->getTotalTime();
+	_cprintf("download sql usedTime:%d\t\t", sqlTotalTime);
 	return flag;
 }
 
@@ -481,7 +486,7 @@ bool CSQLiTest::boolBasedTest(CHttpClient* pHttpClient, Item *pItem, unsigned po
 	if ((pItem->getArgs())[pos].getValue() != "")	//是否有默认值
 	{
 		//该位置有默认值
-		args = pItem->getArgsStr(-1,"",true, false);
+		args = pItem->getArgsStr(-1,"",true, true);
 		code = send(pHttpClient, method, cookieStr, url, args, oriHtml, sumTime, sendCount);	//获取样本0
 		if (code == CURLE_OK)
 		{
@@ -506,6 +511,7 @@ bool CSQLiTest::boolBasedTest(CHttpClient* pHttpClient, Item *pItem, unsigned po
 							if (!htmlEqual(rightHtml, errorHtml))
 							{
 								resultState = 201;
+								
 								break;
 							}
 						}
@@ -606,6 +612,7 @@ bool CSQLiTest::timeBasedTest(CHttpClient* pHttpClient, Item *pItem, unsigned po
 
 	CURLcode code;
 	pHttpClient->setTimeOut(averageTime + m_lateTime);
+	WriteLog("avergeTime" + to_string(averageTime) + "\t\turl:" + pItem->getUrl() + pItem->getArgsStr(-1, "", true, false));
 	for (unsigned i = 0; i < m_veerTBTestCase.size(); i++)
 	{
 		resultState = 0;
@@ -621,7 +628,7 @@ bool CSQLiTest::timeBasedTest(CHttpClient* pHttpClient, Item *pItem, unsigned po
 				resultState = 301;
 				break;
 			case CURLE_OK:
-				if ((end - start) > averageTime + m_lateTime)
+				if ((end - start) > (averageTime + m_lateTime))
 				{
 					//也说明延迟时间有问题。可能执行的sleep函数
 					resultState=302;
@@ -633,7 +640,16 @@ bool CSQLiTest::timeBasedTest(CHttpClient* pHttpClient, Item *pItem, unsigned po
 		}
 		if (resultState > 0)
 		{
-			//进一步验证，不知道如何验证。
+			//进一步验证，不知道如何验证。正常情况下不超时。应该为curle_ok且时间小于超时时间。
+			args = pItem->getArgsStr(pos, m_veerTBTestCase[i]->identify + getComment(pItem->getMethod()));
+
+			start = clock();
+			code = pHttpClient->send(pItem->getMethod(), cookie.toString(), pItem->getUrl(), args, html);
+			end = clock();
+			if ((code != CURLE_OK) || (end - start)> (averageTime + m_lateTime))
+			{
+				resultState = 0;
+			}
 		}
 		if (resultState > 0)
 		{

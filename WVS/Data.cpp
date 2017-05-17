@@ -64,26 +64,49 @@ bool CData::checkInLinks(Item &des, vector<Item*>&crawlerLinksVec)
 	//	cout << "该网址为https,暂不支持!" << des.getUrl() << endl;
 		return true;
 	}
-	else if (des.getUrl().find("logout") != -1)
+	//else if (des.getUrl().find("logout") != -1)
+	//{
+	//	//cout << "退出登陆网址，不要" << des.getUrl() << endl;
+	//	return true;
+	//}
+	////else if (des.getUrl().find("captcha") != -1)
+	////{
+	////	//cout << "需要一个翻墙的验证码，会导致整体速度剧减，不要" << des.getUrl() << endl;
+	////	return true;
+	////}
+	//else if (des.getUrl().find("setup-db.php") != -1)
+	//{
+	//	//cout << "sqli数据库重置，不要" << des.getUrl() << endl;
+	//	return true;
+	//}
+	//else if (des.getUrl().find("setup.php") != -1)
+	//{
+	//	//cout << "dvwa数据库重置，不要" << des.getUrl() << endl;
+	//	return true;
+	//}
+	//else if (des.getUrl().find("csrf") != -1)
+	//{
+	//	//cout << "密码重置，不要" << des.getUrl() << endl;
+	//	return true;
+	//}
+	/*if (test == false)
 	{
-		cout << "退出登陆网址，不要" << des.getUrl() << endl;
-		return true;
-	}
-	else if (des.getUrl().find("setup-db.php") != -1)
+		for (unsigned int i = 0; i < excludeUrl.size(); i++)
+		{
+			
+				cout << "exclude选项为 excludeurl:" << excludeUrl[i] << endl;
+		}
+		test = true;
+	}*/
+	for (unsigned int i = 0; i < excludeUrl.size(); i++)
 	{
-		cout << "sqli数据库重置，不要" << des.getUrl() << endl;
-		return true;
+		if (des.getUrl().find(excludeUrl[i]) != -1)
+		{
+			//cout << "有exclude选项  url:" << des.getUrl() << "\texcludeurl:" << excludeUrl[i] << endl;
+			return true;
+		}
 	}
-	else if (des.getUrl().find("setup.php") != -1)
-	{
-		cout << "dvwa数据库重置，不要" << des.getUrl() << endl;
-		return true;
-	}
-	else if (des.getUrl().find("csrf") != -1)
-	{
-		cout << "密码重置，不要" << des.getUrl() << endl;
-		return true;
-	}
+
 	AcquireSRWLockShared(&m_linksVecSRW);
 	for (unsigned int i = 0; i < crawlerLinksItemVec.size(); i++)
 	{
@@ -139,7 +162,7 @@ void CData::analyseHeader(string& strHeader)
 		return;	
 	}
 	AcquireSRWLockExclusive(&m_cookieSRW);
-	if (!(cookie == newCookie))
+	if (!(cookie == newCookie) && cookie.toString() == "")
 	{
 		cookie = newCookie;
 	//	_cprintf("cookie:%s\n", newCookie.toString().c_str());
@@ -169,6 +192,7 @@ vector<Item*>* CData::analyseHtml(Item*pItem, string& strHtml)
 	{
 		
 		argStr = "";
+		pTempNewItem->reset();
 		findByName(linksVec[i], "href", tempLink, false);
 		formatLink(baseUrl, tempLink, argStr);
 		pTempNewItem->setUrl(tempLink);

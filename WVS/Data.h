@@ -47,7 +47,7 @@ public:
 	string userName;
 	string password;
 	static unsigned crawlerLayer;
-
+	vector<string> excludeUrl;
 private:
 	SRWLOCK m_linksVecSRW;
 	SRWLOCK m_cookieSRW;
@@ -61,5 +61,6 @@ private:
 
 	void initData();
 	
+	bool test = false;
 };
 

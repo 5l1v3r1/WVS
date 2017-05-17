@@ -32,5 +32,5 @@ std::string Field::toString()
 	return arg;
 }
 
-const std::string Field::DEFAULT_NAME_VALUE = "admin";
-const std::string Field::DEFAULT_PASSWORD = "password";
+const std::string Field::DEFAULT_NAME_VALUE = "";
+const std::string Field::DEFAULT_PASSWORD = "";
