@@ -43,8 +43,8 @@ public:
 
 public:
 
-	CData *m_pData;
-	CMyThreadPool *m_pThreadPool;
+	Data *m_pData;
+	ThreadPool *m_pThreadPool;
 //	CSQLiTest* pSQLiTest;
 	TestManager *m_pTestManager;
 	

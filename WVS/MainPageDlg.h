@@ -24,7 +24,7 @@ public:
 	void updateTree();
 	void updateTreeNodeImagae(string &url);
 	HTREEITEM FindItem(const CString& name, CTreeCtrl& tree, HTREEITEM hRoot);
-	void setGlobalData(CData *pData, CMyThreadPool *pThreadPool, TestManager* pTestManager, CConfigDlg *pConfigDlg);
+	void setGlobalData(Data *pData, ThreadPool *pThreadPool, TestManager* pTestManager, CConfigDlg *pConfigDlg);
 	void initBeforeCheck();
 	afx_msg void OnEnChangeUrlEdit();
 	afx_msg void OnBnClickedBegin();
@@ -47,8 +47,8 @@ private:
 	CButton m_btnBegin;
 	CConfigDlg* m_pConfigDialog;
 
-	CData *m_pData;
-	CMyThreadPool *m_pThreadPool;
+	Data *m_pData;
+	ThreadPool *m_pThreadPool;
 	TestManager* m_pTestManager;
 
 	clock_t start, end;

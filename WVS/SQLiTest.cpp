@@ -3,7 +3,7 @@
 #include "tinyxml2.h"
 #include "TestManager.h"
 
-CSQLiTest::CSQLiTest(CData* pData, TestManager* pTestManager)
+SQLiTest::SQLiTest(Data* pData, TestManager* pTestManager)
 {
 	m_vecEBTestCase = vector<ErrorBasedCase*>();
 	m_veerTBTestCase = vector<TimeBasedCase*>();
@@ -12,12 +12,12 @@ CSQLiTest::CSQLiTest(CData* pData, TestManager* pTestManager)
 	m_pTestManager = pTestManager;
 }
 
-CSQLiTest::~CSQLiTest()
+SQLiTest::~SQLiTest()
 {
 
 }
 
-bool CSQLiTest::loadConfiguration(string fileName /*= "SQLiTestCase.xml"*/)
+bool SQLiTest::loadConfiguration(string fileName /*= "SQLiTestCase.xml"*/)
 {
 	//读取Xml文件，并遍历
 	try
@@ -121,7 +121,7 @@ bool CSQLiTest::loadConfiguration(string fileName /*= "SQLiTestCase.xml"*/)
 
 
 
-bool CSQLiTest::saveConfiguration(string fileName /*= "SQLiTestCase.xml"*/)
+bool SQLiTest::saveConfiguration(string fileName /*= "SQLiTestCase.xml"*/)
 {
 	try
 	{
@@ -189,7 +189,7 @@ bool CSQLiTest::saveConfiguration(string fileName /*= "SQLiTestCase.xml"*/)
 		bbcCase = { 0, "1524024) and 1=2 #", "NULL", "1816807) ANd 'abc' = 'bbc' #", "NULL" };
 		insertBBC(&bbcCase, BBCRoot, myDocument);
 
-		TimeBasedCase tbcCase = { 0, "' or if(1=1, sleep(", "), 0) #", "' and if(1=2, sleep(0), 0) #", "NULL",0 };
+		/*TimeBasedCase tbcCase = { 0, "' or if(1=1, sleep(", "), 0) #", "' and if(1=2, sleep(0), 0) #", "NULL", 0 };
 		insertTBC(&tbcCase, TBCRoot, myDocument);
 		TimeBasedCase tbcCase2 = { 0, "\" or if(1=1, sleep(", "), 0) #", "\" and if(1=2, sleep(0), 0) #", "NULL", 0 };
 		insertTBC(&tbcCase2, TBCRoot, myDocument);
@@ -200,6 +200,19 @@ bool CSQLiTest::saveConfiguration(string fileName /*= "SQLiTestCase.xml"*/)
 		TimeBasedCase tbcCase5 = { 0, "23 or if(1=1, sleep(", "), 0) #", "23 or and(1=2, sleep(0), 0) #", "NULL", 0 };
 		insertTBC(&tbcCase5, TBCRoot, myDocument);
 		TimeBasedCase tbcCase6 = { 0, "12345) or if(1=1, sleep(", "), 0) #", "12345) and if(1=2, sleep(0), 0) #", "NULL", 0 };
+		insertTBC(&tbcCase6, TBCRoot, myDocument);*/
+
+		TimeBasedCase tbcCase = { 0, "' and if(1=1, sleep(", "), 0) #", "' and if(1=1, sleep(0), 0) #", "NULL", 0 };
+		insertTBC(&tbcCase, TBCRoot, myDocument);
+		TimeBasedCase tbcCase2 = { 0, "\" and if(1=1, sleep(", "), 0) #", "\" and if(1=1, sleep(0), 0) #", "NULL", 0 };
+		insertTBC(&tbcCase2, TBCRoot, myDocument);
+		TimeBasedCase tbcCase3 = { 0, "') and if(1=1, sleep(", "), 0) #", "') and if(1=1, sleep(0), 0) #", "NULL", 0 };
+		insertTBC(&tbcCase3, TBCRoot, myDocument);
+		TimeBasedCase tbcCase4 = { 0, "\") and if(1=1, sleep(", "), 0) #", "\") and if(1=1, sleep(0), 0) #", "NULL", 0 };
+		insertTBC(&tbcCase4, TBCRoot, myDocument);
+		TimeBasedCase tbcCase5 = { 0, " and if(1=1, sleep(", "), 0) #", "and if(1=1, sleep(0), 0) #", "NULL", 0 };
+		insertTBC(&tbcCase5, TBCRoot, myDocument);
+		TimeBasedCase tbcCase6 = { 0, ") and if(1=1, sleep(", "), 0) #", ") and if(1=1, sleep(0), 0) #", "NULL", 0 };
 		insertTBC(&tbcCase6, TBCRoot, myDocument);
 
 		myDocument->SaveFile(fileName.c_str());//保存到文件
@@ -211,7 +224,7 @@ bool CSQLiTest::saveConfiguration(string fileName /*= "SQLiTestCase.xml"*/)
 	}
 	return true;
 }
-void CSQLiTest::insertEBC(ErrorBasedCase *pEBC, tinyxml2::XMLElement *EBCRoot, tinyxml2::XMLDocument* myDocument)
+void SQLiTest::insertEBC(ErrorBasedCase *pEBC, tinyxml2::XMLElement *EBCRoot, tinyxml2::XMLDocument* myDocument)
 {
 	int i = -1;
 	tinyxml2::XMLElement *ele = (tinyxml2::XMLElement*)EBCRoot->LastChild();
@@ -246,7 +259,7 @@ void CSQLiTest::insertEBC(ErrorBasedCase *pEBC, tinyxml2::XMLElement *EBCRoot, t
 	EBCRoot->QueryIntAttribute("num", &i);
 	EBCRoot->SetAttribute("num", i + 1);
 }
-void CSQLiTest::insertBBC(BoolBasedCase *pBBC, tinyxml2::XMLElement *BBCRoot, tinyxml2::XMLDocument* myDocument)
+void SQLiTest::insertBBC(BoolBasedCase *pBBC, tinyxml2::XMLElement *BBCRoot, tinyxml2::XMLDocument* myDocument)
 {
 	int i = -1;
 	tinyxml2::XMLElement *ele = (tinyxml2::XMLElement*)BBCRoot->LastChild();
@@ -284,7 +297,7 @@ void CSQLiTest::insertBBC(BoolBasedCase *pBBC, tinyxml2::XMLElement *BBCRoot, ti
 	BBCRoot->QueryIntAttribute("num", &i);
 	BBCRoot->SetAttribute("num", i + 1);
 }
-void CSQLiTest::insertTBC(TimeBasedCase *pTBC, tinyxml2::XMLElement *TBCRoot, tinyxml2::XMLDocument* myDocument)
+void SQLiTest::insertTBC(TimeBasedCase *pTBC, tinyxml2::XMLElement *TBCRoot, tinyxml2::XMLDocument* myDocument)
 {
 	int i = -1;
 	tinyxml2::XMLElement *ele = (tinyxml2::XMLElement*)TBCRoot->LastChild();
@@ -322,7 +335,7 @@ void CSQLiTest::insertTBC(TimeBasedCase *pTBC, tinyxml2::XMLElement *TBCRoot, ti
 	TBCRoot->SetAttribute("num", i + 1);
 }
 
-bool CSQLiTest::test(CHttpClient *pHttpClient, Item *pItem)
+bool SQLiTest::test(CHttpClient *pHttpClient, Item *pItem)
 {
 	bool flag = false;
 	long averageTime1 = 0;
@@ -333,7 +346,7 @@ bool CSQLiTest::test(CHttpClient *pHttpClient, Item *pItem)
 
 	for (unsigned i = 0; i < pItem->getArgs().size(); i++)
 	{
-		if (((pItem->getArgs())[i].getSecurityFlag()&1) !=0)	//这个参数肯定不用测试，如submit。
+		if (((pItem->getArgs())[i].getSecurityFlag() & 1) != 0)	//这个参数肯定不用测试，如submit。
 			continue;
 		if (m_errorBased)
 		{
@@ -365,7 +378,7 @@ bool CSQLiTest::test(CHttpClient *pHttpClient, Item *pItem)
 	return flag;
 }
 
-bool CSQLiTest::errorBasedTest(CHttpClient* pHttpClient, Item *pItem, unsigned pos, long &averageTime)
+bool SQLiTest::errorBasedTest(CHttpClient* pHttpClient, Item *pItem, unsigned pos, long &averageTime)
 {
 	long sumTime = 0;
 	int sendCount = 0;
@@ -387,22 +400,22 @@ bool CSQLiTest::errorBasedTest(CHttpClient* pHttpClient, Item *pItem, unsigned p
 		html = "";
 		//参数编制。
 		args = pItem->getArgsStr(pos, m_vecEBTestCase[i]->inject);
-	
+
 		send(pHttpClient, method, cookieStr, url, args, html, sumTime, sendCount);
 
 		if (pHttpClient->getStatusCode() / 100 == 5)
 		{
 			//返回码为服务器内部错误，则认为有漏洞。
-			resultState=1500;
+			resultState = 1500;
 		}
 		else if (pHttpClient->getStatusCode() / 100 == 4)
 		{
-		//	resultState = 1000 + pHttpClient->getStatusCode();
+			//	resultState = 1000 + pHttpClient->getStatusCode();
 			continue;
 		}
 		else if (html.find(m_vecEBTestCase[i]->check) != -1)
 		{
-			resultState=101;
+			resultState = 101;
 		}
 
 		//如果找到了报错，则不用验证。
@@ -440,7 +453,7 @@ bool CSQLiTest::errorBasedTest(CHttpClient* pHttpClient, Item *pItem, unsigned p
 			pResult->method = method;
 			/*if (resultState == 101)
 			{
-				pResult->vecResponse.push_back(html);
+			pResult->vecResponse.push_back(html);
 			}*/
 			m_pTestManager->putResultItem(pResult);
 			//pItem->getArgs()[pos].setResultId(pResult->id);
@@ -451,11 +464,11 @@ bool CSQLiTest::errorBasedTest(CHttpClient* pHttpClient, Item *pItem, unsigned p
 		}
 	}
 	//这里有一个小问题，如果sendCount=0，那么平均时间将无法计算。 可以使用两个参数，总时间与次数。当前仅使用平均时间。
-	averageTime = sendCount == 0? 0:sumTime*1000/CLOCKS_PER_SEC / sendCount;
+	averageTime = sendCount == 0 ? 0 : sumTime * 1000 / CLOCKS_PER_SEC / sendCount;
 	return resultState > 0;
 }
 
-bool CSQLiTest::boolBasedTest(CHttpClient* pHttpClient, Item *pItem, unsigned pos, long &averageTime)
+bool SQLiTest::boolBasedTest(CHttpClient* pHttpClient, Item *pItem, unsigned pos, long &averageTime)
 {
 
 
@@ -486,11 +499,11 @@ bool CSQLiTest::boolBasedTest(CHttpClient* pHttpClient, Item *pItem, unsigned po
 	if ((pItem->getArgs())[pos].getValue() != "")	//是否有默认值
 	{
 		//该位置有默认值
-		args = pItem->getArgsStr(-1,"",true, true);
+		args = pItem->getArgsStr(-1, "", true, true);
 		code = send(pHttpClient, method, cookieStr, url, args, oriHtml, sumTime, sendCount);	//获取样本0
 		if (code == CURLE_OK)
 		{
-			switch (pHttpClient->getStatusCode() / 100 )
+			switch (pHttpClient->getStatusCode() / 100)
 			{
 				case 2:
 					for (i = 0; i < testCaseNum; i++)
@@ -500,7 +513,7 @@ bool CSQLiTest::boolBasedTest(CHttpClient* pHttpClient, Item *pItem, unsigned po
 
 						args = pItem->getArgsStr(pos, m_vecBBTestCase[i]->inject) + getComment(method);
 						code = send(pHttpClient, method, cookieStr, url, args, rightHtml, sumTime, sendCount);	//获取样本1
-						if (code != CURLE_OK || pHttpClient->getStatusCode()/100 != 2)
+						if (code != CURLE_OK || pHttpClient->getStatusCode() / 100 != 2)
 							continue;
 						if (htmlEqual(oriHtml, rightHtml))
 						{
@@ -511,13 +524,13 @@ bool CSQLiTest::boolBasedTest(CHttpClient* pHttpClient, Item *pItem, unsigned po
 							if (!htmlEqual(rightHtml, errorHtml))
 							{
 								resultState = 201;
-								
+
 								break;
 							}
 						}
 					}
-					default:// 未正常返回网页，表示参数有问题直接当做无参数处理
-						break;
+				default:// 未正常返回网页，表示参数有问题直接当做无参数处理
+					break;
 			}
 		}
 	}
@@ -580,7 +593,7 @@ bool CSQLiTest::boolBasedTest(CHttpClient* pHttpClient, Item *pItem, unsigned po
 				pItem->getArgsStr(pos, m_vecBBTestCase[i]->inject, true, false) + m_pTestManager->g_separator +
 				pItem->getArgsStr(pos, m_vecBBTestCase[testCaseNum * 2 + i]->inject, true, false);
 		}
-		else 
+		else
 		{
 			/*pResult->vecResponse.push_back(rightHtml);
 			pResult->vecResponse.push_back(rightIdentiHtml);
@@ -589,7 +602,7 @@ bool CSQLiTest::boolBasedTest(CHttpClient* pHttpClient, Item *pItem, unsigned po
 			pResult->argStrs = pItem->getArgsStr(pos, m_vecBBTestCase[i]->inject, false, false) + m_pTestManager->g_separator +
 				pItem->getArgsStr(pos, m_vecBBTestCase[testCaseNum + i]->inject, false, false) + m_pTestManager->g_separator +
 				pItem->getArgsStr(pos, m_vecBBTestCase[i]->identify, false, false) + m_pTestManager->g_separator +
-				pItem->getArgsStr(pos, m_vecBBTestCase[testCaseNum + i]->identify, false,false);
+				pItem->getArgsStr(pos, m_vecBBTestCase[testCaseNum + i]->identify, false, false);
 		}
 		m_pTestManager->putResultItem(pResult);
 		pItem->setResultId(pos, pResult->id);
@@ -600,7 +613,7 @@ bool CSQLiTest::boolBasedTest(CHttpClient* pHttpClient, Item *pItem, unsigned po
 	return resultState > 0;
 }
 
-bool CSQLiTest::timeBasedTest(CHttpClient* pHttpClient, Item *pItem, unsigned pos, long averageTime)
+bool SQLiTest::timeBasedTest(CHttpClient* pHttpClient, Item *pItem, unsigned pos, long averageTime)
 {
 	clock_t start, end;
 	string html = "";
@@ -612,17 +625,20 @@ bool CSQLiTest::timeBasedTest(CHttpClient* pHttpClient, Item *pItem, unsigned po
 
 	CURLcode code;
 	pHttpClient->setTimeOut(averageTime + m_lateTime);
-	WriteLog("avergeTime" + to_string(averageTime) + "\t\turl:" + pItem->getUrl() + pItem->getArgsStr(-1, "", true, false));
+	//WriteLog("avergeTime" + to_string(averageTime) + "\t\turl:" + pItem->getUrl() + pItem->getArgsStr(-1, "", true, false));
+	//code具有一定的延迟，为什么不知道(因为超时只是客户端超时，但是服务端仍然在执行sql语句，导致下一个请求发送时，服务端还在处理上一个请求)。
+	//使用自己取得时间判断，没有用。服务端不会改变。
 	for (unsigned i = 0; i < m_veerTBTestCase.size(); i++)
 	{
 		resultState = 0;
-		args = pItem->getArgsStr(pos, m_veerTBTestCase[i]->inject + to_string(averageTime / 1000 + 1) + m_veerTBTestCase[i]->injectPost + getComment(pItem->getMethod()));
+		args = pItem->getArgsStr(pos, m_veerTBTestCase[i]->inject + to_string(averageTime / 1000 + m_lateTime / 1000) + m_veerTBTestCase[i]->injectPost + getComment(pItem->getMethod()));
 
 		start = clock();
 		code = pHttpClient->send(pItem->getMethod(), cookie.toString(), pItem->getUrl(), args, html);
 		end = clock();
 		switch (code)
 		{
+			
 			case CURLE_OPERATION_TIMEDOUT:
 				//超时，说明if起作用了,即可插入
 				resultState = 301;
@@ -638,6 +654,7 @@ bool CSQLiTest::timeBasedTest(CHttpClient* pHttpClient, Item *pItem, unsigned po
 				WriteLog("timeBasedTest(CHttpClient* pHttpClient, Item *pItem, unsigned pos, long averageTime)----curlCode=" + to_string(code));
 				break;
 		}
+		_cprintf("1:%d   %d\n", code, i);
 		if (resultState > 0)
 		{
 			//进一步验证，不知道如何验证。正常情况下不超时。应该为curle_ok且时间小于超时时间。
@@ -650,7 +667,39 @@ bool CSQLiTest::timeBasedTest(CHttpClient* pHttpClient, Item *pItem, unsigned po
 			{
 				resultState = 0;
 			}
+			_cprintf("2:%d   %d\n", code, i);
 		}
+
+	//clock_t during;
+	//for (unsigned i = 0; i < m_veerTBTestCase.size(); i++)
+	//{
+	//	resultState = 0;
+	//	args = pItem->getArgsStr(pos, m_veerTBTestCase[i]->inject + to_string(averageTime / 1000 + m_lateTime / 1000) + m_veerTBTestCase[i]->injectPost + getComment(pItem->getMethod()));
+
+	//	start = clock();
+	//	code = pHttpClient->send(pItem->getMethod(), cookie.toString(), pItem->getUrl(), args, html);
+	//	end = clock();
+	//	during = end - start;
+	//	_cprintf("1: %d\t%d\t%d\t%d\t%d\n", code, i, during, end, start);
+	//	if (during >= (averageTime + m_lateTime))
+	//	{
+	//		//超时，说明if起作用了,即可插入
+	//		resultState = 301;
+
+	//		//进一步验证，不知道如何验证。正常情况下不超时。应该为curle_ok且时间小于超时时间。
+	//		args = pItem->getArgsStr(pos, m_veerTBTestCase[i]->identify + getComment(pItem->getMethod()));
+
+	//		start = clock();
+	//		code = pHttpClient->send(pItem->getMethod(), cookie.toString(), pItem->getUrl(), args, html);
+	//		end = clock();
+	//		during = (end - start);
+	//		if ( during >= (averageTime + m_lateTime))
+	//		{
+	//			resultState = 0;
+	//		}
+	//		_cprintf("2: %d\t%d\t%d\t%d\t%d\n", code, i, during, end, start);
+	//	}
+
 		if (resultState > 0)
 		{
 			pResult = new TestResult();
@@ -674,16 +723,16 @@ bool CSQLiTest::timeBasedTest(CHttpClient* pHttpClient, Item *pItem, unsigned po
 	return resultState > 0;
 }
 
-BOOL CSQLiTest::htmlEqual(string html, string html2)
+BOOL SQLiTest::htmlEqual(string html, string html2)
 {
 	if (html.length() == html2.length())
 		return true;
 	return false;
 }
 
-string CSQLiTest::getComment(HttpMethod method)
+string SQLiTest::getComment(HttpMethod method)
 {
-	string arg="";
+	string arg = "";
 	if (method == HttpMethod::get)
 	{
 		//arg = "%20%23";
@@ -695,7 +744,7 @@ string CSQLiTest::getComment(HttpMethod method)
 	return arg;
 }
 
-CURLcode CSQLiTest::send(CHttpClient*pHttpClient, HttpMethod method, string cookieStr, string url, string args, string& html, long&sumTime, int&sendCount)
+CURLcode SQLiTest::send(CHttpClient*pHttpClient, HttpMethod method, string cookieStr, string url, string args, string& html, long&sumTime, int&sendCount)
 {
 	CURLcode code;
 	static clock_t start, end;
@@ -711,7 +760,7 @@ CURLcode CSQLiTest::send(CHttpClient*pHttpClient, HttpMethod method, string cook
 	return code;
 }
 
-void CSQLiTest::setTestMode(bool errorBased, bool boolBased, bool timeBased)
+void SQLiTest::setTestMode(bool errorBased, bool boolBased, bool timeBased)
 {
 	m_errorBased = errorBased;
 	m_boolBased = boolBased;

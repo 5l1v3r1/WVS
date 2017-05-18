@@ -8,16 +8,16 @@
 #include "TestManager.h"
 
 
-class CExtractJob : public CJob
+class ExtractJob : public Job
 {
 public:
-	CExtractJob(Item*pItem, CData* pData, TestManager*pTestManager, HWND hwnd);
-	~CExtractJob();
+	ExtractJob(Item*pItem, Data* pData, TestManager*pTestManager, HWND hwnd);
+	~ExtractJob();
 
 	void Run(void *ptr);
 private:
 	Item* m_pItem;
-	CData* m_pData;
+	Data* m_pData;
 	TestManager* m_pTestManager;
 	HWND m_hwnd = NULL;
 };

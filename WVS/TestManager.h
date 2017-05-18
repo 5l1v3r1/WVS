@@ -13,7 +13,7 @@ using namespace std;
 class TestManager
 {
 public:
-	TestManager(CData *pData);
+	TestManager(Data *pData);
 	~TestManager();
 	/*bool loadLibByName();
 	bool unloadAllLib();*/
@@ -34,9 +34,9 @@ private:
 	//vector<string> m_vecModuleName;
 	//map<string, Test*> m_mapNameTest;
 	//vector<HINSTANCE> m_vechLib;
-	CSQLiTest* m_pSQLiTest;
+	SQLiTest* m_pSQLiTest;
 	XSSTest* m_pXSSTest;
-	CData* m_pData;
+	Data* m_pData;
 	SRWLOCK m_resultSRW;
 	vector<TestResult*> m_vecpResult;
 };

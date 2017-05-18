@@ -2,7 +2,7 @@
 #include "MonitorJob.h"
 #include "Data.h"
 
-MonitorJob::MonitorJob(HWND hwnd, clock_t start, CMyThreadPool* pThreadPool)
+MonitorJob::MonitorJob(HWND hwnd, clock_t start, ThreadPool* pThreadPool)
 {
 	m_start = start;
 	m_pThreadPool = pThreadPool;

@@ -37,7 +37,7 @@
 #include "conio.h"
 #include <string>
 #define WM_MY_MONITOR	WM_USER+8
-#define  DEBUG_MY
+//#define  DEBUG_MY
 #ifndef DEBUG_MY
 #define  _cprintf(x, ...) 
 #endif

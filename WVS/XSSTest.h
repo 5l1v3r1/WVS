@@ -14,7 +14,7 @@ typedef struct XSSTestCase
 class XSSTest: public Test
 {
 public:
-	XSSTest(CData* pData, TestManager* pTestManager);
+	XSSTest(Data* pData, TestManager* pTestManager);
 	~XSSTest();
 	virtual bool loadConfiguration(string fileName = "XSSConf.xml");
 	virtual bool saveConfiguration(string fileName = "XSSConf.xml");

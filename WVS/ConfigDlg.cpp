@@ -90,7 +90,7 @@ void CConfigDlg::OnBnClickedOk()
 	m_pTestManager->loadConfiguration();
 }
 
-void CConfigDlg::setGlobalData(CData *pData, CMyThreadPool *pThreadPool, TestManager* pTestManager)
+void CConfigDlg::setGlobalData(Data *pData, ThreadPool *pThreadPool, TestManager* pTestManager)
 {
 	m_pData = pData;
 	m_pThreadPool = pThreadPool;
@@ -204,14 +204,14 @@ void CConfigDlg::OnBnClickedButton5()
 	}
 	if (!m_testXSS)
 	{
-		field.setSecurityFlag(3);
+		field.setSecurityFlag(2);
 	}
 	pTestArgs->push_back(field);
 
 	string showArgs = "";
 	for (unsigned i = 0; i < pTestArgs->size(); i++)
 	{
-		showArgs += (*pTestArgs)[i].getName() + "=" + (*pTestArgs)[i].getValue() + "{"+ (m_testSQLi? "0":"1")+ "}";
+		showArgs += (*pTestArgs)[i].getName() + "=" + (*pTestArgs)[i].getValue() + "{" + to_string((*pTestArgs)[i].getSecurityFlag()) + "}";
 		if (i < pTestArgs->size() - 1)
 		{
 			showArgs += "&";

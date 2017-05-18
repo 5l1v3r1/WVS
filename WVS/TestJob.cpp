@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "TestJob.h"
 
-TestJob::TestJob(HWND hwnd, Item*pItem, CData*pData, TestManager*pTestManager)
+TestJob::TestJob(HWND hwnd, Item*pItem, Data*pData, TestManager*pTestManager)
 {
 	m_pItem = pItem;
 	m_pData = pData;

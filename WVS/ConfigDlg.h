@@ -18,7 +18,7 @@ public:
 	CConfigDlg(CWnd* pParent = NULL);   // 标准构造函数
 	virtual ~CConfigDlg();
 
-	void setGlobalData(CData *pData, CMyThreadPool *pThreadPool, TestManager* pTestManager);
+	void setGlobalData(Data *pData, ThreadPool *pThreadPool, TestManager* pTestManager);
 	
 	afx_msg void OnBnClickedOk();		//重新加载测试用例
 	afx_msg void OnBnClickedButton1();	//存储测试用例
@@ -38,8 +38,8 @@ protected:
 	DECLARE_MESSAGE_MAP()
 private:
 
-	CData *m_pData;
-	CMyThreadPool *m_pThreadPool;
+	Data *m_pData;
+	ThreadPool *m_pThreadPool;
 	TestManager* m_pTestManager;
 	UINT m_crawlerLayer;// 爬行深度
 	UINT m_numOfThread;

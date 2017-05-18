@@ -228,12 +228,12 @@ void setConsole()
 CWVSDlg::CWVSDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(CWVSDlg::IDD, pParent)
 {
-	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
+	m_hIcon = AfxGetApp()->LoadIcon(IDI_APP);
 #ifdef DEBUG_MY
 	setConsole();
 #endif
-	m_pData = new CData();
-	m_pThreadPool = new	CMyThreadPool(-1);	
+	m_pData = new Data();
+	m_pThreadPool = new	ThreadPool(-1);	
 	m_pTestManager = new TestManager(m_pData);
 	m_config.setGlobalData(m_pData, m_pThreadPool, m_pTestManager);
 	m_mainPage.setGlobalData(m_pData, m_pThreadPool, m_pTestManager, &m_config);

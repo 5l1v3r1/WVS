@@ -117,7 +117,7 @@ void CMainPageDlg::OnBnClickedBegin()
 
 			MonitorJob *pMJob = new MonitorJob(this->m_hWnd, start, m_pThreadPool);
 			m_pThreadPool->addJob(pMJob, NULL);
-			CExtractJob *pJob = new CExtractJob(pItem, m_pData, m_pTestManager, m_hWnd);
+			ExtractJob *pJob = new ExtractJob(pItem, m_pData, m_pTestManager, m_hWnd);
 			m_pThreadPool->addJob(pJob, NULL);
 		}
 		else{
@@ -144,7 +144,7 @@ void CMainPageDlg::OnBnClickedBegin()
 	}
 }
 
-void CMainPageDlg::setGlobalData(CData *pData, CMyThreadPool *pThreadPool, TestManager* pTestManager, CConfigDlg *pConfigDlg)
+void CMainPageDlg::setGlobalData(Data *pData, ThreadPool *pThreadPool, TestManager* pTestManager, CConfigDlg *pConfigDlg)
 {
 	m_pData = pData;
 	m_pThreadPool = pThreadPool;

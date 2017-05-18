@@ -17,22 +17,22 @@ typedef enum ThreadPoolStatus{
 
 #include "CHttpClient.h"
 
-class CMyThreadPool;
-class CMyWorkerThread;
-class CJob
+class ThreadPool;
+class WorkerThread;
+class Job
 {
 protected:
-	CMyWorkerThread * m_pWorkThread;        //在线程里面设置
+	WorkerThread * m_pWorkThread;        //在线程里面设置
 public:
-	CJob();
-	virtual ~CJob();
+	Job();
+	virtual ~Job();
 
 	//获取或设置工作线程  
-	CMyWorkerThread * GetWorkThread()
+	WorkerThread * GetWorkThread()
 	{
 		return m_pWorkThread;
 	}
-	void SetWorkThread(CMyWorkerThread * pWorkThread)
+	void SetWorkThread(WorkerThread * pWorkThread)
 	{
 		m_pWorkThread = pWorkThread;
 	}
@@ -42,13 +42,13 @@ public:
 	bool m_isDeleteAfterDone;
 };
 
-class CMyWorkerThread
+class WorkerThread
 {
 protected:
 	static unsigned int __stdcall ThreadFunction(void* args);
 public:
-	CMyWorkerThread(CMyThreadPool* m_pThreadPool);
-	~CMyWorkerThread();
+	WorkerThread(ThreadPool* m_pThreadPool);
+	~WorkerThread();
 	void Run(void);
 
 	ThreadStatus getStatus(){
@@ -59,11 +59,11 @@ public:
 	
 	CURLcode m_curlCode;
 	string m_strHeader = "";
-	CMyThreadPool* m_pThreadPool;
+	ThreadPool* m_pThreadPool;
 	unsigned long getThreadID(){ return m_ThreadID; }
 	CHttpClient* getHttpClient();
 private:
-	CJob* m_Job;
+	Job* m_Job;
 	void* m_JobData;
 	unsigned long m_ThreadID;
 	TheadStatus m_status;	
@@ -71,15 +71,15 @@ private:
 };
 
 
-class CMyThreadPool
+class ThreadPool
 {
 public:
 
-	CMyThreadPool(int initWorkerNum = -1);
-	~CMyThreadPool();
+	ThreadPool(int initWorkerNum = -1);
+	~ThreadPool();
 	void setThreadNum(int threadNum);
-	void addJob(CJob *pJob, void* jobData);
-	CJob* getJob(void* &pjobData);
+	void addJob(Job *pJob, void* jobData);
+	Job* getJob(void* &pjobData);
 	int getBusyWorkerNum();
 	int getRestJobNum();
 
@@ -93,12 +93,12 @@ public:
 	CONDITION_VARIABLE m_statusCond;
 	SRWLOCK m_statusSRW;
 private:
-	queue<CJob*> jobQueue;	//任务队列；
+	queue<Job*> jobQueue;	//任务队列；
 	queue<void*> jobDataQueue;//任务参数队列;
 	ThreadPoolStatus m_status;	//线程运行状态
 	
 
-	vector<CMyWorkerThread*> workerVec;
+	vector<WorkerThread*> workerVec;
 	
 };
 

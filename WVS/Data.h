@@ -7,13 +7,13 @@
 #include "HtmlForm.h"
 #include "MyThreadPool.h"
 
-class CData
+class Data
 {
 //全局类，用来存储所有的全局数据。
 public:
-	CData(string oriUrl);
-	CData();
-	~CData();
+	Data(string oriUrl);
+	Data();
+	~Data();
 	bool checkInLinks(Item &des, vector<Item*>&crawlerLinksVec);
 	string vecFieldToString(vector<Field> fieldVec);
 	//void showCrawler();

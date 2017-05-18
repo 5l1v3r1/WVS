@@ -35,7 +35,7 @@ private:
 	string m_value;
 	string m_defaultValue;
 	string m_type;
-	unsigned securityFlag = 0;	//作为肯定安全的标记，这个参数不用测试
+	unsigned securityFlag = 0;	//作为肯定安全的标记，这个参数不用测试默认为0，需要测试
 	int m_resultId = -1;		//漏洞具体情况ID， -1代表没有漏洞；
 	
 	static  const string DEFAULT_NAME_VALUE;

@@ -188,5 +188,8 @@
     <Image Include="res\button_ok.ico">
       <Filter>资源文件</Filter>
     </Image>
+    <Image Include="res\app_icon.ICO">
+      <Filter>资源文件</Filter>
+    </Image>
   </ItemGroup>
 </Project>

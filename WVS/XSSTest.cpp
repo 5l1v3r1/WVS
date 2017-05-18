@@ -3,7 +3,7 @@
 #include "conio.h"
 #include "TestManager.h"
 
-XSSTest::XSSTest(CData* pData, TestManager* pTestManager)
+XSSTest::XSSTest(Data* pData, TestManager* pTestManager)
 {
 	
 	m_pData = pData;

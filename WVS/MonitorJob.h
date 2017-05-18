@@ -2,14 +2,14 @@
 #include "MyThreadPool.h"
 
 
-class MonitorJob :public CJob
+class MonitorJob :public Job
 {
 public:
-	MonitorJob(HWND hwnd,clock_t start, CMyThreadPool* pThreadPool);
+	MonitorJob(HWND hwnd,clock_t start, ThreadPool* pThreadPool);
 	~MonitorJob();
 	void Run(void*ptr);
 private:
-	CMyThreadPool *m_pThreadPool;
+	ThreadPool *m_pThreadPool;
 	clock_t m_start;
 	clock_t m_now;
 	//CData*m_pData;

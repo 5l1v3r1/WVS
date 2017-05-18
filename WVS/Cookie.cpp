@@ -36,7 +36,7 @@ Cookie::Cookie(string headerStr)
 					}
 					else if (temp->getName() == "security")
 					{
-						temp->setValue("low");
+						//temp->setValue("low");
 					}
 					m_cookie.push_back(*temp);
 				}

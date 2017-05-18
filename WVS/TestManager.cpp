@@ -2,11 +2,11 @@
 #include "TestManager.h"
 
 
-TestManager::TestManager(CData *pData)
+TestManager::TestManager(Data *pData)
 {
 	
 	m_pData = pData;
-	m_pSQLiTest = new CSQLiTest(pData, this);
+	m_pSQLiTest = new SQLiTest(pData, this);
 	m_pXSSTest = new XSSTest(pData, this);
 	InitializeSRWLock(&m_resultSRW);
 	loadConfiguration();

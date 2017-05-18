@@ -2,7 +2,7 @@
 #include "MyThreadPool.h"
 
 
-CMyThreadPool::CMyThreadPool(int initWorkerNum /*= -1*/)
+ThreadPool::ThreadPool(int initWorkerNum /*= -1*/)
 {
 	InitializeCriticalSection(&m_jobQueueCS);
 	InitializeConditionVariable(&m_jobCond);
@@ -15,36 +15,36 @@ CMyThreadPool::CMyThreadPool(int initWorkerNum /*= -1*/)
 	}
 	else{
 		m_status = ThreadPoolStatus::work;
-		CMyWorkerThread *pWorkerThread;
+		WorkerThread *pWorkerThread;
 		for (int i = 0; i < initWorkerNum; i++)
 		{
-			pWorkerThread = new CMyWorkerThread(this);
+			pWorkerThread = new WorkerThread(this);
 			workerVec.push_back(pWorkerThread);
 		}
 	}
 }
 
-void CMyThreadPool::setThreadNum(int threadNum)
+void ThreadPool::setThreadNum(int threadNum)
 {
 	if (workerVec.size() == 0)
 	{
 		m_status = ThreadPoolStatus::work;
-		CMyWorkerThread *pWorkerThread;
+		WorkerThread *pWorkerThread;
 		for (int i = 0; i < threadNum; i++)
 		{
-			pWorkerThread = new CMyWorkerThread(this);
+			pWorkerThread = new WorkerThread(this);
 			workerVec.push_back(pWorkerThread);
 		}
 	}
 }
 
-CMyThreadPool::~CMyThreadPool()
+ThreadPool::~ThreadPool()
 {
 	DeleteCriticalSection(&m_jobQueueCS);
 }
 
 
-void CMyThreadPool::addJob(CJob *pJob, void* jobData)
+void ThreadPool::addJob(Job *pJob, void* jobData)
 {
 	EnterCriticalSection(&m_jobQueueCS);
 	jobQueue.push(pJob);
@@ -53,9 +53,9 @@ void CMyThreadPool::addJob(CJob *pJob, void* jobData)
 	WakeAllConditionVariable(&m_jobCond);
 }
 
-CJob* CMyThreadPool::getJob(void* &pjobData)
+Job* ThreadPool::getJob(void* &pjobData)
 {
-	CJob * pJob = NULL;
+	Job * pJob = NULL;
 	if (jobQueue.size() > 0){
 		pJob = jobQueue.front();
 		jobQueue.pop();
@@ -65,7 +65,7 @@ CJob* CMyThreadPool::getJob(void* &pjobData)
 	return pJob;
 }
 
-int CMyThreadPool::getBusyWorkerNum()
+int ThreadPool::getBusyWorkerNum()
 {
 	int num = 0;
 	for (unsigned i = 0; i < workerVec.size(); i++)
@@ -76,7 +76,7 @@ int CMyThreadPool::getBusyWorkerNum()
 	return num;
 }
 
-int CMyThreadPool::getRestJobNum()
+int ThreadPool::getRestJobNum()
 {
 	int num;
 	EnterCriticalSection(&m_jobQueueCS);
@@ -85,14 +85,14 @@ int CMyThreadPool::getRestJobNum()
 	return num;
 }
 
-void CMyThreadPool::pause()
+void ThreadPool::pause()
 {
 	AcquireSRWLockExclusive(&m_statusSRW);
 	m_status = ThreadPoolStatus::pause;
 	ReleaseSRWLockExclusive(&m_statusSRW);
 }
 
-ThreadPoolStatus CMyThreadPool::getStatus()
+ThreadPoolStatus ThreadPool::getStatus()
 {
 	ThreadPoolStatus status;
 	AcquireSRWLockShared(&m_statusSRW);
@@ -101,7 +101,7 @@ ThreadPoolStatus CMyThreadPool::getStatus()
 	return status;
 }
 
-void CMyThreadPool::resume()
+void ThreadPool::resume()
 {
 	AcquireSRWLockExclusive(&m_statusSRW);
 	m_status = ThreadPoolStatus::work;
@@ -109,7 +109,7 @@ void CMyThreadPool::resume()
 	WakeAllConditionVariable(&m_statusCond);
 }
 
-void CMyThreadPool::stop()	//problem 线程对象没有被释放
+void ThreadPool::stop()	//problem 线程对象没有被释放
 {
 	AcquireSRWLockExclusive(&m_statusSRW);
 	m_status = ThreadPoolStatus::stop; 
@@ -117,16 +117,16 @@ void CMyThreadPool::stop()	//problem 线程对象没有被释放
 	WakeAllConditionVariable(&m_jobCond);
 }
 
-unsigned int CMyWorkerThread::ThreadFunction(void*arg)
+unsigned int WorkerThread::ThreadFunction(void*arg)
 {
-	CMyWorkerThread * pThread = (CMyWorkerThread *)arg;
+	WorkerThread * pThread = (WorkerThread *)arg;
 	pThread->Run();
 	//	_cprintf("in threadFunction\n");
 	return 0;
 }
 
 
-CMyWorkerThread::CMyWorkerThread(CMyThreadPool* pThreadPool)
+WorkerThread::WorkerThread(ThreadPool* pThreadPool)
 {
 	m_pThreadPool = pThreadPool;
 	m_pHttpClient = new CHttpClient();
@@ -135,12 +135,12 @@ CMyWorkerThread::CMyWorkerThread(CMyThreadPool* pThreadPool)
 	_cprintf("CMyWorkerThread: %d:\n", m_ThreadID);
 }
 
-CMyWorkerThread::~CMyWorkerThread()
+WorkerThread::~WorkerThread()
 {
 	delete m_pHttpClient;
 }
 
-void CMyWorkerThread::Run(void)
+void WorkerThread::Run(void)
 {
 	ThreadPoolStatus threadPoolStatus = ThreadPoolStatus::work;
 	bool flag = TRUE;
@@ -193,19 +193,19 @@ void CMyWorkerThread::Run(void)
 	WriteLog("thead_id" + to_string(m_ThreadID) + "  end");
 }
 
-CHttpClient* CMyWorkerThread::getHttpClient()
+CHttpClient* WorkerThread::getHttpClient()
 {
 	m_pHttpClient->setProxy(CHttpClient::s_useProxy, CHttpClient::s_proxy);
 	return m_pHttpClient;
 }
 
 
-CJob::CJob()
+Job::Job()
 {
 	m_isDeleteAfterDone = true;
 }
 
-CJob::~CJob()
+Job::~Job()
 {
 
 }

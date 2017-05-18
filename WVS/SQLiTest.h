@@ -35,11 +35,11 @@ typedef struct TimeBasedCase{
 
 
 
-class CSQLiTest:public Test
+class SQLiTest:public Test
 {
 public:
-	CSQLiTest(CData* pData, TestManager* pTestManger);
-	~CSQLiTest();
+	SQLiTest(Data* pData, TestManager* pTestManger);
+	~SQLiTest();
 	bool loadConfiguration(string fileName = "SQLiTestCase.xml");
 	bool saveConfiguration(string fileName = "SQLiTestCase.xml");
 	void insertEBC(ErrorBasedCase *pEBC, tinyxml2::XMLElement *EBCRoot, tinyxml2::XMLDocument* myDocument);
@@ -58,7 +58,7 @@ private:
 	vector<ErrorBasedCase*> m_vecEBTestCase;
 	vector<TimeBasedCase*> m_veerTBTestCase;
 	vector<BoolBasedCase*> m_vecBBTestCase;
-	long m_lateTime = 10000;	//允许意外的网络延迟时间（ms）
+	long m_lateTime = 2000;	//允许意外的网络延迟时间（ms）
 
 	BOOL htmlEqual(string html, string html2);
 	string getComment(HttpMethod method);

@@ -7,15 +7,15 @@
 #include "MonitorJob.h"
 #define WM_TEST_JOB	WM_USER+9
 
-class TestJob :public CJob
+class TestJob :public Job
 {
 public:
-	TestJob(HWND hwnd, Item*pItem, CData*pData, TestManager*pTestManager);
+	TestJob(HWND hwnd, Item*pItem, Data*pData, TestManager*pTestManager);
 	~TestJob();
 	void Run(void*ptr);
 private:
 	Item* m_pItem;
-	CData* m_pData;
+	Data* m_pData;
 	TestManager* m_pTestManager;
 	HWND m_hwnd;
 };

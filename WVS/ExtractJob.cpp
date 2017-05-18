@@ -17,7 +17,7 @@ string vecFieldToString2(vector<Field> fieldVec)
 }
 
 
-CExtractJob::CExtractJob(Item*pItem, CData* pData, TestManager*pTestManager, HWND hwnd)
+ExtractJob::ExtractJob(Item*pItem, Data* pData, TestManager*pTestManager, HWND hwnd)
 {
 	m_pData = pData;
 	m_pItem = pItem;
@@ -25,17 +25,17 @@ CExtractJob::CExtractJob(Item*pItem, CData* pData, TestManager*pTestManager, HWN
 	m_hwnd = hwnd;
 }
 
-CExtractJob::~CExtractJob()
+ExtractJob::~ExtractJob()
 {
 
 }
 
-void CExtractJob::Run(void *ptr)
+void ExtractJob::Run(void *ptr)
 {
 	string strHtml = "";
 	Cookie tempCookie;
 	int status;
-	CExtractJob *pJob;
+	ExtractJob *pJob;
 	m_pData->getCookie(tempCookie);
 	CHttpClient*pHttpClient = m_pWorkThread->getHttpClient();
 	WriteFile("ÍøÖ·Ê÷.txt" + to_string(m_pWorkThread->getThreadID()),
@@ -68,7 +68,7 @@ void CExtractJob::Run(void *ptr)
 					Item* tempItem = m_pData->analyseRedirectHeader(m_pItem, m_pWorkThread->m_strHeader);
 					if (tempItem != NULL)
 					{
-						pJob = new CExtractJob(tempItem, m_pData, m_pTestManager, m_hwnd);
+						pJob = new ExtractJob(tempItem, m_pData, m_pTestManager, m_hwnd);
 						m_pWorkThread->m_pThreadPool->addJob(pJob, NULL);
 					}
 				}
@@ -79,7 +79,7 @@ void CExtractJob::Run(void *ptr)
 
 				for (unsigned int i = 0; i < pItemVec->size(); i++)
 				{
-					pJob = new CExtractJob((*pItemVec)[i], m_pData, m_pTestManager, m_hwnd);
+					pJob = new ExtractJob((*pItemVec)[i], m_pData, m_pTestManager, m_hwnd);
 				//	_cprintf("addNewJob%s\n", (*pItemVec)[i]->getUrl().c_str());
 					m_pWorkThread->m_pThreadPool->addJob(pJob, NULL);
 				}

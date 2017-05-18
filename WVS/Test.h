@@ -17,7 +17,7 @@ public:
 	//virtual string resultToStringForCSV()=0;
 	//virtual void clearResult()=0;
 	TestManager* m_pTestManager;
-	CData* m_pData;
+	Data* m_pData;
 	friend class TestManager;
 };
 

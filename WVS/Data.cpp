@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "Data.h"
 
-void CData::initData()
+void Data::initData()
 {
 	InitializeSRWLock(&m_linksVecSRW);
 	InitializeSRWLock(&m_cookieSRW);
@@ -9,17 +9,17 @@ void CData::initData()
 	InitializeSRWLock(&m_testedArgNumSRW);
 }
 
-CData::CData(string oriUrl)
+Data::Data(string oriUrl)
 {
 	setUrl(oriUrl);
 	initData();
 }
 
-CData::CData()
+Data::Data()
 {
 	initData();
 }
-void CData::setUrl(string oriUrl)
+void Data::setUrl(string oriUrl)
 {
 	if (oriUrl.find("http") != 0)
 	{
@@ -40,7 +40,7 @@ void CData::setUrl(string oriUrl)
 
 
 
-CData::~CData()
+Data::~Data()
 {
 
 }
@@ -51,7 +51,7 @@ CData::~CData()
 // Parameter: vector<Item> & crawlerLinksVec :
 // Function:  查看是否已经存在过。
 //************************************
-bool CData::checkInLinks(Item &des, vector<Item*>&crawlerLinksVec)
+bool Data::checkInLinks(Item &des, vector<Item*>&crawlerLinksVec)
 {
 	crawledNum = 100;
 	if (des.getUrl().find(domain) == -1)
@@ -122,7 +122,7 @@ bool CData::checkInLinks(Item &des, vector<Item*>&crawlerLinksVec)
 	return false;
 }
 
-string CData::vecFieldToString(vector<Field> fieldVec)
+string Data::vecFieldToString(vector<Field> fieldVec)
 {
 	string args;
 	for (unsigned int i = 0; i < fieldVec.size(); i++)
@@ -152,7 +152,7 @@ string CData::vecFieldToString(vector<Field> fieldVec)
 //}
 
 
-void CData::analyseHeader(string& strHeader)
+void Data::analyseHeader(string& strHeader)
 {
 	Cookie newCookie(strHeader);
 	if (newCookie.toString() == "")
@@ -171,7 +171,7 @@ void CData::analyseHeader(string& strHeader)
 	strHeader = "";
 }
 
-vector<Item*>* CData::analyseHtml(Item*pItem, string& strHtml)
+vector<Item*>* Data::analyseHtml(Item*pItem, string& strHtml)
 {
 	string baseUrl = getBaseUrl(strHtml, pItem);
 	vector<Item*> *pItemVec = new vector<Item*>();
@@ -252,7 +252,7 @@ vector<Item*>* CData::analyseHtml(Item*pItem, string& strHtml)
 	return pItemVec;
 }
 
-Item* CData::analyseRedirectHeader(Item* pItem, string headerStr)
+Item* Data::analyseRedirectHeader(Item* pItem, string headerStr)
 {
 	Item *tempItem = NULL;
 	regex e("Location: (.*)");
@@ -295,7 +295,7 @@ Item* CData::analyseRedirectHeader(Item* pItem, string headerStr)
 //	return pItme;
 //}
 
-Item* CData::getItemByIndex(unsigned index)
+Item* Data::getItemByIndex(unsigned index)
 {
 	Item * pItme;
 	AcquireSRWLockShared(&m_linksVecSRW);
@@ -313,7 +313,7 @@ Item* CData::getItemByIndex(unsigned index)
 
 
 
-void CData::putItem(Item* pItem)
+void Data::putItem(Item* pItem)
 {
 	AcquireSRWLockExclusive(&m_linksVecSRW);
 	pItem->setId(crawlerLinksItemVec.size());
@@ -322,14 +322,14 @@ void CData::putItem(Item* pItem)
 	ReleaseSRWLockExclusive(&m_linksVecSRW);
 }
 
-void CData::getCookie(Cookie& tempCookie)
+void Data::getCookie(Cookie& tempCookie)
 {
 	AcquireSRWLockShared(&m_cookieSRW);
 	tempCookie = cookie;
 	ReleaseSRWLockShared(&m_cookieSRW);
 }
 
-std::string CData::getBaseUrl(string strHtml, Item *pItem)
+std::string Data::getBaseUrl(string strHtml, Item *pItem)
 {
 	vector<string>baseVec;		//暂存 从一个网页中提取的base
 	findByRegex(strHtml, baseRegex, baseVec, false);
@@ -367,14 +367,14 @@ std::string CData::getBaseUrl(string strHtml, Item *pItem)
 	return baseUrl;
 }
 
-void CData::setCookie(Cookie& tempCookie)
+void Data::setCookie(Cookie& tempCookie)
 {
 	AcquireSRWLockExclusive(&m_cookieSRW);
 	cookie = tempCookie;
 	ReleaseSRWLockExclusive(&m_cookieSRW);
 }
 
-int CData::getExtractLinkNum()
+int Data::getExtractLinkNum()
 {
 	int tmp = 0;
 	AcquireSRWLockExclusive(&m_extractLinkNumSRW);
@@ -383,14 +383,14 @@ int CData::getExtractLinkNum()
 	return tmp;
 }
 
-void CData::addExtractLinkNum()
+void Data::addExtractLinkNum()
 {
 	AcquireSRWLockExclusive(&m_extractLinkNumSRW);
 	m_extractedLinkNum++;
 	ReleaseSRWLockExclusive(&m_extractLinkNumSRW);
 }
 
-int CData::getTestedArgNum()
+int Data::getTestedArgNum()
 {
 	int tmp = 0;
 	AcquireSRWLockExclusive(&m_testedArgNumSRW);
@@ -399,24 +399,24 @@ int CData::getTestedArgNum()
 	return tmp;
 }
 
-void CData::addTestedArgNum(int val)
+void Data::addTestedArgNum(int val)
 {
 	AcquireSRWLockExclusive(&m_testedArgNumSRW);
 	m_testedArgNum += val;
 	ReleaseSRWLockExclusive(&m_testedArgNumSRW);
 }
 
-int CData::getTotalArgNum()
+int Data::getTotalArgNum()
 {
 	return m_totalArgNum;
 }
 
-void CData::setTotalArgNum(int val)
+void Data::setTotalArgNum(int val)
 {
 	m_totalArgNum = val;
 }
 
-unsigned CData::crawlerLayer = 100000;
+unsigned Data::crawlerLayer = 100000;
 
 
 
