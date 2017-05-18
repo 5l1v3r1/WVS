@@ -162,7 +162,7 @@ void WriteLog(string log)
 {
 	SYSTEMTIME st;
 	GetLocalTime(&st);
-	ofstream logOut("MyLog.txt", ios::out|ios::app);
+	ofstream logOut("ÍøÖ·_log.txt", ios::out|ios::app);
 	logOut << st.wHour << ":" << st.wMinute << "." << st.wSecond << "." << st.wMilliseconds <<"\t";
 	logOut << log << endl;
 	logOut.close();

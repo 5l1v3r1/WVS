@@ -460,6 +460,7 @@ bool SQLiTest::errorBasedTest(CHttpClient* pHttpClient, Item *pItem, unsigned po
 			pItem->setResultId(pos, pResult->id);
 
 			WriteFile("ÍøÖ·_½á¹û¸ñÊ½»¯.txt", generateResult(pResult->id, pResult->resultState, pResult->url, pResult->method, pResult->args, pResult->argStrs, m_pTestManager->g_separator));
+			WriteFile("ÍøÖ·Ê÷_resultId" + to_string(pResult->id), html);
 			break;
 		}
 	}
@@ -607,7 +608,18 @@ bool SQLiTest::boolBasedTest(CHttpClient* pHttpClient, Item *pItem, unsigned pos
 		m_pTestManager->putResultItem(pResult);
 		pItem->setResultId(pos, pResult->id);
 		WriteFile("ÍøÖ·_½á¹û¸ñÊ½»¯.txt", generateResult(pResult->id, pResult->resultState, pResult->url, pResult->method, pResult->args, pResult->argStrs, m_pTestManager->g_separator));
-	}
+		//¼ÇÂ¼½á¹û
+		if (resultState == 201)
+		{
+			WriteFile("ÍøÖ·Ê÷_resultId" + to_string(pResult->id) + "ori", to_string(oriHtml.length()) + "\r\n" + oriHtml);
+		}
+		else{
+			WriteFile("ÍøÖ·Ê÷_resultId" + to_string(pResult->id) + "identiRight", to_string(rightIdentiHtml.length()) + "\r\n" + rightIdentiHtml);
+			WriteFile("ÍøÖ·Ê÷_resultId" + to_string(pResult->id) + "identiError", to_string(errorIdentiHtml.length()) + "\r\n" + errorIdentiHtml);
+		}
+		WriteFile("ÍøÖ·Ê÷_resultId" + to_string(pResult->id) + "Right", to_string(rightHtml.length()) + "\r\n" + rightHtml);
+		WriteFile("ÍøÖ·Ê÷_resultId" + to_string(pResult->id) + "Error", to_string(errorHtml.length()) + "\r\n" + errorHtml);
+}
 
 	averageTime = sendCount == 0 ? 0 : sumTime * 1000 / CLOCKS_PER_SEC / sendCount;
 	return resultState > 0;
