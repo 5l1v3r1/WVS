@@ -220,7 +220,7 @@ void setConsole()
 	*stdout = *fpout;
 	std::ios_base::sync_with_stdio();           // 将iostream 流同c runtime lib 的stdio 同步，标准是同步的   
 	//	_cprintf("%d, %d, (%d, %d, %d, %d)\t(%d,%d,%d,%d)\n", cx, cy, rectWnd.left,rectWnd.top, rectWnd.Width(),rectWnd.Height(), wnd.left, wnd.top, wnd.Width(), wnd.Height());
-	SetConsoleMode(240, 80);
+	SetConsoleMode(200, 60);
 }
 
 

@@ -22,6 +22,7 @@ public:
 	std::vector<Field> getFields() const { return m_fields; }
 	void setFields(std::vector<Field> val) { m_fields = val; }
 
+	static const  string SELECT_REGEX;
 	static const  string INPUT_REGEX;
 	static const  string TEXTAREA_REGEX;
 	static const  string FORM_REGEX;

@@ -165,28 +165,28 @@ bool SQLiTest::saveConfiguration(string fileName /*= "SQLiTestCase.xml"*/)
 
 		bbcCase = { 0, "' or 1=1 #", "NULL", "' Or 'ab' = 'ab' #", "NULL" };
 		insertBBC(&bbcCase, BBCRoot, myDocument);
-		bbcCase = { 0, "\" or 1=1 #", "NULL", "\" Or 'ab' = 'ab' #", "NULL" };
+		bbcCase = { 0, "\" or 1=1 #", "NULL", "\" Or \"ab\" = \"ab\" #", "NULL" };
 		insertBBC(&bbcCase, BBCRoot, myDocument);
 		bbcCase = { 0, "') or 1=1 #", "NULL", "') Or 'ab' = 'ab' #", "NULL" };
 		insertBBC(&bbcCase, BBCRoot, myDocument);
-		bbcCase = { 0, "\") or 1=1 #", "NULL", "\") Or 'ab' = 'ab' #", "NULL" };
+		bbcCase = { 0, "\") or 1=1 #", "NULL", "\") Or \"ab\" = \"ab\" #", "NULL" };
 		insertBBC(&bbcCase, BBCRoot, myDocument);
-		bbcCase = { 0, "1524024 or 1=1 #", "NULL", "1816807 Or 'ab' = 'ab' #", "NULL" };
+		bbcCase = { 0, "1524024 or 1=1 #", "NULL", "1816807 Or 123 = 123 #", "NULL" };
 		insertBBC(&bbcCase, BBCRoot, myDocument);
-		bbcCase = { 0, "1524024) or 1=1 #", "NULL", "1816807) Or 'ab' = 'ab' #", "NULL" };
+		bbcCase = { 0, "1524024) or 1=1 #", "NULL", "1816807) Or 123 = 123 #", "NULL" };
 		insertBBC(&bbcCase, BBCRoot, myDocument);
 
 		bbcCase = { 0, "' and 1=2 #", "NULL", "' AND 'abc' = 'bbc' #", "NULL" };
 		insertBBC(&bbcCase, BBCRoot, myDocument);
-		bbcCase = { 0, "\" and 1=2 #", "NULL", "\" aND 'abc' = 'bbc' #", "NULL" };
+		bbcCase = { 0, "\" and 1=2 #", "NULL", "\" aND \"ab\" = \"ab\" #", "NULL" };
 		insertBBC(&bbcCase, BBCRoot, myDocument);
 		bbcCase = { 0, "') and 1=2 #", "NULL", "') aND 'abc' = 'bbc' #", "NULL" };
 		insertBBC(&bbcCase, BBCRoot, myDocument);
-		bbcCase = { 0, "\") and 1=2 #", "NULL", "\") And 'abc' = 'bbc' #", "NULL" };
+		bbcCase = { 0, "\") and 1=2 #", "NULL", "\") And \"ab\" = \"ab\" #", "NULL" };
 		insertBBC(&bbcCase, BBCRoot, myDocument);
-		bbcCase = { 0, "1524024 and 1=2 #", "NULL", "1816807 anD 'abc' = 'bbc' #", "NULL" };
+		bbcCase = { 0, "1524024 and 1=2 #", "NULL", "1816807 anD 456 = 456 #", "NULL" };
 		insertBBC(&bbcCase, BBCRoot, myDocument);
-		bbcCase = { 0, "1524024) and 1=2 #", "NULL", "1816807) ANd 'abc' = 'bbc' #", "NULL" };
+		bbcCase = { 0, "1524024) and 1=2 #", "NULL", "1816807) ANd 78 = 78 #", "NULL" };
 		insertBBC(&bbcCase, BBCRoot, myDocument);
 
 		/*TimeBasedCase tbcCase = { 0, "' or if(1=1, sleep(", "), 0) #", "' and if(1=2, sleep(0), 0) #", "NULL", 0 };
